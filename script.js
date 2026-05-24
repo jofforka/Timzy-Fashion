@@ -1,3 +1,4 @@
+alert("NEW SCRIPT IS RUNNING");
 const SALES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Responses";
 
 let sales = [];
