@@ -1,12 +1,4 @@
-// FIREBASE IMPORTS
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   getAuth,
@@ -14,6 +6,7 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 
 
 // FIREBASE CONFIG
@@ -27,31 +20,45 @@ const firebaseConfig = {
 };
 
 
+
 // INITIALIZE FIREBASE
 const app = initializeApp(firebaseConfig);
-
-const db = getFirestore(app);
-
 const auth = getAuth(app);
 
 
-// GLOBAL DATA
+
+// SALES API
+const SALES_API =
+  "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Responses";
+
+
+
 let sales = [];
 
 
+
 // MONEY FORMAT
-const money = n => '₦' + Number(n || 0).toLocaleString();
+const money = n =>
+  "₦" + Number(n || 0).toLocaleString();
+
 
 
 // LOGIN
 window.loginUser = async function () {
 
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+  const email =
+    document.getElementById("loginEmail").value;
+
+  const password =
+    document.getElementById("loginPassword").value;
 
   try {
 
-    await signInWithEmailAndPassword(auth, email, password);
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
     alert("Login successful");
 
@@ -64,6 +71,7 @@ window.loginUser = async function () {
 };
 
 
+
 // LOGOUT
 window.logoutUser = async function () {
 
@@ -72,87 +80,100 @@ window.logoutUser = async function () {
 };
 
 
-// AUTH CHECK
-onAuthStateChanged(auth, async (user) => {
+
+// AUTH STATE
+onAuthStateChanged(auth, user => {
+
+  const loginPage =
+    document.getElementById("loginPage");
+
+  const app =
+    document.getElementById("app");
+
+  if (!loginPage || !app) return;
 
   if (user) {
 
-    document.getElementById("loginPage").style.display = "none";
+    loginPage.style.display = "none";
+    app.style.display = "block";
 
-    document.getElementById("app").style.display = "block";
-
-    loadSales();
+    loadSalesFromSheetDB();
 
   } else {
 
-    document.getElementById("loginPage").style.display = "flex";
-
-    document.getElementById("app").style.display = "none";
+    loginPage.style.display = "flex";
+    app.style.display = "none";
 
   }
 
 });
 
 
+
+// TAB SWITCHING
+window.showTab = function (id) {
+
+  document
+    .querySelectorAll(".tab")
+    .forEach(tab => {
+      tab.classList.remove("active");
+    });
+
+  const selectedTab =
+    document.getElementById(id);
+
+  if (selectedTab) {
+    selectedTab.classList.add("active");
+  }
+
+};
+
+
+
 // LOAD SALES
-async function loadSales() {
+async function loadSalesFromSheetDB() {
 
-  sales = [];
+  try {
 
-  const querySnapshot = await getDocs(collection(db, "sales"));
+    const response =
+      await fetch(SALES_API);
 
-  querySnapshot.forEach((doc) => {
+    const data =
+      await response.json();
 
-    sales.push(doc.data());
+    console.log("SheetDB DATA:", data);
 
-  });
+    sales = data.map(row => ({
 
-  render();
+      staff:
+        row["Staff Name"] || "-",
+
+      category:
+        row["Category"] || "-",
+
+      product:
+        row["Product/SKU"] || "-",
+
+      qty:
+        Number(row["Quantity Sold"] || 0),
+
+      amount:
+        Number(row["Unit Selling Price"] || 0)
+
+    }));
+
+    render();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Could not load sales");
+
+  }
 
 }
 
-
-// ADD SALE
-window.addSale = async function () {
-
-  const staff = document.getElementById("salesStaff").value;
-
-  const category = document.getElementById("salesCategory").value;
-
-  const product = document.getElementById("salesProduct").value;
-
-  const qty = Number(document.getElementById("salesQty").value);
-
-  const amount = Number(document.getElementById("salesAmount").value);
-
-  await addDoc(collection(db, "sales"), {
-
-    staff,
-    category,
-    product,
-    qty,
-    amount,
-    createdAt: new Date()
-
-  });
-
-  alert("Sale added");
-
-  loadSales();
-
-};
-
-
-// TAB SWITCHING
-window.showTab = function(id) {
-
-  document.querySelectorAll('.tab').forEach(x => {
-    x.classList.remove('active');
-  });
-
-  document.getElementById(id).classList.add('active');
-
-};
 
 
 // STAFF XP
@@ -162,16 +183,13 @@ function staffXP() {
 
   sales.forEach(x => {
 
-    if (x.staff) {
-
-      xp[x.staff] = (xp[x.staff] || 0) + 10;
-
-    }
+    xp[x.staff] =
+      (xp[x.staff] || 0) + 10;
 
   });
 
-  return Object.entries(xp)
-
+  return Object
+    .entries(xp)
     .map(([name, points]) => ({
 
       name,
@@ -179,62 +197,111 @@ function staffXP() {
       points,
 
       rank:
-        points >= 700 ? 'Fashion Master' :
-        points >= 300 ? 'Gold Stylist' :
-        points >= 100 ? 'Silver Stylist' :
-        'Bronze Stylist'
+        points >= 700
+          ? "Fashion Master"
+          : points >= 300
+          ? "Gold Stylist"
+          : points >= 100
+          ? "Silver Stylist"
+          : "Bronze Stylist"
 
     }))
-
     .sort((a, b) => b.points - a.points);
 
 }
 
 
-// RENDER
+
+// RENDER UI
 function render() {
 
-  const salesTable = document.getElementById("salesTable");
+  const salesTable =
+    document.getElementById("salesTable");
 
-  const totalSales = document.getElementById("totalSales");
+  const totalSales =
+    document.getElementById("totalSales");
 
-  const netProfit = document.getElementById("netProfit");
+  const netProfit =
+    document.getElementById("netProfit");
 
-  const leaderboard = document.getElementById("leaderboard");
+  const inventoryValue =
+    document.getElementById("inventoryValue");
 
-  salesTable.innerHTML = sales.map(x => `
+  const lowStock =
+    document.getElementById("lowStock");
 
-    <tr>
-      <td>${x.staff || "-"}</td>
-      <td>${x.category || "-"}</td>
-      <td>${x.product || "-"}</td>
-      <td>${x.qty || 0}</td>
-      <td>${money(x.amount)}</td>
-    </tr>
+  const leaderboard =
+    document.getElementById("leaderboard");
 
-  `).join('');
 
-  let total = sales.reduce((s, x) => s + Number(x.amount || 0), 0);
 
-  totalSales.textContent = money(total);
+  if (salesTable) {
 
-  netProfit.textContent = money(total);
+    salesTable.innerHTML =
+      sales.map(x => `
 
-  leaderboard.innerHTML = staffXP().map((x, i) => `
+      <tr>
+        <td>${x.staff}</td>
+        <td>${x.category}</td>
+        <td>${x.product}</td>
+        <td>${x.qty}</td>
+        <td>${money(x.amount)}</td>
+      </tr>
 
-    <div class="rank-card">
+    `).join("");
 
-      <span>
-        #${i + 1}
-        <b>${x.name}</b>
-        <br>
-        ${x.rank}
-      </span>
+  }
 
-      <strong>${x.points} XP</strong>
 
-    </div>
 
-  `).join('');
+  const total =
+    sales.reduce(
+      (sum, item) => sum + item.amount,
+      0
+    );
+
+
+
+  if (totalSales)
+    totalSales.textContent =
+      money(total);
+
+  if (netProfit)
+    netProfit.textContent =
+      money(total);
+
+  if (inventoryValue)
+    inventoryValue.textContent =
+      "₦0";
+
+  if (lowStock)
+    lowStock.textContent =
+      "0";
+
+
+
+  if (leaderboard) {
+
+    leaderboard.innerHTML =
+      staffXP().map((x, i) => `
+
+      <div class="rank-card">
+
+        <span>
+          #${i + 1}
+          <b>${x.name}</b>
+          <br>
+          ${x.rank}
+        </span>
+
+        <strong>
+          ${x.points} XP
+        </strong>
+
+      </div>
+
+    `).join("");
+
+  }
 
 }
