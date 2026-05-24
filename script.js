@@ -12,15 +12,6 @@ function showTab(id) {
   document.getElementById(id).classList.add('active');
 }
 
-function getValue(row, possibleNames) {
-  for (const name of possibleNames) {
-    if (row[name] !== undefined && row[name] !== null && row[name] !== "") {
-      return row[name];
-    }
-  }
-  return "";
-}
-
 function cleanNumber(value) {
   return Number(String(value || "0").replace(/[₦,\s]/g, "")) || 0;
 }
@@ -36,21 +27,12 @@ async function loadSalesFromSheetDB() {
     }
 
     sales = data.map(row => ({
-  staff: row["Staff Name"] || "",
-  category: row["Category"] || "",
-  product: row["Product/VSKU"] || "",
-  qty: Number(row["Quantity Sold"] || 0),
-  amount: Number(row["Unit Selling Price"] || 0)
-}));
-
-      return {
-        staff,
-        category,
-        product,
-        qty,
-        amount: totalDirect || (qty * unitPrice)
-      };
-    });
+      staff: row["Staff Name"] || "",
+      category: row["Category"] || "",
+      product: row["Product/VSKU"] || "",
+      qty: cleanNumber(row["Quantity Sold"]),
+      amount: cleanNumber(row["Unit Selling Price"])
+    }));
 
     render();
 
