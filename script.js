@@ -18,17 +18,11 @@ async function loadSalesFromSheetDB() {
     const data = await response.json();
 
     sales = data.map(row => ({
-  staff: row["Staff Name"] || "",
-  category: row["Category"] || "",
-  product: row["Product/SKU"] || "",
-  qty: Number(row["Qty sold"] || row["Quantity Sold"] || 0),
-  amount: Number(
-    row["Total sales ₦"] ||
-    row["Total Sales"] ||
-    0
-  )
-}));
-}));
+      staff: row["Staff Name"] || "",
+      category: row["Category"] || "",
+      product: row["Product/SKU"] || "",
+      qty: Number(row["Qty sold"] || row["Quantity Sold"] || 0),
+      amount: Number(row["Total sales ₦"] || row["Total Sales"] || 0)
     }));
 
     render();
@@ -56,7 +50,7 @@ function staffXP() {
 }
 
 function render() {
-  salesTable.innerHTML = sales.map((x, i) => `
+  salesTable.innerHTML = sales.map(x => `
     <tr>
       <td>${x.staff}</td>
       <td>${x.category}</td>
