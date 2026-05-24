@@ -2,12 +2,12 @@ window.TIMZY_FORMS = [
   {
     name: "Sales Entry Form",
     description: "Use this for every sale. Connect it to Sales Responses in Google Sheets.",
-    url: "PASTE_GOOGLE_FORM_SALES_LINK_HERE"
+    url: "https://forms.gle/KiSfFM1aJT6jLfv99"
   },
   {
     name: "Expense Form",
     description: "Use this for every business expense.",
-    url: "PASTE_GOOGLE_FORM_EXPENSE_LINK_HERE"
+    url: "https://forms.gle/V3y2ktxVpgTtyMKj9"
   },
   {
     name: "Inventory Restock Form",
