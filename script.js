@@ -18,11 +18,14 @@ async function loadSalesFromSheetDB() {
     const data = await response.json();
 
     sales = data.map(row => ({
-      staff: row["Staff Name"] || "",
-      category: row["Category"] || "",
-      product: row["Product/SKU"] || "",
-      qty: Number(row["Quantity Sold"] || 0),
-      amount: Number(row["Total Sales"] || 0)
+  staff: row["Staff Name"] || "",
+  category: row["Category"] || "",
+  product: row["Product/SKU"] || "",
+  qty: Number(row["Quantity Sold"] || 0),
+  amount:
+    Number(row["Quantity Sold"] || 0) *
+    Number(row["Unit Selling Price"] || 0)
+}));
     }));
 
     render();
