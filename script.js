@@ -21,10 +21,13 @@ async function loadSalesFromSheetDB() {
   staff: row["Staff Name"] || "",
   category: row["Category"] || "",
   product: row["Product/SKU"] || "",
-  qty: Number(row["Quantity Sold"] || 0),
-  amount:
-    Number(row["Quantity Sold"] || 0) *
-    Number(row["Unit Selling Price"] || 0)
+  qty: Number(row["Qty sold"] || row["Quantity Sold"] || 0),
+  amount: Number(
+    row["Total sales ₦"] ||
+    row["Total Sales"] ||
+    0
+  )
+}));
 }));
     }));
 
