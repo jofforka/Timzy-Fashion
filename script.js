@@ -1,145 +1,240 @@
-const SALES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Responses";
+// FIREBASE IMPORTS
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+// FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU",
+  authDomain: "timzy-fashion-os.firebaseapp.com",
+  projectId: "timzy-fashion-os",
+  storageBucket: "timzy-fashion-os.firebasestorage.app",
+  messagingSenderId: "515655826693",
+  appId: "1:515655826693:web:4085b86651f39ffa03cb6c"
+};
+
+
+// INITIALIZE FIREBASE
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+const auth = getAuth(app);
+
+
+// GLOBAL DATA
 let sales = [];
 
-const money = n => "₦" + Number(n || 0).toLocaleString();
 
-function showTab(id){
-  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-  const selected = document.getElementById(id);
-  if(selected) selected.classList.add("active");
-}
+// MONEY FORMAT
+const money = n => '₦' + Number(n || 0).toLocaleString();
 
-function cleanNumber(value){
-  return Number(String(value || "0").replace(/[₦,\s]/g,"")) || 0;
-}
 
-async function loadSalesFromSheetDB() {
+// LOGIN
+window.loginUser = async function () {
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
   try {
 
-    const response = await fetch(SALES_API);
-    const data = await response.json();
+    await signInWithEmailAndPassword(auth, email, password);
 
-    console.log("SheetDB raw data:", data);
-
-    sales = data.map(row => {
-
-  const normalized = {};
-
-  Object.keys(row).forEach(key => {
-    const cleanKey = key.trim().toLowerCase();
-    normalized[cleanKey] = row[key];
-  });
-
-  const qty = cleanNumber(
-    normalized["quantity sold"] ||
-    normalized["qty sold"] ||
-    normalized["quantity"] ||
-    0
-  );
-
-  const unitPrice = cleanNumber(
-    normalized["unit selling price"] ||
-    normalized["selling price"] ||
-    normalized["total sales ₦"] ||
-    normalized["total sales"] ||
-    0
-  );
-
-  return {
-    staff: normalized["staff name"] || "-",
-    category: normalized["category"] || "-",
-    product: normalized["product/vsku"] || normalized["product/sku"] || "-",
-    qty: qty,
-    amount: qty * unitPrice
-  };
-
-});
-
-    console.log("Processed sales:", sales);
-
-    render();
+    alert("Login successful");
 
   } catch (error) {
 
-    console.error("SheetDB sales loading error:", error);
-
-    alert("Sales data could not load.");
+    alert(error.message);
 
   }
-}
 
-function render(){
-  const salesTableEl = document.getElementById("salesTable");
-  const totalSalesEl = document.getElementById("totalSales");
-  const totalExpensesEl = document.getElementById("totalExpenses");
-  const netProfitEl = document.getElementById("netProfit");
-  const inventoryValueEl = document.getElementById("inventoryValue");
-  const lowStockEl = document.getElementById("lowStock");
-  const pendingOrdersEl = document.getElementById("pendingOrders");
-  const leaderboardEl = document.getElementById("leaderboard");
-  const formLinksEl = document.getElementById("formLinks");
+};
 
-  console.log("salesTable exists?", salesTableEl);
-  console.log("sales data after mapping:", sales);
 
-  if(salesTableEl){
-    salesTableEl.innerHTML = sales.map(x => `
-      <tr>
-        <td>${x.staff || "-"}</td>
-        <td>${x.category || "-"}</td>
-        <td>${x.product || "-"}</td>
-        <td>${x.qty || 0}</td>
-        <td>${money(x.amount)}</td>
-        <td>From Google Form</td>
-      </tr>
-    `).join("");
+// LOGOUT
+window.logoutUser = async function () {
+
+  await signOut(auth);
+
+};
+
+
+// AUTH CHECK
+onAuthStateChanged(auth, async (user) => {
+
+  if (user) {
+
+    document.getElementById("loginPage").style.display = "none";
+
+    document.getElementById("app").style.display = "block";
+
+    loadSales();
+
+  } else {
+
+    document.getElementById("loginPage").style.display = "flex";
+
+    document.getElementById("app").style.display = "none";
+
   }
 
-  const total = sales.reduce((sum,item) => sum + item.amount, 0);
+});
 
-  if(totalSalesEl) totalSalesEl.textContent = money(total);
-  if(totalExpensesEl) totalExpensesEl.textContent = "₦0";
-  if(netProfitEl) netProfitEl.textContent = money(total);
-  if(inventoryValueEl) inventoryValueEl.textContent = "₦0";
-  if(lowStockEl) lowStockEl.textContent = "0";
-  if(pendingOrdersEl) pendingOrdersEl.textContent = "0";
 
-  if(leaderboardEl){
-    let xp = {};
-    sales.forEach(x => {
-      if(x.staff) xp[x.staff] = (xp[x.staff] || 0) + 10;
-    });
+// LOAD SALES
+async function loadSales() {
 
-    leaderboardEl.innerHTML = Object.entries(xp).map(([name, points], i) => `
-      <div class="rank-card">
-        <span>#${i + 1} <b>${name}</b><br>Bronze Stylist</span>
-        <strong>${points} XP</strong>
-      </div>
-    `).join("") || "<p>No staff points yet.</p>";
-  }
+  sales = [];
 
-  if(formLinksEl){
-    formLinksEl.innerHTML = (window.TIMZY_FORMS || []).map(f => `
-      <div class="form-card">
-        <h3>${f.name}</h3>
-        <p>${f.description}</p>
-        <a href="${f.url}" target="_blank">Open Form</a>
-      </div>
-    `).join("");
-  }
+  const querySnapshot = await getDocs(collection(db, "sales"));
+
+  querySnapshot.forEach((doc) => {
+
+    sales.push(doc.data());
+
+  });
+
+  render();
+
 }
 
-function exportBackup(){
-  const blob = new Blob([JSON.stringify({sales}, null, 2)], {type:"application/json"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "timzy-sales-backup.json";
-  a.click();
+
+// ADD SALE
+window.addSale = async function () {
+
+  const staff = document.getElementById("salesStaff").value;
+
+  const category = document.getElementById("salesCategory").value;
+
+  const product = document.getElementById("salesProduct").value;
+
+  const qty = Number(document.getElementById("salesQty").value);
+
+  const amount = Number(document.getElementById("salesAmount").value);
+
+  await addDoc(collection(db, "sales"), {
+
+    staff,
+    category,
+    product,
+    qty,
+    amount,
+    createdAt: new Date()
+
+  });
+
+  alert("Sale added");
+
+  loadSales();
+
+};
+
+
+// TAB SWITCHING
+window.showTab = function(id) {
+
+  document.querySelectorAll('.tab').forEach(x => {
+    x.classList.remove('active');
+  });
+
+  document.getElementById(id).classList.add('active');
+
+};
+
+
+// STAFF XP
+function staffXP() {
+
+  let xp = {};
+
+  sales.forEach(x => {
+
+    if (x.staff) {
+
+      xp[x.staff] = (xp[x.staff] || 0) + 10;
+
+    }
+
+  });
+
+  return Object.entries(xp)
+
+    .map(([name, points]) => ({
+
+      name,
+
+      points,
+
+      rank:
+        points >= 700 ? 'Fashion Master' :
+        points >= 300 ? 'Gold Stylist' :
+        points >= 100 ? 'Silver Stylist' :
+        'Bronze Stylist'
+
+    }))
+
+    .sort((a, b) => b.points - a.points);
+
 }
 
-function clearData(){
-  alert("Live sales comes from Google Form/SheetDB.");
-}
 
-loadSalesFromSheetDB();
+// RENDER
+function render() {
+
+  const salesTable = document.getElementById("salesTable");
+
+  const totalSales = document.getElementById("totalSales");
+
+  const netProfit = document.getElementById("netProfit");
+
+  const leaderboard = document.getElementById("leaderboard");
+
+  salesTable.innerHTML = sales.map(x => `
+
+    <tr>
+      <td>${x.staff || "-"}</td>
+      <td>${x.category || "-"}</td>
+      <td>${x.product || "-"}</td>
+      <td>${x.qty || 0}</td>
+      <td>${money(x.amount)}</td>
+    </tr>
+
+  `).join('');
+
+  let total = sales.reduce((s, x) => s + Number(x.amount || 0), 0);
+
+  totalSales.textContent = money(total);
+
+  netProfit.textContent = money(total);
+
+  leaderboard.innerHTML = staffXP().map((x, i) => `
+
+    <div class="rank-card">
+
+      <span>
+        #${i + 1}
+        <b>${x.name}</b>
+        <br>
+        ${x.rank}
+      </span>
+
+      <strong>${x.points} XP</strong>
+
+    </div>
+
+  `).join('');
+
+}
