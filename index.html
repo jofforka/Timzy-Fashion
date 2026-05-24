@@ -2,12 +2,18 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
 
   <title>Timzy Fashion OS</title>
 
   <link rel="stylesheet" href="style.css" />
+
 </head>
 
 <body>
@@ -42,27 +48,38 @@
   </div>
 
 
+
   <!-- MAIN APP -->
   <div id="app" style="display:none;">
+
 
     <!-- HERO -->
     <header class="hero">
 
       <div>
-        <p class="eyebrow">TIMZY FASHION OS</p>
 
-        <h1>Business Command Center</h1>
+        <p class="eyebrow">
+          TIMZY FASHION OS
+        </p>
+
+        <h1>
+          Business Command Center
+        </h1>
 
         <p>
           Sales • Inventory • Orders • Customers • Staff XP
         </p>
+
       </div>
+
 
       <div class="xp-card">
 
         <span>Business Health</span>
 
-        <strong id="healthScore">85%</strong>
+        <strong id="healthScore">
+          85%
+        </strong>
 
         <div class="bar">
           <i style="width:85%"></i>
@@ -77,6 +94,7 @@
       </div>
 
     </header>
+
 
 
     <!-- NAVIGATION -->
@@ -113,34 +131,61 @@
     </nav>
 
 
+
     <!-- MAIN -->
     <main>
+
 
       <!-- DASHBOARD -->
       <section id="dashboard" class="tab active">
 
-        <h2>Executive Dashboard</h2>
+        <h2>
+          Executive Dashboard
+        </h2>
 
         <div class="cards">
 
           <div class="card">
+
             <span>Total Sales</span>
-            <strong id="totalSales">₦0</strong>
+
+            <strong id="totalSales">
+              ₦0
+            </strong>
+
           </div>
 
+
           <div class="card">
+
             <span>Net Profit</span>
-            <strong id="netProfit">₦0</strong>
+
+            <strong id="netProfit">
+              ₦0
+            </strong>
+
           </div>
 
+
           <div class="card">
+
             <span>Inventory Value</span>
-            <strong id="inventoryValue">₦0</strong>
+
+            <strong id="inventoryValue">
+              ₦0
+            </strong>
+
           </div>
+
 
           <div class="card warning">
+
             <span>Low Stock</span>
-            <strong id="lowStock">0</strong>
+
+            <strong id="lowStock">
+              0
+            </strong>
+
           </div>
 
         </div>
@@ -148,68 +193,11 @@
       </section>
 
 
+
       <!-- SALES -->
       <section id="sales" class="tab">
 
-        <h2>Sales Entry</h2>
-
-        <form>
-
-          <input
-            id="salesStaff"
-            placeholder="Staff name"
-          />
-
-          <select id="salesCategory">
-
-            <option value="">
-              Category
-            </option>
-
-            <option>
-              Chimezie Materials
-            </option>
-
-            <option>
-              Our Material
-            </option>
-
-            <option>
-              Adire
-            </option>
-
-            <option>
-              Aseoke
-            </option>
-
-          </select>
-
-          <input
-            id="salesProduct"
-            placeholder="Product/SKU"
-          />
-
-          <input
-            id="salesQty"
-            type="number"
-            placeholder="Qty sold"
-          />
-
-          <input
-            id="salesAmount"
-            type="number"
-            placeholder="Total sales ₦"
-          />
-
-          <button
-            type="button"
-            onclick="addSale()"
-          >
-            Add Sale +10 XP
-          </button>
-
-        </form>
-
+        <h2>Sales Records</h2>
 
         <table>
 
@@ -234,16 +222,36 @@
       </section>
 
 
+
       <!-- INVENTORY -->
       <section id="inventory" class="tab">
 
         <h2>Inventory Control</h2>
 
-        <p>
-          Inventory module coming next.
-        </p>
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Category</th>
+              <th>Product</th>
+              <th>SKU</th>
+              <th>Supplier</th>
+              <th>Qty Added</th>
+              <th>Cost Price</th>
+              <th>Selling Price</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="inventoryTable"></tbody>
+
+        </table>
 
       </section>
+
 
 
       <!-- ORDERS -->
@@ -251,29 +259,67 @@
 
         <h2>Orders</h2>
 
-        <p>
-          Orders module coming next.
-        </p>
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Product/Style</th>
+              <th>Assigned Staff</th>
+              <th>Status</th>
+              <th>Delivery Date</th>
+              <th>Amount</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="ordersTable"></tbody>
+
+        </table>
 
       </section>
+
 
 
       <!-- CUSTOMERS -->
       <section id="customers" class="tab">
 
-        <h2>Customers</h2>
+        <h2>Customer Measurement Portal</h2>
 
-        <p>
-          Customer portal coming next.
-        </p>
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Customer Name</th>
+              <th>Phone</th>
+              <th>Measurements</th>
+              <th>Style Notes</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody id="customersTable"></tbody>
+
+        </table>
 
       </section>
+
 
 
       <!-- STAFF -->
       <section id="staff" class="tab">
 
-        <h2>Staff XP Leaderboard</h2>
+        <h2>
+          Staff XP Leaderboard
+        </h2>
 
         <div
           id="leaderboard"
@@ -283,10 +329,13 @@
       </section>
 
 
+
       <!-- FORMS -->
       <section id="forms" class="tab">
 
-        <h2>Google Forms Hub</h2>
+        <h2>
+          Google Forms Hub
+        </h2>
 
         <div
           class="form-grid"
@@ -295,7 +344,9 @@
 
       </section>
 
+
     </main>
+
 
 
     <!-- FOOTER -->
@@ -307,7 +358,9 @@
 
     </footer>
 
+
   </div>
+
 
 
   <!-- SCRIPTS -->
