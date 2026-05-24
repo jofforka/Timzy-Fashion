@@ -212,5 +212,17 @@ function render() {
         <strong>${x.points} XP</strong>
       </div>
     `).join("") || "<p>No staff points yet.</p>";
+
+    const formLinks = document.getElementById("formLinks");
+
+if (formLinks) {
+  formLinks.innerHTML = (window.TIMZY_FORMS || []).map(f => `
+    <div class="form-card">
+      <h3>${f.name}</h3>
+      <p>${f.description}</p>
+      <a href="${f.url}" target="_blank">Open Form</a>
+    </div>
+  `).join("");
+}
   }
 }
