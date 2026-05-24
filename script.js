@@ -1,4 +1,4 @@
-const SALES_API = "https://sheetdb.io/api/v1/0vexx5p8p7zk3";
+const SALES_API = "https://sheetdb.io/api/v1/mjufygf14vhj8";
 
 let sales = [];
 let inventory = JSON.parse(localStorage.getItem('tf_inventory')) || [];
