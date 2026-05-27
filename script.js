@@ -28,6 +28,7 @@ let sales = [];
 let inventory = [];
 let orders = [];
 let customers = [];
+let currentRole = "customer";
 
 const money = n => "₦" + Number(n || 0).toLocaleString();
 
@@ -68,9 +69,7 @@ onAuthStateChanged(auth, user => {
     loginPage.style.display = "none";
     appView.style.display = "block";
 
-    const email = user.email.toLowerCase();
-
-    setupRoleAccess(email);
+    setupRoleAccess(user.email.toLowerCase());
     loadAllData();
   } else {
     loginPage.style.display = "flex";
@@ -82,29 +81,22 @@ function setupRoleAccess(email) {
   hideAllSections();
 
   if (email === "admin@timzyfashion.com") {
-    showAllSections();
+    currentRole = "admin";
+    showRoleSections(["dashboard", "sales", "inventory", "orders", "customers", "staff", "forms"]);
     showTab("dashboard");
     return;
   }
 
   if (email.includes("staff")) {
-    showRoleSections([
-      "dashboard",
-      "sales",
-      "inventory",
-      "orders",
-      "forms"
-    ]);
-
-    showTab("dashboard");
+    currentRole = "staff";
+    showRoleSections(["sales", "orders", "customers", "forms"]);
+    showTab("sales");
     return;
   }
 
-  showRoleSections([
-    "customers"
-  ]);
-
-  showTab("customers");
+  currentRole = "customer";
+  showRoleSections(["forms"]);
+  showTab("forms");
 }
 
 function hideAllSections() {
@@ -115,16 +107,6 @@ function hideAllSections() {
 
   document.querySelectorAll("nav button").forEach(btn => {
     btn.style.display = "none";
-  });
-}
-
-function showAllSections() {
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.style.display = "";
-  });
-
-  document.querySelectorAll("nav button").forEach(btn => {
-    btn.style.display = "inline-block";
   });
 }
 
@@ -157,12 +139,7 @@ async function fetchSheet(api) {
 
 async function loadAllData() {
   try {
-    const [
-      salesData,
-      inventoryData,
-      ordersData,
-      customersData
-    ] = await Promise.all([
+    const [salesData, inventoryData, ordersData, customersData] = await Promise.all([
       fetchSheet(SALES_API),
       fetchSheet(INVENTORY_API),
       fetchSheet(ORDERS_API),
@@ -171,19 +148,8 @@ async function loadAllData() {
 
     sales = salesData.map(row => {
       const n = normalize(row);
-
-      const qty = cleanNumber(
-        n["quantity sold"] ||
-        n["qty sold"] ||
-        n["quantity"]
-      );
-
-      const unitPrice = cleanNumber(
-        n["unit selling price"] ||
-        n["selling price"] ||
-        n["total sales"] ||
-        n["total sales ₦"]
-      );
+      const qty = cleanNumber(n["quantity sold"] || n["qty sold"] || n["quantity"]);
+      const unitPrice = cleanNumber(n["unit selling price"] || n["selling price"] || n["total sales"] || n["total sales ₦"]);
 
       return {
         staff: n["staff name"] || "-",
@@ -244,7 +210,6 @@ async function loadAllData() {
     });
 
     render();
-
   } catch (error) {
     console.error("Data loading error:", error);
     alert("Could not load one or more Google Form sheets.");
@@ -346,19 +311,9 @@ function render() {
     `).join("");
   }
 
-  const totalSalesAmount = sales.reduce(
-    (sum, item) => sum + Number(item.amount || 0),
-    0
-  );
-
-  const inventoryValueAmount = inventory.reduce(
-    (sum, item) => sum + Number(item.quantity * item.cost || 0),
-    0
-  );
-
-  const lowStockCount = inventory.filter(
-    item => item.quantity <= 5
-  ).length;
+  const totalSalesAmount = sales.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const inventoryValueAmount = inventory.reduce((sum, item) => sum + Number(item.quantity * item.cost || 0), 0);
+  const lowStockCount = inventory.filter(item => item.quantity <= 5).length;
 
   const totalSales = document.getElementById("totalSales");
   const netProfit = document.getElementById("netProfit");
@@ -385,7 +340,24 @@ function render() {
   }
 
   if (formLinks) {
-    formLinks.innerHTML = (window.TIMZY_FORMS || []).map(f => `
+    let allowedForms = window.TIMZY_FORMS || [];
+
+    if (currentRole === "customer") {
+      allowedForms = allowedForms.filter(f =>
+        f.name.includes("Customer Measurement") ||
+        f.name.includes("Order")
+      );
+    }
+
+    if (currentRole === "staff") {
+      allowedForms = allowedForms.filter(f =>
+        f.name.includes("Sales") ||
+        f.name.includes("Customer Measurement") ||
+        f.name.includes("Order")
+      );
+    }
+
+    formLinks.innerHTML = allowedForms.map(f => `
       <div class="form-card">
         <h3>${f.name}</h3>
         <p>${f.description}</p>
