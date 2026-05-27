@@ -28,7 +28,9 @@ let sales = [];
 let inventory = [];
 let orders = [];
 let customers = [];
+
 let currentRole = "customer";
+let currentUserEmail = "";
 
 const money = n => "₦" + Number(n || 0).toLocaleString();
 
@@ -38,9 +40,11 @@ function cleanNumber(value) {
 
 function normalize(row) {
   const obj = {};
+
   Object.keys(row).forEach(key => {
     obj[key.trim().toLowerCase()] = row[key];
   });
+
   return obj;
 }
 
@@ -69,8 +73,12 @@ onAuthStateChanged(auth, user => {
     loginPage.style.display = "none";
     appView.style.display = "block";
 
-    setupRoleAccess(user.email.toLowerCase());
+    currentUserEmail = user.email.toLowerCase();
+
+    setupRoleAccess(currentUserEmail);
+
     loadAllData();
+
   } else {
     loginPage.style.display = "flex";
     appView.style.display = "none";
@@ -80,22 +88,48 @@ onAuthStateChanged(auth, user => {
 function setupRoleAccess(email) {
   hideAllSections();
 
+  // ADMIN: sees everything
   if (email === "admin@timzyfashion.com") {
     currentRole = "admin";
-    showRoleSections(["dashboard", "sales", "inventory", "orders", "customers", "staff", "forms"]);
+
+    showRoleSections([
+      "dashboard",
+      "sales",
+      "inventory",
+      "orders",
+      "customers",
+      "staff",
+      "forms"
+    ]);
+
     showTab("dashboard");
     return;
   }
 
+  // STAFF: sales, orders, customers/measurements, forms
+  // Staff does NOT see inventory
   if (email.includes("staff")) {
     currentRole = "staff";
-    showRoleSections(["sales", "orders", "customers", "forms"]);
+
+    showRoleSections([
+      "sales",
+      "orders",
+      "customers",
+      "forms"
+    ]);
+
     showTab("sales");
     return;
   }
 
+  // CUSTOMER: own measurements + own orders + forms hub
   currentRole = "customer";
-  showRoleSections(["forms"]);
+
+  showRoleSections([
+    "customers",
+    "forms"
+  ]);
+
   showTab("forms");
 }
 
@@ -139,7 +173,12 @@ async function fetchSheet(api) {
 
 async function loadAllData() {
   try {
-    const [salesData, inventoryData, ordersData, customersData] = await Promise.all([
+    const [
+      salesData,
+      inventoryData,
+      ordersData,
+      customersData
+    ] = await Promise.all([
       fetchSheet(SALES_API),
       fetchSheet(INVENTORY_API),
       fetchSheet(ORDERS_API),
@@ -148,10 +187,22 @@ async function loadAllData() {
 
     sales = salesData.map(row => {
       const n = normalize(row);
-      const qty = cleanNumber(n["quantity sold"] || n["qty sold"] || n["quantity"]);
-      const unitPrice = cleanNumber(n["unit selling price"] || n["selling price"] || n["total sales"] || n["total sales ₦"]);
+
+      const qty = cleanNumber(
+        n["quantity sold"] ||
+        n["qty sold"] ||
+        n["quantity"]
+      );
+
+      const unitPrice = cleanNumber(
+        n["unit selling price"] ||
+        n["selling price"] ||
+        n["total sales"] ||
+        n["total sales ₦"]
+      );
 
       return {
+        email: (n["email address"] || n["email"] || "").toLowerCase(),
         staff: n["staff name"] || "-",
         category: n["category"] || "-",
         product: n["product/vsku"] || n["product/sku"] || "-",
@@ -164,6 +215,7 @@ async function loadAllData() {
       const n = normalize(row);
 
       return {
+        email: (n["email address"] || n["email"] || "").toLowerCase(),
         staff: n["staff name"] || "-",
         category: n["category"] || "-",
         product: n["product name"] || "-",
@@ -179,6 +231,7 @@ async function loadAllData() {
       const n = normalize(row);
 
       return {
+        email: (n["email address"] || n["email"] || "").toLowerCase(),
         orderId: n["order id"] || "-",
         customer: n["customer name"] || "-",
         phone: n["phone number"] || "-",
@@ -189,7 +242,8 @@ async function loadAllData() {
         delivery: n["delivery date"] || "-",
         amount: cleanNumber(n["total amount"]),
         deposit: cleanNumber(n["deposit"]),
-        balance: cleanNumber(n["balance"])
+        balance: cleanNumber(n["balance"]),
+        notes: n["notes"] || "-"
       };
     });
 
@@ -197,6 +251,7 @@ async function loadAllData() {
       const n = normalize(row);
 
       return {
+        email: (n["email address"] || n["email"] || "").toLowerCase(),
         name: n["customer name"] || "-",
         phone: n["phone number"] || "-",
         shoulder: n["shoulder"] || "-",
@@ -205,11 +260,14 @@ async function loadAllData() {
         hip: n["hip"] || "-",
         sleeve: n["sleeve"] || "-",
         length: n["length"] || "-",
+        neck: n["neck"] || "-",
+        trouser: n["trouser length"] || "-",
         notes: n["style notes"] || "-"
       };
     });
 
     render();
+
   } catch (error) {
     console.error("Data loading error:", error);
     alert("Could not load one or more Google Form sheets.");
@@ -226,7 +284,12 @@ function staffXP() {
   });
 
   orders.forEach(x => {
-    if (x.staff && x.status.toLowerCase() === "completed") {
+    if (
+      x.staff &&
+      x.staff !== "-" &&
+      x.status &&
+      x.status.toLowerCase() === "completed"
+    ) {
       xp[x.staff] = (xp[x.staff] || 0) + 15;
     }
   });
@@ -242,6 +305,28 @@ function staffXP() {
         "Bronze Stylist"
     }))
     .sort((a, b) => b.points - a.points);
+}
+
+function getVisibleOrders() {
+  if (currentRole === "customer") {
+    return orders.filter(x =>
+      x.email &&
+      x.email.toLowerCase() === currentUserEmail
+    );
+  }
+
+  return orders;
+}
+
+function getVisibleCustomers() {
+  if (currentRole === "customer") {
+    return customers.filter(x =>
+      x.email &&
+      x.email.toLowerCase() === currentUserEmail
+    );
+  }
+
+  return customers;
 }
 
 function render() {
@@ -279,41 +364,102 @@ function render() {
   }
 
   if (ordersTable) {
-    ordersTable.innerHTML = orders.map(x => `
-      <tr>
-        <td>${x.orderId}</td>
-        <td>${x.customer}</td>
-        <td>${x.phone}</td>
-        <td>${x.product}</td>
-        <td>${x.staff}</td>
-        <td>${x.status}</td>
-        <td>${x.delivery}</td>
-        <td>${money(x.amount)}</td>
-      </tr>
-    `).join("");
+    const visibleOrders = getVisibleOrders();
+
+    ordersTable.innerHTML = visibleOrders.length
+      ? visibleOrders.map(x => `
+        <tr>
+          <td>${x.orderId}</td>
+          <td>${x.customer}</td>
+          <td>${x.phone}</td>
+          <td>${x.product}</td>
+          <td>${x.staff}</td>
+          <td>${x.status}</td>
+          <td>${x.delivery}</td>
+          <td>${money(x.amount)}</td>
+        </tr>
+      `).join("")
+      : `
+        <tr>
+          <td colspan="8">
+            No order record found for this account yet.
+          </td>
+        </tr>
+      `;
   }
 
   if (customersTable) {
-    customersTable.innerHTML = customers.map(x => `
-      <tr>
-        <td>${x.name}</td>
-        <td>${x.phone}</td>
-        <td>
-          Shoulder: ${x.shoulder}<br>
-          Chest/Bust: ${x.chest}<br>
-          Waist: ${x.waist}<br>
-          Hip: ${x.hip}<br>
-          Sleeve: ${x.sleeve}<br>
-          Length: ${x.length}
-        </td>
-        <td>${x.notes}</td>
-      </tr>
-    `).join("");
+    const visibleCustomers = getVisibleCustomers();
+    const visibleOrders = getVisibleOrders();
+
+    const measurementRows = visibleCustomers.length
+      ? visibleCustomers.map(x => `
+        <tr>
+          <td>${x.name}</td>
+          <td>${x.phone}</td>
+          <td>
+            <strong>Measurements</strong><br>
+            Shoulder: ${x.shoulder}<br>
+            Chest/Bust: ${x.chest}<br>
+            Waist: ${x.waist}<br>
+            Hip: ${x.hip}<br>
+            Sleeve: ${x.sleeve}<br>
+            Length: ${x.length}<br>
+            Neck: ${x.neck}<br>
+            Trouser Length: ${x.trouser}
+          </td>
+          <td>${x.notes}</td>
+        </tr>
+      `).join("")
+      : "";
+
+    const orderRowsForCustomer = currentRole === "customer" && visibleOrders.length
+      ? visibleOrders.map(x => `
+        <tr>
+          <td>${x.customer}</td>
+          <td>${x.phone}</td>
+          <td>
+            <strong>Order</strong><br>
+            Order ID: ${x.orderId}<br>
+            Product/Style: ${x.product}<br>
+            Status: ${x.status}<br>
+            Delivery Date: ${x.delivery}<br>
+            Amount: ${money(x.amount)}<br>
+            Deposit: ${money(x.deposit)}<br>
+            Balance: ${money(x.balance)}
+          </td>
+          <td>${x.notes || "-"}</td>
+        </tr>
+      `).join("")
+      : "";
+
+    customersTable.innerHTML =
+      measurementRows ||
+      orderRowsForCustomer
+        ? measurementRows + orderRowsForCustomer
+        : `
+          <tr>
+            <td colspan="4">
+              No measurement or order record found for this account yet.
+              Please use the Google Forms Hub to submit your measurement or order.
+            </td>
+          </tr>
+        `;
   }
 
-  const totalSalesAmount = sales.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-  const inventoryValueAmount = inventory.reduce((sum, item) => sum + Number(item.quantity * item.cost || 0), 0);
-  const lowStockCount = inventory.filter(item => item.quantity <= 5).length;
+  const totalSalesAmount = sales.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0
+  );
+
+  const inventoryValueAmount = inventory.reduce(
+    (sum, item) => sum + Number(item.quantity * item.cost || 0),
+    0
+  );
+
+  const lowStockCount = inventory.filter(
+    item => item.quantity <= 5
+  ).length;
 
   const totalSales = document.getElementById("totalSales");
   const netProfit = document.getElementById("netProfit");
