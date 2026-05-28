@@ -299,30 +299,80 @@
 
 
       <!-- CUSTOMERS -->
-      <section id="customers" class="tab">
+    <section id="customers" class="tab">
+  <h2>Customer Portal</h2>
 
-        <h2>Customer Measurement Portal</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Submit Measurement</h3>
 
-        <table>
+      <form>
+        <input id="cmName" placeholder="Customer Name" />
+        <input id="cmPhone" placeholder="Phone Number" />
+        <input id="cmShoulder" placeholder="Shoulder" />
+        <input id="cmChest" placeholder="Chest/Bust" />
+        <input id="cmWaist" placeholder="Waist" />
+        <input id="cmHip" placeholder="Hip" />
+        <input id="cmSleeve" placeholder="Sleeve" />
+        <input id="cmLength" placeholder="Length" />
+        <input id="cmNotes" placeholder="Style Notes" />
 
-          <thead>
+        <button type="button" onclick="submitMeasurement()">
+          Save Measurement
+        </button>
+      </form>
+    </div>
 
-            <tr>
+    <div class="card">
+      <h3>Submit Order</h3>
 
-              <th>Customer Name</th>
-              <th>Phone</th>
-              <th>Measurements</th>
-              <th>Style Notes</th>
+      <form>
+        <input id="coName" placeholder="Customer Name" />
+        <input id="coPhone" placeholder="Phone Number" />
+        <input id="coStyle" placeholder="Product / Style" />
+        <input id="coDelivery" type="date" />
+        <input id="coAmount" type="number" placeholder="Total Amount" />
+        <input id="coDeposit" type="number" placeholder="Deposit" />
 
-            </tr>
+        <button type="button" onclick="submitOrder()">
+          Submit Order
+        </button>
+      </form>
+    </div>
+  </div>
 
-          </thead>
+  <h3>My Measurements / Customer Measurements</h3>
 
-          <tbody id="customersTable"></tbody>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Measurements</th>
+        <th>Style Notes</th>
+      </tr>
+    </thead>
+    <tbody id="customersTable"></tbody>
+  </table>
 
-        </table>
+  <h3>My Orders / Customer Orders</h3>
 
-      </section>
+  <table>
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Phone</th>
+        <th>Style</th>
+        <th>Status</th>
+        <th>Delivery</th>
+        <th>Amount</th>
+        <th>Deposit</th>
+        <th>Balance</th>
+      </tr>
+    </thead>
+    <tbody id="customerOrdersTable"></tbody>
+  </table>
+</section>
 
 
 
