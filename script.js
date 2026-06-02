@@ -1,3 +1,4 @@
+```javascript
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
@@ -22,6 +23,7 @@ import {
   orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU",
   authDomain: "timzy-fashion-os.firebaseapp.com",
@@ -35,10 +37,17 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const SALES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Responses";
-const INVENTORY_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Inventory%20Restock";
-const EXPENSES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Expense%20Responses";
+/* SHEETDB APIS */
+const SALES_API =
+  "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Responses";
 
+const INVENTORY_API =
+  "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Inventory%20Restock";
+
+const EXPENSES_API =
+  "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Expense%20Responses";
+
+/* GLOBAL DATA */
 let sales = [];
 let inventory = [];
 let expenses = [];
@@ -51,6 +60,7 @@ let currentUserEmail = "";
 let activeChatOrderId = "";
 let unsubscribeChat = null;
 
+/* HELPERS */
 const money = n => "₦" + Number(n || 0).toLocaleString();
 
 function cleanNumber(value) {
@@ -59,42 +69,57 @@ function cleanNumber(value) {
 
 function normalize(row) {
   const obj = {};
+
   Object.keys(row || {}).forEach(key => {
     obj[key.trim().toLowerCase()] = row[key];
   });
+
   return obj;
 }
 
+/* ROLE LOOKUP */
 async function getUserRole(email) {
   try {
     const snap = await getDoc(doc(db, "users", email));
-    if (snap.exists() && snap.data().role) return snap.data().role;
+
+    if (snap.exists() && snap.data().role) {
+      return snap.data().role;
+    }
   } catch (error) {
     console.warn("Role lookup failed:", error);
   }
 
   if (email === "admin@timzyfashion.com") return "admin";
   if (email.includes("staff")) return "staff";
+
   return "customer";
 }
 
+/* LOGIN */
 window.loginUser = async function () {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
+  if (!email || !password) {
+    alert("Enter email and password.");
+    return;
+  }
+
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    alert(error.message);
     console.error(error);
+    alert(error.message);
   }
 };
 
+/* LOGOUT */
 window.logoutUser = async function () {
   if (unsubscribeChat) unsubscribeChat();
   await signOut(auth);
 };
 
+/* AUTH STATE */
 onAuthStateChanged(auth, async user => {
   const loginPage = document.getElementById("loginPage");
   const appView = document.getElementById("app");
@@ -113,11 +138,13 @@ onAuthStateChanged(auth, async user => {
   } else {
     currentUserEmail = "";
     currentRole = "customer";
+
     loginPage.style.display = "flex";
     appView.style.display = "none";
   }
 });
 
+/* ROLE ACCESS */
 function setupRoleAccess() {
   hideAllSections();
 
@@ -134,6 +161,7 @@ function setupRoleAccess() {
       "staff",
       "forms"
     ]);
+
     showStaffAdminFields(true);
     showTab("dashboard");
     return;
@@ -148,6 +176,7 @@ function setupRoleAccess() {
       "customers",
       "forms"
     ]);
+
     showStaffAdminFields(true);
     showTab("catalog");
     return;
@@ -157,6 +186,7 @@ function setupRoleAccess() {
     "catalog",
     "customers"
   ]);
+
   showStaffAdminFields(false);
   showTab("catalog");
 }
@@ -188,19 +218,29 @@ function showStaffAdminFields(show) {
   });
 }
 
+/* TAB SWITCH */
 window.showTab = function (id) {
   document.querySelectorAll(".tab").forEach(tab => {
     tab.classList.remove("active");
   });
 
   const selected = document.getElementById(id);
-  if (selected) selected.classList.add("active");
+
+  if (selected) {
+    selected.classList.add("active");
+  }
 };
 
+/* FETCH SHEETDB */
 async function fetchSheet(api) {
   try {
     const response = await fetch(api);
-    if (!response.ok) return [];
+
+    if (!response.ok) {
+      console.warn("SheetDB failed:", api, response.status);
+      return [];
+    }
+
     const data = await response.json();
     return Array.isArray(data) ? data : [];
   } catch (error) {
@@ -209,6 +249,7 @@ async function fetchSheet(api) {
   }
 }
 
+/* LOAD ALL DATA */
 async function loadAllData() {
   const [salesData, inventoryData, expensesData] = await Promise.all([
     fetchSheet(SALES_API),
@@ -218,13 +259,31 @@ async function loadAllData() {
 
   sales = salesData.map(row => {
     const n = normalize(row);
-    const qty = cleanNumber(n["quantity sold"] || n["qty sold"] || n["quantity"] || n["qty"]);
-    const unitPrice = cleanNumber(n["unit selling price"] || n["selling price"] || n["total sales"] || n["total sales ₦"] || n["amount"]);
+
+    const qty = cleanNumber(
+      n["quantity sold"] ||
+      n["qty sold"] ||
+      n["quantity"] ||
+      n["qty"]
+    );
+
+    const unitPrice = cleanNumber(
+      n["unit selling price"] ||
+      n["selling price"] ||
+      n["total sales"] ||
+      n["total sales ₦"] ||
+      n["amount"]
+    );
 
     return {
       staff: n["staff name"] || "-",
       category: n["category"] || "-",
-      product: n["product/vsku"] || n["product/sku"] || n["product name"] || n["product"] || "-",
+      product:
+        n["product/vsku"] ||
+        n["product/sku"] ||
+        n["product name"] ||
+        n["product"] ||
+        "-",
       qty,
       amount: qty * unitPrice || unitPrice
     };
@@ -232,27 +291,59 @@ async function loadAllData() {
 
   inventory = inventoryData.map(row => {
     const n = normalize(row);
-    const quantity = cleanNumber(n["quantity added"] || n["qty added"] || n["quantity"] || n["qty"] || n["stock"] || n["stock quantity"]);
+
+    const quantity = cleanNumber(
+      n["quantity added"] ||
+      n["qty added"] ||
+      n["quantity"] ||
+      n["qty"] ||
+      n["stock"] ||
+      n["stock quantity"]
+    );
 
     return {
       category: n["category"] || "-",
-      product: n["product name"] || n["product"] || n["product/sku"] || "-",
+      product:
+        n["product name"] ||
+        n["product"] ||
+        n["product/sku"] ||
+        "-",
       sku: n["sku"] || n["product/sku"] || "-",
       supplier: n["supplier/vendor"] || n["supplier"] || "-",
       quantity,
       cost: cleanNumber(n["cost price"] || n["unit cost"] || n["cost"]),
-      selling: cleanNumber(n["selling price"] || n["price"] || n["unit selling price"]),
+      selling: cleanNumber(
+        n["selling price"] ||
+        n["price"] ||
+        n["unit selling price"]
+      ),
       color: n["color"] || n["material color"] || "",
       sizes: n["sizes"] || "",
-      image1: n["image url"] || n["image 1"] || n["product image"] || n["image"] || "",
-      image2: n["image url 2"] || n["image 2"] || "",
-      image3: n["image url 3"] || n["image 3"] || "",
-      description: n["description"] || n["product description"] || ""
+      image1:
+        n["image url"] ||
+        n["image url 1"] ||
+        n["image 1"] ||
+        n["product image"] ||
+        n["image"] ||
+        "",
+      image2:
+        n["image url 2"] ||
+        n["image 2"] ||
+        "",
+      image3:
+        n["image url 3"] ||
+        n["image 3"] ||
+        "",
+      description:
+        n["description"] ||
+        n["product description"] ||
+        ""
     };
   });
 
   expenses = expensesData.map(row => {
     const n = normalize(row);
+
     const qty = cleanNumber(n["quantity"] || n["qty"] || 1);
     const unitCost = cleanNumber(n["unit cost"] || n["amount"] || n["cost"]);
 
@@ -271,33 +362,41 @@ async function loadAllData() {
   await loadFirestoreData();
 }
 
+/* LOAD CATALOG */
 async function loadCatalog() {
-  const snap = await getDocs(collection(db, "catalog"));
+  let firestoreCatalog = [];
 
-  catalog = snap.docs.map(docSnap => ({
-    id: docSnap.id,
-    ...docSnap.data()
-  }));
+  try {
+    const snap = await getDocs(collection(db, "catalog"));
+
+    firestoreCatalog = snap.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    }));
+  } catch (error) {
+    console.warn("Could not load Firestore catalog:", error);
+  }
 
   const inventoryCatalog = inventory
-    .filter(x => x.product && x.product !== "-")
-    .map(x => ({
-      id: `inventory-${x.sku || x.product}`,
-      name: x.product,
-      category: x.category,
-      price: x.selling,
-      quantity: x.quantity,
-      color: x.color,
-      sizes: x.sizes,
-      image1: x.image1,
-      image2: x.image2,
-      image3: x.image3,
-      description: x.description
+    .filter(item => item.product && item.product !== "-")
+    .map(item => ({
+      id: `inventory-${item.sku || item.product}`,
+      name: item.product,
+      category: item.category,
+      price: item.selling,
+      quantity: item.quantity,
+      color: item.color,
+      sizes: item.sizes,
+      image1: item.image1,
+      image2: item.image2,
+      image3: item.image3,
+      description: item.description
     }));
 
-  catalog = [...catalog, ...inventoryCatalog];
+  catalog = [...firestoreCatalog, ...inventoryCatalog];
 }
 
+/* LOAD FIRESTORE CUSTOMER DATA */
 async function loadFirestoreData() {
   let measurementQuery;
   let orderQuery;
@@ -318,12 +417,14 @@ async function loadFirestoreData() {
   }
 
   const measurementSnapshot = await getDocs(measurementQuery);
+
   customers = measurementSnapshot.docs.map(docSnap => ({
     id: docSnap.id,
     ...docSnap.data()
   }));
 
   const orderSnapshot = await getDocs(orderQuery);
+
   orders = orderSnapshot.docs.map(docSnap => ({
     id: docSnap.id,
     ...docSnap.data()
@@ -332,6 +433,7 @@ async function loadFirestoreData() {
   render();
 }
 
+/* CATALOG MANAGER */
 window.saveCatalogProduct = async function () {
   if (currentRole !== "admin") {
     alert("Only admin can publish catalog products.");
@@ -383,6 +485,7 @@ function clearCatalogForm() {
   });
 }
 
+/* CUSTOMER EMAIL TARGETING */
 function getTargetCustomerEmail(inputId) {
   if (currentRole === "customer") return currentUserEmail;
 
@@ -397,6 +500,7 @@ function getTargetCustomerEmail(inputId) {
   return email;
 }
 
+/* MEASUREMENTS */
 window.submitMeasurement = async function () {
   try {
     const targetEmail = getTargetCustomerEmail("targetCustomerEmail");
@@ -426,6 +530,24 @@ window.submitMeasurement = async function () {
   }
 };
 
+function clearMeasurementForm() {
+  [
+    "cmName",
+    "cmPhone",
+    "cmShoulder",
+    "cmChest",
+    "cmWaist",
+    "cmHip",
+    "cmSleeve",
+    "cmLength",
+    "cmNotes"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+}
+
+/* ORDERS */
 window.submitOrder = async function () {
   try {
     const targetEmail = getTargetCustomerEmail("targetCustomerEmailOrder");
@@ -457,23 +579,6 @@ window.submitOrder = async function () {
   }
 };
 
-function clearMeasurementForm() {
-  [
-    "cmName",
-    "cmPhone",
-    "cmShoulder",
-    "cmChest",
-    "cmWaist",
-    "cmHip",
-    "cmSleeve",
-    "cmLength",
-    "cmNotes"
-  ].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = "";
-  });
-}
-
 function clearOrderForm() {
   [
     "coName",
@@ -488,6 +593,7 @@ function clearOrderForm() {
   });
 }
 
+/* CATALOG ORDER REQUEST */
 window.requestCatalogOrder = function (productName, price = "") {
   showTab("customers");
 
@@ -505,10 +611,13 @@ window.requestCatalogOrder = function (productName, price = "") {
   });
 };
 
+/* PRODUCT MODAL */
 window.openProductDetails = function (encodedProduct) {
   const product = JSON.parse(decodeURIComponent(encodedProduct));
   const modal = document.getElementById("productModal");
   const content = document.getElementById("modalProductContent");
+
+  if (!modal || !content) return;
 
   const images = [product.image1, product.image2, product.image3].filter(Boolean);
 
@@ -543,6 +652,7 @@ window.closeProductModal = function () {
   if (modal) modal.style.display = "none";
 };
 
+/* APPROVE / REJECT */
 window.approveOrder = async function (orderId) {
   if (currentRole !== "admin") {
     alert("Only admin can approve orders.");
@@ -586,6 +696,7 @@ window.rejectOrder = async function (orderId) {
   await loadFirestoreData();
 };
 
+/* ORDER CHAT */
 window.openOrderChat = function (orderId) {
   activeChatOrderId = orderId;
 
@@ -626,9 +737,14 @@ window.openOrderChat = function (orderId) {
 };
 
 window.sendChatMessage = async function () {
-  const input =
-    document.getElementById("chatInput") ||
-    document.getElementById("customerChatInput");
+  const activeTab = document.querySelector(".tab.active");
+  let input = null;
+
+  if (activeTab && activeTab.id === "customers") {
+    input = document.getElementById("customerChatInput");
+  } else {
+    input = document.getElementById("chatInput");
+  }
 
   if (!activeChatOrderId) {
     alert("Open an order chat first.");
@@ -648,18 +764,19 @@ window.sendChatMessage = async function () {
   input.value = "";
 };
 
+/* STAFF XP */
 function staffXP() {
   let xp = {};
 
-  sales.forEach(x => {
-    if (x.staff && x.staff !== "-") {
-      xp[x.staff] = (xp[x.staff] || 0) + 10;
+  sales.forEach(item => {
+    if (item.staff && item.staff !== "-") {
+      xp[item.staff] = (xp[item.staff] || 0) + 10;
     }
   });
 
-  orders.forEach(x => {
-    if (x.uploadedBy && x.status === "Completed") {
-      xp[x.uploadedBy] = (xp[x.uploadedBy] || 0) + 15;
+  orders.forEach(item => {
+    if (item.uploadedBy && item.status === "Completed") {
+      xp[item.uploadedBy] = (xp[item.uploadedBy] || 0) + 15;
     }
   });
 
@@ -676,6 +793,7 @@ function staffXP() {
     .sort((a, b) => b.points - a.points);
 }
 
+/* RENDER */
 function render() {
   const catalogGrid = document.getElementById("catalogGrid");
   const salesTable = document.getElementById("salesTable");
@@ -738,67 +856,67 @@ function render() {
   }
 
   if (salesTable) {
-    salesTable.innerHTML = sales.map(x => `
+    salesTable.innerHTML = sales.map(item => `
       <tr>
-        <td>${x.staff}</td>
-        <td>${x.category}</td>
-        <td>${x.product}</td>
-        <td>${x.qty}</td>
-        <td>${money(x.amount)}</td>
+        <td>${item.staff}</td>
+        <td>${item.category}</td>
+        <td>${item.product}</td>
+        <td>${item.qty}</td>
+        <td>${money(item.amount)}</td>
       </tr>
     `).join("");
   }
 
   if (expensesTable) {
-    expensesTable.innerHTML = expenses.map(x => `
+    expensesTable.innerHTML = expenses.map(item => `
       <tr>
-        <td>${x.staff}</td>
-        <td>${x.category}</td>
-        <td>${x.item}</td>
-        <td>${x.supplier}</td>
-        <td>${x.qty}</td>
-        <td>${money(x.unitCost)}</td>
-        <td>${money(x.total)}</td>
+        <td>${item.staff}</td>
+        <td>${item.category}</td>
+        <td>${item.item}</td>
+        <td>${item.supplier}</td>
+        <td>${item.qty}</td>
+        <td>${money(item.unitCost)}</td>
+        <td>${money(item.total)}</td>
       </tr>
     `).join("");
   }
 
   if (inventoryTable) {
-    inventoryTable.innerHTML = inventory.map(x => `
+    inventoryTable.innerHTML = inventory.map(item => `
       <tr>
-        <td>${x.category}</td>
-        <td>${x.product}</td>
-        <td>${x.sku}</td>
-        <td>${x.supplier}</td>
-        <td>${x.quantity}</td>
-        <td>${money(x.cost)}</td>
-        <td>${money(x.selling)}</td>
+        <td>${item.category}</td>
+        <td>${item.product}</td>
+        <td>${item.sku}</td>
+        <td>${item.supplier}</td>
+        <td>${item.quantity}</td>
+        <td>${money(item.cost)}</td>
+        <td>${money(item.selling)}</td>
       </tr>
     `).join("");
   }
 
   const orderRows = orders.length
-    ? orders.map(x => `
+    ? orders.map(item => `
       <tr>
-        <td>${x.customer || "-"}</td>
-        <td>${x.phone || "-"}</td>
-        <td>${x.product || "-"}</td>
-        <td>${x.status || "-"}</td>
-        <td>${x.delivery || "-"}</td>
-        <td>${money(x.finalAmount || 0)}</td>
-        <td>${x.paymentMethod || "-"}</td>
-        <td>${x.adminNote || "-"}</td>
+        <td>${item.customer || "-"}</td>
+        <td>${item.phone || "-"}</td>
+        <td>${item.product || "-"}</td>
+        <td>${item.status || "-"}</td>
+        <td>${item.delivery || "-"}</td>
+        <td>${money(item.finalAmount || 0)}</td>
+        <td>${item.paymentMethod || "-"}</td>
+        <td>${item.adminNote || "-"}</td>
         <td>
           ${
             currentRole === "admin"
               ? `
-                <button type="button" onclick="approveOrder('${x.id}')">Approve</button>
-                <button type="button" onclick="rejectOrder('${x.id}')">Reject</button>
+                <button type="button" onclick="approveOrder('${item.id}')">Approve</button>
+                <button type="button" onclick="rejectOrder('${item.id}')">Reject</button>
               `
               : ""
           }
 
-          <button type="button" onclick="openOrderChat('${x.id}')">Chat</button>
+          <button type="button" onclick="openOrderChat('${item.id}')">Chat</button>
         </td>
       </tr>
     `).join("")
@@ -809,19 +927,19 @@ function render() {
 
   if (customersTable) {
     customersTable.innerHTML = customers.length
-      ? customers.map(x => `
+      ? customers.map(item => `
         <tr>
-          <td>${x.name || "-"}</td>
-          <td>${x.phone || "-"}</td>
+          <td>${item.name || "-"}</td>
+          <td>${item.phone || "-"}</td>
           <td>
-            Shoulder: ${x.shoulder || "-"}<br>
-            Chest: ${x.chest || "-"}<br>
-            Waist: ${x.waist || "-"}<br>
-            Hip: ${x.hip || "-"}<br>
-            Sleeve: ${x.sleeve || "-"}<br>
-            Length: ${x.length || "-"}
+            Shoulder: ${item.shoulder || "-"}<br>
+            Chest: ${item.chest || "-"}<br>
+            Waist: ${item.waist || "-"}<br>
+            Hip: ${item.hip || "-"}<br>
+            Sleeve: ${item.sleeve || "-"}<br>
+            Length: ${item.length || "-"}
           </td>
-          <td>${x.notes || "-"}</td>
+          <td>${item.notes || "-"}</td>
         </tr>
       `).join("")
       : `<tr><td colspan="4">No measurements found.</td></tr>`;
@@ -830,20 +948,28 @@ function render() {
   const totalSalesAmount = sales.reduce((sum, item) => sum + Number(item.amount || 0), 0);
   const totalExpensesAmount = expenses.reduce((sum, item) => sum + Number(item.total || 0), 0);
   const netProfitAmount = totalSalesAmount - totalExpensesAmount;
-  const inventoryValueAmount = inventory.reduce((sum, item) => sum + Number((item.quantity || 0) * (item.cost || 0)), 0);
+  const inventoryValueAmount = inventory.reduce((sum, item) => {
+    return sum + Number((item.quantity || 0) * (item.cost || 0));
+  }, 0);
   const lowStockCount = inventory.filter(item => Number(item.quantity || 0) <= 5).length;
 
-  if (document.getElementById("totalSales")) document.getElementById("totalSales").textContent = money(totalSalesAmount);
-  if (document.getElementById("totalExpenses")) document.getElementById("totalExpenses").textContent = money(totalExpensesAmount);
-  if (document.getElementById("netProfit")) document.getElementById("netProfit").textContent = money(netProfitAmount);
-  if (document.getElementById("inventoryValue")) document.getElementById("inventoryValue").textContent = money(inventoryValueAmount);
-  if (document.getElementById("lowStock")) document.getElementById("lowStock").textContent = lowStockCount;
+  const totalSales = document.getElementById("totalSales");
+  const totalExpenses = document.getElementById("totalExpenses");
+  const netProfit = document.getElementById("netProfit");
+  const inventoryValue = document.getElementById("inventoryValue");
+  const lowStock = document.getElementById("lowStock");
+
+  if (totalSales) totalSales.textContent = money(totalSalesAmount);
+  if (totalExpenses) totalExpenses.textContent = money(totalExpensesAmount);
+  if (netProfit) netProfit.textContent = money(netProfitAmount);
+  if (inventoryValue) inventoryValue.textContent = money(inventoryValueAmount);
+  if (lowStock) lowStock.textContent = lowStockCount;
 
   if (leaderboard) {
-    leaderboard.innerHTML = staffXP().map((x, i) => `
+    leaderboard.innerHTML = staffXP().map((item, i) => `
       <div class="rank-card">
-        <span>#${i + 1} <b>${x.name}</b><br>${x.rank}</span>
-        <strong>${x.points} XP</strong>
+        <span>#${i + 1} <b>${item.name}</b><br>${item.rank}</span>
+        <strong>${item.points} XP</strong>
       </div>
     `).join("") || "<p>No staff points yet.</p>";
   }
@@ -852,11 +978,11 @@ function render() {
     let allowedForms = window.TIMZY_FORMS || [];
 
     if (currentRole === "staff") {
-      allowedForms = allowedForms.filter(f =>
-        f.name.includes("Sales") ||
-        f.name.includes("Expense") ||
-        f.name.includes("Customer Measurement") ||
-        f.name.includes("Order")
+      allowedForms = allowedForms.filter(form =>
+        form.name.includes("Sales") ||
+        form.name.includes("Expense") ||
+        form.name.includes("Customer Measurement") ||
+        form.name.includes("Order")
       );
     }
 
@@ -864,12 +990,13 @@ function render() {
       allowedForms = [];
     }
 
-    formLinks.innerHTML = allowedForms.map(f => `
+    formLinks.innerHTML = allowedForms.map(form => `
       <div class="form-card">
-        <h3>${f.name}</h3>
-        <p>${f.description}</p>
-        <a href="${f.url}" target="_blank">Open Form</a>
+        <h3>${form.name}</h3>
+        <p>${form.description}</p>
+        <a href="${form.url}" target="_blank">Open Form</a>
       </div>
     `).join("");
   }
 }
+```
