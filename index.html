@@ -19,22 +19,29 @@
   <!-- LOGIN PAGE -->
   <div id="loginPage" class="login-page">
     <div class="login-card">
-      <h1>Timzy Fashion OS</h1>
-      <p>Secure Login</p>
+      <p class="eyebrow">TIMZY FASHION OS</p>
+
+      <h1>Secure Login</h1>
+
+      <p>
+        Access your dashboard, customer portal, orders, catalog, and operations tools.
+      </p>
 
       <input
         id="loginEmail"
         type="email"
         placeholder="Enter Email"
+        autocomplete="email"
       />
 
       <input
         id="loginPassword"
         type="password"
         placeholder="Enter Password"
+        autocomplete="current-password"
       />
 
-      <button onclick="loginUser()">
+      <button type="button" onclick="loginUser()">
         Login
       </button>
     </div>
@@ -52,7 +59,7 @@
         <h1>Business Command Center</h1>
 
         <p>
-          Sales • Expenses • Inventory • Orders • Customers • Staff XP
+          Catalog • Sales • Expenses • Inventory • Orders • Customers • Staff XP
         </p>
       </div>
 
@@ -67,7 +74,7 @@
 
         <br>
 
-        <button onclick="logoutUser()">
+        <button type="button" onclick="logoutUser()">
           Logout
         </button>
       </div>
@@ -77,35 +84,39 @@
     <!-- NAVIGATION -->
     <nav class="nav-buttons">
 
-      <button id="dashboardBtn" onclick="showTab('dashboard')">
+      <button id="dashboardBtn" type="button" onclick="showTab('dashboard')">
         🏠 Dashboard
       </button>
 
-      <button id="salesBtn" onclick="showTab('sales')">
+      <button id="catalogBtn" type="button" onclick="showTab('catalog')">
+        🛍️ Catalog
+      </button>
+
+      <button id="salesBtn" type="button" onclick="showTab('sales')">
         💰 Sales
       </button>
 
-      <button id="expensesBtn" onclick="showTab('expenses')">
+      <button id="expensesBtn" type="button" onclick="showTab('expenses')">
         💸 Expenses
       </button>
 
-      <button id="inventoryBtn" onclick="showTab('inventory')">
+      <button id="inventoryBtn" type="button" onclick="showTab('inventory')">
         📦 Inventory
       </button>
 
-      <button id="ordersBtn" onclick="showTab('orders')">
+      <button id="ordersBtn" type="button" onclick="showTab('orders')">
         🧵 Orders
       </button>
 
-      <button id="customersBtn" onclick="showTab('customers')">
+      <button id="customersBtn" type="button" onclick="showTab('customers')">
         👗 Customers
       </button>
 
-      <button id="staffBtn" onclick="showTab('staff')">
+      <button id="staffBtn" type="button" onclick="showTab('staff')">
         🏆 Staff XP
       </button>
 
-      <button id="formsBtn" onclick="showTab('forms')">
+      <button id="formsBtn" type="button" onclick="showTab('forms')">
         📝 Google Forms
       </button>
 
@@ -146,6 +157,21 @@
           </div>
 
         </div>
+      </section>
+
+
+      <!-- CATALOG -->
+      <section id="catalog" class="tab">
+        <h2>Customer Product Catalog</h2>
+
+        <p class="note">
+          View available Timzy Fashion products in real time. Select a product to request an order.
+        </p>
+
+        <div
+          id="catalogGrid"
+          class="catalog-grid"
+        ></div>
       </section>
 
 
@@ -248,6 +274,10 @@
       <section id="customers" class="tab">
         <h2>Customer Portal</h2>
 
+        <p class="note">
+          Customers can submit their own measurements and order requests. Staff/Admin can submit records for customers using the customer email field.
+        </p>
+
         <div class="cards">
 
           <div class="card">
@@ -258,7 +288,7 @@
                 id="targetCustomerEmail"
                 class="staff-admin-only"
                 type="email"
-                placeholder="Customer Email"
+                placeholder="Customer Email — Staff/Admin only"
               />
 
               <input id="cmName" placeholder="Customer Name" />
@@ -279,25 +309,25 @@
 
 
           <div class="card">
-            <h3>Submit Order</h3>
+            <h3>Submit Order Request</h3>
 
             <form>
               <input
                 id="targetCustomerEmailOrder"
                 class="staff-admin-only"
                 type="email"
-                placeholder="Customer Email"
+                placeholder="Customer Email — Staff/Admin only"
               />
 
               <input id="coName" placeholder="Customer Name" />
               <input id="coPhone" placeholder="Phone Number" />
               <input id="coStyle" placeholder="Product / Style" />
               <input id="coDelivery" type="date" />
-              <input id="coAmount" type="number" placeholder="Total Amount" />
-              <input id="coDeposit" type="number" placeholder="Deposit" />
+              <input id="coAmount" type="number" placeholder="Final Amount — Optional" />
+              <input id="coDeposit" type="number" placeholder="Deposit — Optional" />
 
               <button type="button" onclick="submitOrder()">
-                Submit Order
+                Submit Order Request
               </button>
             </form>
           </div>
@@ -360,6 +390,10 @@
       <!-- FORMS -->
       <section id="forms" class="tab">
         <h2>Google Forms Hub</h2>
+
+        <p class="note">
+          Internal Google Forms remain available for admin/staff operations.
+        </p>
 
         <div
           class="form-grid"
