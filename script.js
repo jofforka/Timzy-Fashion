@@ -205,11 +205,9 @@ function hideAllSections() {
 function showRoleSections(sectionIds) {
   sectionIds.forEach(id => {
     const section = document.getElementById(id);
-
-    const button = document.getElementById(`${id}Btn`);
+    const button = document.getElementById(id + "Btn");
 
     if (section) section.style.display = "";
-
     if (button) button.style.display = "inline-block";
   });
 }
