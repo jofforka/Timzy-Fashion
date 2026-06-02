@@ -444,6 +444,58 @@ footer{
   button{
     width:100%;
   }
+.chat-box{
+  margin-top:22px;
+}
 
+.chat-messages{
+  background:#101013;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:14px;
+  max-height:280px;
+  overflow-y:auto;
+  display:grid;
+  gap:10px;
+  margin:14px 0;
+}
+
+.chat-message{
+  background:#1b1b20;
+  border:1px solid #2f2f35;
+  padding:10px;
+  border-radius:12px;
+}
+
+.chat-message strong{
+  color:#d9a441;
+}
+
+.chat-input-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+}
+
+.status-approved{
+  color:#18c964;
+  font-weight:bold;
+}
+
+.status-rejected{
+  color:#ff4d6d;
+  font-weight:bold;
+}
+
+.status-pending{
+  color:#ffb224;
+  font-weight:bold;
+}
+
+@media(max-width:700px){
+  .chat-input-row{
+    grid-template-columns:1fr;
+  }
+}
 }
 ```
