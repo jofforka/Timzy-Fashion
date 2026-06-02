@@ -46,47 +46,48 @@ let currentUserEmail = "";
 
 const money = n => "₦" + Number(n || 0).toLocaleString();
 
-function cleanNumber(value){
+function cleanNumber(value) {
   return Number(String(value || "0").replace(/[₦,\s]/g, "")) || 0;
 }
 
-function normalize(row){
+function normalize(row) {
   const obj = {};
-  Object.keys(row).forEach(key => {
+  Object.keys(row || {}).forEach(key => {
     obj[key.trim().toLowerCase()] = row[key];
   });
   return obj;
 }
 
-async function getUserRole(email){
-  try{
-    const ref = doc(db, "users", email);
-    const snap = await getDoc(ref);
+async function getUserRole(email) {
+  try {
+    const userRef = doc(db, "users", email);
+    const snap = await getDoc(userRef);
 
-    if(snap.exists() && snap.data().role){
+    if (snap.exists() && snap.data().role) {
       return snap.data().role;
     }
-  }catch(error){
+  } catch (error) {
     console.warn("Role lookup failed:", error);
   }
 
-  if(email === "admin@timzyfashion.com") return "admin";
-  if(email.includes("staff")) return "staff";
+  if (email === "admin@timzyfashion.com") return "admin";
+  if (email.includes("staff")) return "staff";
   return "customer";
 }
 
-window.loginUser = async function(){
+window.loginUser = async function () {
   const email = document.getElementById("loginEmail").value.trim();
   const password = document.getElementById("loginPassword").value;
 
-  try{
+  try {
     await signInWithEmailAndPassword(auth, email, password);
-  }catch(error){
+  } catch (error) {
     alert(error.message);
+    console.error(error);
   }
 };
 
-window.logoutUser = async function(){
+window.logoutUser = async function () {
   await signOut(auth);
 };
 
@@ -94,9 +95,9 @@ onAuthStateChanged(auth, async user => {
   const loginPage = document.getElementById("loginPage");
   const appView = document.getElementById("app");
 
-  if(!loginPage || !appView) return;
+  if (!loginPage || !appView) return;
 
-  if(user){
+  if (user) {
     currentUserEmail = user.email.toLowerCase();
     currentRole = await getUserRole(currentUserEmail);
 
@@ -105,16 +106,16 @@ onAuthStateChanged(auth, async user => {
 
     setupRoleAccess();
     await loadAllData();
-  }else{
+  } else {
     loginPage.style.display = "flex";
     appView.style.display = "none";
   }
 });
 
-function setupRoleAccess(){
+function setupRoleAccess() {
   hideAllSections();
 
-  if(currentRole === "admin"){
+  if (currentRole === "admin") {
     showRoleSections([
       "dashboard",
       "catalog",
@@ -131,7 +132,7 @@ function setupRoleAccess(){
     return;
   }
 
-  if(currentRole === "staff"){
+  if (currentRole === "staff") {
     showRoleSections([
       "catalog",
       "sales",
@@ -152,7 +153,7 @@ function setupRoleAccess(){
   showTab("catalog");
 }
 
-function hideAllSections(){
+function hideAllSections() {
   document.querySelectorAll(".tab").forEach(tab => {
     tab.style.display = "none";
     tab.classList.remove("active");
@@ -163,139 +164,172 @@ function hideAllSections(){
   });
 }
 
-function showRoleSections(sectionIds){
+function showRoleSections(sectionIds) {
   sectionIds.forEach(id => {
     const section = document.getElementById(id);
     const button = document.querySelector(`button[onclick="showTab('${id}')"]`);
 
-    if(section) section.style.display = "";
-    if(button) button.style.display = "inline-block";
+    if (section) section.style.display = "";
+    if (button) button.style.display = "inline-block";
   });
 }
 
-function showStaffAdminFields(show){
+function showStaffAdminFields(show) {
   document.querySelectorAll(".staff-admin-only").forEach(field => {
     field.style.display = show ? "block" : "none";
   });
 }
 
-window.showTab = function(id){
+window.showTab = function (id) {
   document.querySelectorAll(".tab").forEach(tab => {
     tab.classList.remove("active");
   });
 
   const selected = document.getElementById(id);
-  if(selected) selected.classList.add("active");
+  if (selected) selected.classList.add("active");
 };
 
-async function fetchSheet(api){
-  const response = await fetch(api);
-  return await response.json();
-}
+async function fetchSheet(api) {
+  try {
+    const response = await fetch(api);
 
-async function loadAllData(){
-  try{
-    const [salesData, inventoryData, expensesData] = await Promise.all([
-      fetchSheet(SALES_API),
-      fetchSheet(INVENTORY_API),
-      fetchSheet(EXPENSES_API)
-    ]);
-
-    sales = salesData.map(row => {
-      const n = normalize(row);
-      const qty = cleanNumber(n["quantity sold"] || n["qty sold"] || n["quantity"]);
-      const unitPrice = cleanNumber(n["unit selling price"] || n["selling price"] || n["total sales"] || n["total sales ₦"]);
-
-      return {
-        staff: n["staff name"] || "-",
-        category: n["category"] || "-",
-        product: n["product/vsku"] || n["product/sku"] || "-",
-        qty,
-        amount: qty * unitPrice
-      };
-    });
-
-    inventory = inventoryData.map(row => {
-      const n = normalize(row);
-
-      return {
-        category: n["category"] || "-",
-        product: n["product name"] || n["product"] || "-",
-        sku: n["sku"] || "-",
-        supplier: n["supplier/vendor"] || "-",
-        quantity: cleanNumber(n["quantity added"] || n["qty added"] || n["quantity"]),
-        cost: cleanNumber(n["cost price"] || n["unit cost"]),
-        selling: cleanNumber(n["selling price"] || n["price"]),
-        image: n["image url"] || n["product image"] || "",
-        description: n["description"] || ""
-      };
-    });
-
-    expenses = expensesData.map(row => {
-      const n = normalize(row);
-      const qty = cleanNumber(n["quantity"] || n["qty"] || 1);
-      const unitCost = cleanNumber(n["unit cost"] || n["amount"] || n["cost"]);
-
-      return {
-        staff: n["staff name"] || "-",
-        category: n["category"] || "-",
-        item: n["expense item"] || n["item"] || "-",
-        supplier: n["supplier/vendor"] || "-",
-        qty,
-        unitCost,
-        total: qty * unitCost
-      };
-    });
-
-    await loadFirestoreData();
-  }catch(error){
-    console.error(error);
-    alert("Could not load business data.");
-  }
-}
-
-async function loadFirestoreData(){
-  try{
-    let measurementQuery;
-    let orderQuery;
-
-    if(currentRole === "customer"){
-      measurementQuery = query(
-        collection(db, "customerMeasurements"),
-        where("email", "==", currentUserEmail)
-      );
-
-      orderQuery = query(
-        collection(db, "customerOrders"),
-        where("email", "==", currentUserEmail)
-      );
-    }else{
-      measurementQuery = collection(db, "customerMeasurements");
-      orderQuery = collection(db, "customerOrders");
+    if (!response.ok) {
+      console.warn("SheetDB fetch failed:", api, response.status);
+      return [];
     }
 
-    const measurementSnapshot = await getDocs(measurementQuery);
-    customers = measurementSnapshot.docs.map(doc => doc.data());
+    const data = await response.json();
 
-    const orderSnapshot = await getDocs(orderQuery);
-    orders = orderSnapshot.docs.map(doc => doc.data());
+    if (!Array.isArray(data)) {
+      console.warn("SheetDB did not return an array:", data);
+      return [];
+    }
 
-    render();
-  }catch(error){
-    console.error(error);
-    alert("Could not load customer records.");
+    return data;
+  } catch (error) {
+    console.error("SheetDB error:", api, error);
+    return [];
   }
 }
 
-function getTargetCustomerEmail(inputId){
-  if(currentRole === "customer"){
+async function loadAllData() {
+  const [salesData, inventoryData, expensesData] = await Promise.all([
+    fetchSheet(SALES_API),
+    fetchSheet(INVENTORY_API),
+    fetchSheet(EXPENSES_API)
+  ]);
+
+  sales = salesData.map(row => {
+    const n = normalize(row);
+
+    const qty = cleanNumber(
+      n["quantity sold"] ||
+      n["qty sold"] ||
+      n["quantity"] ||
+      n["qty"]
+    );
+
+    const unitPrice = cleanNumber(
+      n["unit selling price"] ||
+      n["selling price"] ||
+      n["total sales"] ||
+      n["total sales ₦"] ||
+      n["amount"]
+    );
+
+    return {
+      staff: n["staff name"] || "-",
+      category: n["category"] || "-",
+      product: n["product/vsku"] || n["product/sku"] || n["product name"] || n["product"] || "-",
+      qty,
+      amount: qty * unitPrice || unitPrice
+    };
+  });
+
+  inventory = inventoryData.map(row => {
+    const n = normalize(row);
+
+    const quantity = cleanNumber(
+      n["quantity added"] ||
+      n["qty added"] ||
+      n["quantity"] ||
+      n["qty"] ||
+      n["stock"] ||
+      n["stock quantity"]
+    );
+
+    return {
+      category: n["category"] || "-",
+      product: n["product name"] || n["product"] || n["product/sku"] || "-",
+      sku: n["sku"] || n["product/sku"] || "-",
+      supplier: n["supplier/vendor"] || n["supplier"] || "-",
+      quantity,
+      cost: cleanNumber(n["cost price"] || n["unit cost"] || n["cost"]),
+      selling: cleanNumber(n["selling price"] || n["price"] || n["unit selling price"]),
+      image: n["image url"] || n["product image"] || n["image"] || "",
+      description: n["description"] || n["product description"] || ""
+    };
+  });
+
+  expenses = expensesData.map(row => {
+    const n = normalize(row);
+
+    const qty = cleanNumber(n["quantity"] || n["qty"] || 1);
+    const unitCost = cleanNumber(n["unit cost"] || n["amount"] || n["cost"]);
+
+    return {
+      staff: n["staff name"] || "-",
+      category: n["category"] || "-",
+      item: n["expense item"] || n["item"] || "-",
+      supplier: n["supplier/vendor"] || n["supplier"] || "-",
+      qty,
+      unitCost,
+      total: qty * unitCost
+    };
+  });
+
+  console.log("Inventory loaded:", inventory);
+
+  await loadFirestoreData();
+}
+
+async function loadFirestoreData() {
+  let measurementQuery;
+  let orderQuery;
+
+  if (currentRole === "customer") {
+    measurementQuery = query(
+      collection(db, "customerMeasurements"),
+      where("email", "==", currentUserEmail)
+    );
+
+    orderQuery = query(
+      collection(db, "customerOrders"),
+      where("email", "==", currentUserEmail)
+    );
+  } else {
+    measurementQuery = collection(db, "customerMeasurements");
+    orderQuery = collection(db, "customerOrders");
+  }
+
+  const measurementSnapshot = await getDocs(measurementQuery);
+  customers = measurementSnapshot.docs.map(doc => doc.data());
+
+  const orderSnapshot = await getDocs(orderQuery);
+  orders = orderSnapshot.docs.map(doc => doc.data());
+
+  render();
+}
+
+function getTargetCustomerEmail(inputId) {
+  if (currentRole === "customer") {
     return currentUserEmail;
   }
 
   const field = document.getElementById(inputId);
   const email = field ? field.value.trim().toLowerCase() : "";
 
-  if(!email){
+  if (!email) {
     alert("Enter customer email.");
     return "";
   }
@@ -303,10 +337,10 @@ function getTargetCustomerEmail(inputId){
   return email;
 }
 
-window.submitMeasurement = async function(){
-  try{
+window.submitMeasurement = async function () {
+  try {
     const targetEmail = getTargetCustomerEmail("targetCustomerEmail");
-    if(!targetEmail) return;
+    if (!targetEmail) return;
 
     await addDoc(collection(db, "customerMeasurements"), {
       email: targetEmail,
@@ -325,16 +359,16 @@ window.submitMeasurement = async function(){
 
     alert("Measurement saved successfully.");
     await loadFirestoreData();
-  }catch(error){
+  } catch (error) {
     console.error(error);
     alert("Could not save measurement.");
   }
 };
 
-window.submitOrder = async function(){
-  try{
+window.submitOrder = async function () {
+  try {
     const targetEmail = getTargetCustomerEmail("targetCustomerEmailOrder");
-    if(!targetEmail) return;
+    if (!targetEmail) return;
 
     const amount = cleanNumber(document.getElementById("coAmount").value);
     const deposit = cleanNumber(document.getElementById("coDeposit").value);
@@ -355,22 +389,22 @@ window.submitOrder = async function(){
 
     alert("Order request submitted successfully.");
     await loadFirestoreData();
-  }catch(error){
+  } catch (error) {
     console.error(error);
     alert("Could not submit order.");
   }
 };
 
-window.requestCatalogOrder = function(product){
+window.requestCatalogOrder = function (product) {
   showTab("customers");
 
   const styleInput = document.getElementById("coStyle");
   const amountInput = document.getElementById("coAmount");
   const depositInput = document.getElementById("coDeposit");
 
-  if(styleInput) styleInput.value = product;
-  if(amountInput) amountInput.value = "";
-  if(depositInput) depositInput.value = "";
+  if (styleInput) styleInput.value = product;
+  if (amountInput) amountInput.value = "";
+  if (depositInput) depositInput.value = "";
 
   alert("Product selected. Complete your order request below.");
 
@@ -380,17 +414,17 @@ window.requestCatalogOrder = function(product){
   });
 };
 
-function staffXP(){
+function staffXP() {
   let xp = {};
 
   sales.forEach(x => {
-    if(x.staff && x.staff !== "-"){
+    if (x.staff && x.staff !== "-") {
       xp[x.staff] = (xp[x.staff] || 0) + 10;
     }
   });
 
   orders.forEach(x => {
-    if(x.uploadedBy && x.status === "Completed"){
+    if (x.uploadedBy && x.status === "Completed") {
       xp[x.uploadedBy] = (xp[x.uploadedBy] || 0) + 15;
     }
   });
@@ -408,7 +442,7 @@ function staffXP(){
     .sort((a, b) => b.points - a.points);
 }
 
-function render(){
+function render() {
   const catalogGrid = document.getElementById("catalogGrid");
   const salesTable = document.getElementById("salesTable");
   const expensesTable = document.getElementById("expensesTable");
@@ -419,8 +453,11 @@ function render(){
   const leaderboard = document.getElementById("leaderboard");
   const formLinks = document.getElementById("formLinks");
 
-  if(catalogGrid){
-    const products = inventory.filter(x => Number(x.quantity || 0) > 0);
+  if (catalogGrid) {
+    const products = inventory.filter(item =>
+      item.product &&
+      item.product !== "-"
+    );
 
     catalogGrid.innerHTML = products.length
       ? products.map(item => `
@@ -428,8 +465,8 @@ function render(){
           <div class="catalog-image">
             ${
               item.image
-              ? `<img src="${item.image}" alt="${item.product}">`
-              : `<span>👗</span>`
+                ? `<img src="${item.image}" alt="${item.product}">`
+                : `<span>👗</span>`
             }
           </div>
 
@@ -438,7 +475,7 @@ function render(){
             <p>${item.category}</p>
             <small>${item.description || "Available product"}</small>
             <strong>${money(item.selling)}</strong>
-            <small>Available: ${item.quantity}</small>
+            <small>Available: ${item.quantity || "Check stock"}</small>
 
             <button type="button" onclick='requestCatalogOrder(${JSON.stringify(item.product)})'>
               Request Order
@@ -449,7 +486,7 @@ function render(){
       : `<p class="note">No products available yet.</p>`;
   }
 
-  if(salesTable){
+  if (salesTable) {
     salesTable.innerHTML = sales.map(x => `
       <tr>
         <td>${x.staff}</td>
@@ -461,7 +498,7 @@ function render(){
     `).join("");
   }
 
-  if(expensesTable){
+  if (expensesTable) {
     expensesTable.innerHTML = expenses.map(x => `
       <tr>
         <td>${x.staff}</td>
@@ -475,7 +512,7 @@ function render(){
     `).join("");
   }
 
-  if(inventoryTable){
+  if (inventoryTable) {
     inventoryTable.innerHTML = inventory.map(x => `
       <tr>
         <td>${x.category}</td>
@@ -504,10 +541,10 @@ function render(){
     `).join("")
     : `<tr><td colspan="8">No orders found.</td></tr>`;
 
-  if(ordersTable) ordersTable.innerHTML = orderRows;
-  if(customerOrdersTable) customerOrdersTable.innerHTML = orderRows;
+  if (ordersTable) ordersTable.innerHTML = orderRows;
+  if (customerOrdersTable) customerOrdersTable.innerHTML = orderRows;
 
-  if(customersTable){
+  if (customersTable) {
     customersTable.innerHTML = customers.length
       ? customers.map(x => `
         <tr>
@@ -533,13 +570,13 @@ function render(){
   const inventoryValueAmount = inventory.reduce((sum, item) => sum + Number((item.quantity || 0) * (item.cost || 0)), 0);
   const lowStockCount = inventory.filter(item => Number(item.quantity || 0) <= 5).length;
 
-  if(document.getElementById("totalSales")) document.getElementById("totalSales").textContent = money(totalSalesAmount);
-  if(document.getElementById("totalExpenses")) document.getElementById("totalExpenses").textContent = money(totalExpensesAmount);
-  if(document.getElementById("netProfit")) document.getElementById("netProfit").textContent = money(netProfitAmount);
-  if(document.getElementById("inventoryValue")) document.getElementById("inventoryValue").textContent = money(inventoryValueAmount);
-  if(document.getElementById("lowStock")) document.getElementById("lowStock").textContent = lowStockCount;
+  if (document.getElementById("totalSales")) document.getElementById("totalSales").textContent = money(totalSalesAmount);
+  if (document.getElementById("totalExpenses")) document.getElementById("totalExpenses").textContent = money(totalExpensesAmount);
+  if (document.getElementById("netProfit")) document.getElementById("netProfit").textContent = money(netProfitAmount);
+  if (document.getElementById("inventoryValue")) document.getElementById("inventoryValue").textContent = money(inventoryValueAmount);
+  if (document.getElementById("lowStock")) document.getElementById("lowStock").textContent = lowStockCount;
 
-  if(leaderboard){
+  if (leaderboard) {
     leaderboard.innerHTML = staffXP().map((x, i) => `
       <div class="rank-card">
         <span>#${i + 1} <b>${x.name}</b><br>${x.rank}</span>
@@ -548,10 +585,10 @@ function render(){
     `).join("") || "<p>No staff points yet.</p>";
   }
 
-  if(formLinks){
+  if (formLinks) {
     let allowedForms = window.TIMZY_FORMS || [];
 
-    if(currentRole === "staff"){
+    if (currentRole === "staff") {
       allowedForms = allowedForms.filter(f =>
         f.name.includes("Sales") ||
         f.name.includes("Customer Measurement") ||
@@ -559,7 +596,7 @@ function render(){
       );
     }
 
-    if(currentRole === "customer"){
+    if (currentRole === "customer") {
       allowedForms = [];
     }
 
