@@ -15,7 +15,11 @@ import {
   query,
   where,
   doc,
-  getDoc
+  getDoc,
+  updateDoc,
+  serverTimestamp,
+  onSnapshot,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -43,6 +47,8 @@ let customers = [];
 
 let currentRole = "customer";
 let currentUserEmail = "";
+let activeChatOrderId = "";
+let unsubscribeChat = null;
 
 const money = n => "₦" + Number(n || 0).toLocaleString();
 
@@ -199,13 +205,7 @@ async function fetchSheet(api) {
     }
 
     const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      console.warn("SheetDB did not return an array:", data);
-      return [];
-    }
-
-    return data;
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error("SheetDB error:", api, error);
     return [];
@@ -221,21 +221,8 @@ async function loadAllData() {
 
   sales = salesData.map(row => {
     const n = normalize(row);
-
-    const qty = cleanNumber(
-      n["quantity sold"] ||
-      n["qty sold"] ||
-      n["quantity"] ||
-      n["qty"]
-    );
-
-    const unitPrice = cleanNumber(
-      n["unit selling price"] ||
-      n["selling price"] ||
-      n["total sales"] ||
-      n["total sales ₦"] ||
-      n["amount"]
-    );
+    const qty = cleanNumber(n["quantity sold"] || n["qty sold"] || n["quantity"] || n["qty"]);
+    const unitPrice = cleanNumber(n["unit selling price"] || n["selling price"] || n["total sales"] || n["total sales ₦"] || n["amount"]);
 
     return {
       staff: n["staff name"] || "-",
@@ -248,15 +235,7 @@ async function loadAllData() {
 
   inventory = inventoryData.map(row => {
     const n = normalize(row);
-
-    const quantity = cleanNumber(
-      n["quantity added"] ||
-      n["qty added"] ||
-      n["quantity"] ||
-      n["qty"] ||
-      n["stock"] ||
-      n["stock quantity"]
-    );
+    const quantity = cleanNumber(n["quantity added"] || n["qty added"] || n["quantity"] || n["qty"] || n["stock"] || n["stock quantity"]);
 
     return {
       category: n["category"] || "-",
@@ -273,7 +252,6 @@ async function loadAllData() {
 
   expenses = expensesData.map(row => {
     const n = normalize(row);
-
     const qty = cleanNumber(n["quantity"] || n["qty"] || 1);
     const unitCost = cleanNumber(n["unit cost"] || n["amount"] || n["cost"]);
 
@@ -287,8 +265,6 @@ async function loadAllData() {
       total: qty * unitCost
     };
   });
-
-  console.log("Inventory loaded:", inventory);
 
   await loadFirestoreData();
 }
@@ -313,18 +289,22 @@ async function loadFirestoreData() {
   }
 
   const measurementSnapshot = await getDocs(measurementQuery);
-  customers = measurementSnapshot.docs.map(doc => doc.data());
+  customers = measurementSnapshot.docs.map(docSnap => ({
+    id: docSnap.id,
+    ...docSnap.data()
+  }));
 
   const orderSnapshot = await getDocs(orderQuery);
-  orders = orderSnapshot.docs.map(doc => doc.data());
+  orders = orderSnapshot.docs.map(docSnap => ({
+    id: docSnap.id,
+    ...docSnap.data()
+  }));
 
   render();
 }
 
 function getTargetCustomerEmail(inputId) {
-  if (currentRole === "customer") {
-    return currentUserEmail;
-  }
+  if (currentRole === "customer") return currentUserEmail;
 
   const field = document.getElementById(inputId);
   const email = field ? field.value.trim().toLowerCase() : "";
@@ -354,10 +334,11 @@ window.submitMeasurement = async function () {
       sleeve: document.getElementById("cmSleeve").value,
       length: document.getElementById("cmLength").value,
       notes: document.getElementById("cmNotes").value,
-      createdAt: new Date()
+      createdAt: serverTimestamp()
     });
 
     alert("Measurement saved successfully.");
+    clearMeasurementForm();
     await loadFirestoreData();
   } catch (error) {
     console.error(error);
@@ -370,8 +351,8 @@ window.submitOrder = async function () {
     const targetEmail = getTargetCustomerEmail("targetCustomerEmailOrder");
     if (!targetEmail) return;
 
-    const amount = cleanNumber(document.getElementById("coAmount").value);
-    const deposit = cleanNumber(document.getElementById("coDeposit").value);
+    const finalAmount = cleanNumber(document.getElementById("coAmount").value);
+    const paymentMethod = document.getElementById("coPaymentMethod").value;
 
     await addDoc(collection(db, "customerOrders"), {
       email: targetEmail,
@@ -381,13 +362,14 @@ window.submitOrder = async function () {
       product: document.getElementById("coStyle").value,
       status: "Pending Review",
       delivery: document.getElementById("coDelivery").value,
-      amount,
-      deposit,
-      balance: amount - deposit,
-      createdAt: new Date()
+      finalAmount,
+      paymentMethod,
+      adminNote: "",
+      createdAt: serverTimestamp()
     });
 
     alert("Order request submitted successfully.");
+    clearOrderForm();
     await loadFirestoreData();
   } catch (error) {
     console.error(error);
@@ -395,16 +377,30 @@ window.submitOrder = async function () {
   }
 };
 
+function clearMeasurementForm() {
+  ["cmName", "cmPhone", "cmShoulder", "cmChest", "cmWaist", "cmHip", "cmSleeve", "cmLength", "cmNotes"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+}
+
+function clearOrderForm() {
+  ["coName", "coPhone", "coStyle", "coDelivery", "coAmount", "coPaymentMethod"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+}
+
 window.requestCatalogOrder = function (product) {
   showTab("customers");
 
   const styleInput = document.getElementById("coStyle");
   const amountInput = document.getElementById("coAmount");
-  const depositInput = document.getElementById("coDeposit");
+  const paymentInput = document.getElementById("coPaymentMethod");
 
   if (styleInput) styleInput.value = product;
   if (amountInput) amountInput.value = "";
-  if (depositInput) depositInput.value = "";
+  if (paymentInput) paymentInput.value = "";
 
   alert("Product selected. Complete your order request below.");
 
@@ -412,6 +408,91 @@ window.requestCatalogOrder = function (product) {
     top: 0,
     behavior: "smooth"
   });
+};
+
+window.approveOrder = async function (orderId) {
+  const note = prompt("Approval note:", "Order approved.");
+
+  await updateDoc(doc(db, "customerOrders", orderId), {
+    status: "Approved",
+    adminNote: note || "Order approved.",
+    reviewedBy: currentUserEmail,
+    reviewedAt: serverTimestamp()
+  });
+
+  await loadFirestoreData();
+};
+
+window.rejectOrder = async function (orderId) {
+  const note = prompt("Rejection reason:");
+
+  if (!note) {
+    alert("Rejection note is required.");
+    return;
+  }
+
+  await updateDoc(doc(db, "customerOrders", orderId), {
+    status: "Rejected",
+    adminNote: note,
+    reviewedBy: currentUserEmail,
+    reviewedAt: serverTimestamp()
+  });
+
+  await loadFirestoreData();
+};
+
+window.openOrderChat = function (orderId) {
+  activeChatOrderId = orderId;
+
+  const chatBox = document.getElementById("chatBox");
+  const chatMessages = document.getElementById("chatMessages");
+
+  if (chatBox) chatBox.style.display = "block";
+  if (chatMessages) chatMessages.innerHTML = "Loading chat...";
+
+  if (unsubscribeChat) unsubscribeChat();
+
+  const q = query(
+    collection(db, "orderChats"),
+    where("orderId", "==", orderId),
+    orderBy("createdAt", "asc")
+  );
+
+  unsubscribeChat = onSnapshot(q, snapshot => {
+    if (!chatMessages) return;
+
+    chatMessages.innerHTML = snapshot.docs.map(d => {
+      const msg = d.data();
+
+      return `
+        <div class="chat-message">
+          <strong>${msg.senderRole || "user"}:</strong>
+          <span>${msg.message || ""}</span>
+        </div>
+      `;
+    }).join("") || "<p>No messages yet.</p>";
+  });
+};
+
+window.sendChatMessage = async function () {
+  const input = document.getElementById("chatInput");
+
+  if (!activeChatOrderId) {
+    alert("Open an order chat first.");
+    return;
+  }
+
+  if (!input || !input.value.trim()) return;
+
+  await addDoc(collection(db, "orderChats"), {
+    orderId: activeChatOrderId,
+    senderEmail: currentUserEmail,
+    senderRole: currentRole,
+    message: input.value.trim(),
+    createdAt: serverTimestamp()
+  });
+
+  input.value = "";
 };
 
 function staffXP() {
@@ -454,10 +535,7 @@ function render() {
   const formLinks = document.getElementById("formLinks");
 
   if (catalogGrid) {
-    const products = inventory.filter(item =>
-      item.product &&
-      item.product !== "-"
-    );
+    const products = inventory.filter(item => item.product && item.product !== "-");
 
     catalogGrid.innerHTML = products.length
       ? products.map(item => `
@@ -534,12 +612,26 @@ function render() {
         <td>${x.product || "-"}</td>
         <td>${x.status || "-"}</td>
         <td>${x.delivery || "-"}</td>
-        <td>${money(x.amount)}</td>
-        <td>${money(x.deposit)}</td>
-        <td>${money(x.balance)}</td>
+        <td>${money(x.finalAmount || 0)}</td>
+        <td>${x.paymentMethod || "-"}</td>
+        <td>${x.adminNote || "-"}</td>
+        <td>
+          ${
+            currentRole === "admin"
+              ? `
+                <button type="button" onclick="approveOrder('${x.id}')">Approve</button>
+                <button type="button" onclick="rejectOrder('${x.id}')">Reject</button>
+              `
+              : ""
+          }
+
+          <button type="button" onclick="openOrderChat('${x.id}')">
+            Chat
+          </button>
+        </td>
       </tr>
     `).join("")
-    : `<tr><td colspan="8">No orders found.</td></tr>`;
+    : `<tr><td colspan="9">No orders found.</td></tr>`;
 
   if (ordersTable) ordersTable.innerHTML = orderRows;
   if (customerOrdersTable) customerOrdersTable.innerHTML = orderRows;
