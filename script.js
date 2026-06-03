@@ -625,27 +625,32 @@ window.openOrderChat = function (orderId) {
 
   const q = query(
     collection(db, "orderChats"),
-    where("orderId", "==", orderId),
-    orderBy("createdAt", "asc")
+    where("orderId", "==", orderId)
   );
 
   unsubscribeChat = onSnapshot(q, snapshot => {
-    const html = snapshot.docs.map(d => {
-      const msg = d.data();
+    const messages = snapshot.docs
+      .map(d => d.data())
+      .sort((a, b) => {
+        const aTime = a.createdAt?.seconds || 0;
+        const bTime = b.createdAt?.seconds || 0;
+        return aTime - bTime;
+      });
 
-      return `
-        <div class="chat-message">
-          <strong>${msg.senderRole || "user"}:</strong>
-          <span>${msg.message || ""}</span>
-        </div>
-      `;
-    }).join("") || "<p>No messages yet.</p>";
+    const html = messages.map(msg => `
+      <div class="chat-message ${msg.senderEmail === currentUserEmail ? "mine" : "theirs"}">
+        <strong>${msg.senderRole || "user"}:</strong>
+        <span>${msg.message || ""}</span>
+      </div>
+    `).join("") || "<p>No messages yet.</p>";
 
     if (chatMessages) chatMessages.innerHTML = html;
     if (customerChatMessages) customerChatMessages.innerHTML = html;
+  }, error => {
+    console.error("Chat listener error:", error);
+    alert("Chat could not load. Check Firestore rules/index.");
   });
 };
-
 window.sendChatMessage = async function () {
   const chatInput = document.getElementById("chatInput");
   const customerChatInput = document.getElementById("customerChatInput");
