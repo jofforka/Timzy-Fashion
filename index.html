@@ -69,13 +69,30 @@
 
       <section id="catalog" class="tab">
         <h2>Customer Product Catalog</h2>
-        <p class="note">View products, colors, pictures, and request an order.</p>
+        <p class="note">Search products, view colors/images, and request an order.</p>
+
+        <div class="catalog-tools">
+          <input id="catalogSearch" placeholder="Search product..." oninput="render()" />
+
+          <select id="catalogCategoryFilter" onchange="render()">
+            <option value="">All Categories</option>
+            <option value="Senator">Senator</option>
+            <option value="Agbada">Agbada</option>
+            <option value="Female Wear">Female Wear</option>
+            <option value="Adire">Adire</option>
+            <option value="Children">Children</option>
+            <option value="Fabrics">Fabrics</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Men / Senator">Men / Senator</option>
+          </select>
+        </div>
+
         <div id="catalogGrid" class="catalog-grid"></div>
       </section>
 
       <section id="catalogManager" class="tab">
         <h2>Catalog Manager</h2>
-        <p class="note">Admin can add product images, colors, sizes, and descriptions here.</p>
+        <p class="note">Admin can publish products using image links. Use GitHub image URLs while Firebase Storage is unavailable.</p>
 
         <div class="card">
           <h3>Add / Publish Product</h3>
