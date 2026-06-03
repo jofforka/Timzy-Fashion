@@ -560,4 +560,12 @@ footer{
   .product-gallery img{
     max-height:520px;
   }
+
+  .chat-message.mine{
+  border-color:var(--green);
+}
+
+.chat-message.theirs{
+  border-color:var(--gold);
+}
 }
