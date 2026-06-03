@@ -17,6 +17,7 @@ import {
   doc,
   getDoc,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
   onSnapshot,
   orderBy
@@ -113,7 +114,6 @@ onAuthStateChanged(auth, async user => {
   } else {
     currentUserEmail = "";
     currentRole = "customer";
-
     loginPage.style.display = "flex";
     appView.style.display = "none";
   }
@@ -135,7 +135,6 @@ function setupRoleAccess() {
       "staff",
       "forms"
     ]);
-
     showStaffAdminFields(true);
     showTab("dashboard");
     return;
@@ -150,7 +149,6 @@ function setupRoleAccess() {
       "customers",
       "forms"
     ]);
-
     showStaffAdminFields(true);
     showTab("catalog");
     return;
@@ -277,6 +275,7 @@ async function loadCatalog() {
 
   const firestoreCatalog = snap.docs.map(docSnap => ({
     id: docSnap.id,
+    source: "catalog",
     ...docSnap.data()
   }));
 
@@ -284,6 +283,7 @@ async function loadCatalog() {
     .filter(x => x.product && x.product !== "-")
     .map(x => ({
       id: `inventory-${x.sku || x.product}`,
+      source: "inventory",
       name: x.product,
       category: x.category,
       price: x.selling,
@@ -363,6 +363,24 @@ window.saveCatalogProduct = async function () {
 
   alert("Product published successfully.");
   clearCatalogForm();
+  await loadAllData();
+};
+
+window.deleteCatalogProduct = async function (productId) {
+  if (currentRole !== "admin") {
+    alert("Only admin can delete catalog products.");
+    return;
+  }
+
+  if (String(productId).startsWith("inventory-")) {
+    alert("This product came from Inventory. Remove it from the Inventory source instead.");
+    return;
+  }
+
+  if (!confirm("Delete this product from catalog?")) return;
+
+  await deleteDoc(doc(db, "catalog", productId));
+  alert("Product deleted.");
   await loadAllData();
 };
 
@@ -629,9 +647,13 @@ window.openOrderChat = function (orderId) {
 };
 
 window.sendChatMessage = async function () {
+  const chatInput = document.getElementById("chatInput");
+  const customerChatInput = document.getElementById("customerChatInput");
+
   const input =
-    document.getElementById("chatInput") ||
-    document.getElementById("customerChatInput");
+    customerChatInput && customerChatInput.value.trim()
+      ? customerChatInput
+      : chatInput;
 
   if (!activeChatOrderId) {
     alert("Open an order chat first.");
@@ -687,7 +709,7 @@ function statusClass(status = "") {
   return "status-pending";
 }
 
-function render() {
+window.render = function () {
   const catalogGrid = document.getElementById("catalogGrid");
   const salesTable = document.getElementById("salesTable");
   const expensesTable = document.getElementById("expensesTable");
@@ -699,9 +721,20 @@ function render() {
   const formLinks = document.getElementById("formLinks");
 
   if (catalogGrid) {
-    catalogGrid.innerHTML = catalog.length
-      ? catalog.map(item => {
+    const searchValue = document.getElementById("catalogSearch")?.value.toLowerCase() || "";
+    const categoryValue = document.getElementById("catalogCategoryFilter")?.value || "";
+
+    const filteredCatalog = catalog.filter(item => {
+      const name = String(item.name || "").toLowerCase();
+      const category = String(item.category || "");
+
+      return name.includes(searchValue) && (!categoryValue || category === categoryValue);
+    });
+
+    catalogGrid.innerHTML = filteredCatalog.length
+      ? filteredCatalog.map(item => {
           const product = {
+            id: item.id,
             name: item.name,
             category: item.category,
             price: item.price,
@@ -715,6 +748,8 @@ function render() {
           };
 
           const encoded = encodeURIComponent(JSON.stringify(product));
+          const whatsappText = encodeURIComponent(`Hello, I want to order ${item.name}`);
+          const whatsappLink = `https://wa.me/2348118103510?text=${whatsappText}`;
 
           return `
             <div class="catalog-card">
@@ -734,18 +769,24 @@ function render() {
                 <strong>${money(item.price)}</strong>
                 <small>Available: ${item.quantity || "Check stock"}</small>
 
-                <button type="button" onclick='openProductDetails("${encoded}")'>
-                  View Details
-                </button>
+                <button type="button" onclick='openProductDetails("${encoded}")'>View Details</button>
 
                 <button type="button" onclick='requestCatalogOrder(${JSON.stringify(item.name)}, ${JSON.stringify(item.price || "")})'>
                   Request Order
                 </button>
+
+                <a class="whatsapp-btn" href="${whatsappLink}" target="_blank">WhatsApp Order</a>
+
+                ${
+                  currentRole === "admin" && !String(item.id).startsWith("inventory-")
+                    ? `<button class="danger-btn" type="button" onclick="deleteCatalogProduct('${item.id}')">Delete Product</button>`
+                    : ""
+                }
               </div>
             </div>
           `;
         }).join("")
-      : `<p class="note">No products available yet.</p>`;
+      : `<p class="note">No products found.</p>`;
   }
 
   if (salesTable) {
@@ -883,4 +924,4 @@ function render() {
       </div>
     `).join("");
   }
-}
+};
