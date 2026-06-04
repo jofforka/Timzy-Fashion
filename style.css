@@ -1,740 +1,630 @@
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-:root{
-  --bg:#0d0d0f;
-  --card:#151518;
-  --card2:#1b1b20;
-  --border:#2b2b31;
-  --gold:#d9a441;
-  --text:#f7f7f7;
-  --muted:#9d9d9d;
-  --green:#18c964;
-  --red:#ff4d6d;
-  --yellow:#ffb224;
-}
-
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:Inter,Arial,sans-serif;
-  line-height:1.5;
-}
-
-.hero{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
-  padding:40px 28px;
-  background:radial-gradient(circle at top left,#7b5600,#111 60%);
-  border-bottom:1px solid #333;
-}
-
-.eyebrow{
-  color:var(--gold);
-  font-size:13px;
-  font-weight:800;
-  letter-spacing:3px;
-  text-transform:uppercase;
-}
-
-h1{
-  font-size:46px;
-  margin:8px 0;
-  font-weight:900;
-}
-
-h2{
-  color:var(--gold);
-  margin-bottom:18px;
-  font-size:26px;
-}
-
-h3{
-  margin:20px 0 12px;
-}
-
-p,.note{
-  color:#cfcfcf;
-}
-
-.login-page{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-}
-
-.login-card{
-  width:100%;
-  max-width:420px;
-  background:linear-gradient(180deg,#1b1b20,#111);
-  border:1px solid #333;
-  border-radius:24px;
-  padding:35px;
-  box-shadow:0 25px 80px rgba(0,0,0,0.5);
-}
-
-.login-card h1{
-  font-size:34px;
-}
-
-.login-card p{
-  margin-bottom:20px;
-}
-
-.xp-card{
-  min-width:260px;
-  background:linear-gradient(180deg,#1c1c22,#131317);
-  border:1px solid #333;
-  border-radius:22px;
-  padding:20px;
-  box-shadow:0 12px 45px rgba(0,0,0,0.45);
-}
-
-.xp-card span,
-.card span{
-  color:#aaa;
-}
-
-.xp-card strong{
-  display:block;
-  font-size:38px;
-  margin-top:8px;
-}
-
-.bar{
-  margin-top:12px;
-  width:100%;
-  height:12px;
-  background:#2c2c32;
-  border-radius:30px;
-  overflow:hidden;
-}
-
-.bar i{
-  display:block;
-  height:100%;
-  background:linear-gradient(90deg,var(--gold),var(--green));
-}
-
-nav{
-  position:sticky;
-  top:0;
-  z-index:999;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-  padding:16px;
-  background:rgba(18,18,22,0.92);
-  backdrop-filter:blur(12px);
-  border-bottom:1px solid #292929;
-}
-
-button{
-  border:none;
-  outline:none;
-  cursor:pointer;
-  border-radius:14px;
-  padding:12px 18px;
-  font-weight:800;
-  transition:0.25s ease;
-  background:var(--gold);
-  color:#111;
-}
-
-button:hover{
-  transform:translateY(-2px);
-  filter:brightness(1.08);
-}
-
-button:active{
-  transform:scale(0.98);
-}
-
-main{
-  max-width:1400px;
-  margin:28px auto;
-  padding:0 18px;
-}
-
-.tab{
-  display:none;
-}
-
-.tab.active{
-  display:block;
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:18px;
-}
-
-.card{
-  background:linear-gradient(180deg,var(--card2),#111);
-  border:1px solid var(--border);
-  border-radius:22px;
-  padding:22px;
-  box-shadow:0 14px 45px rgba(0,0,0,0.35);
-}
-
-.card strong{
-  display:block;
-  margin-top:10px;
-  font-size:34px;
-}
-
-.warning{
-  border-color:#6f2330;
-}
-
-form{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:12px;
-  margin-top:18px;
-}
-
-input,
-select,
-textarea{
-  width:100%;
-  padding:13px;
-  border-radius:14px;
-  border:1px solid #3a3a3f;
-  background:#101013;
-  color:white;
-  transition:0.2s ease;
-}
-
-textarea{
-  min-height:90px;
-  resize:vertical;
-}
-
-input:focus,
-select:focus,
-textarea:focus{
-  border-color:var(--gold);
-  outline:none;
-  box-shadow:0 0 0 3px rgba(217,164,65,0.15);
-}
-
-.table-wrap{
-  overflow-x:auto;
-  margin-top:18px;
-  border-radius:18px;
-  border:1px solid var(--border);
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:900px;
-  background:#151518;
-}
-
-th{
-  background:#242428;
-  color:var(--gold);
-  font-size:13px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
-th,
-td{
-  padding:14px;
-  border-bottom:1px solid #2a2a2d;
-  text-align:left;
-  vertical-align:top;
-}
-
-tr:hover{
-  background:#1b1b21;
-}
-
-.low,
-.status-rejected{
-  color:var(--red);
-  font-weight:800;
-}
-
-.ok,
-.status-approved{
-  color:var(--green);
-  font-weight:800;
-}
-
-.status-pending{
-  color:var(--yellow);
-  font-weight:800;
-}
-
-.leaderboard{
-  display:grid;
-  gap:14px;
-}
-
-.rank-card{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#151518;
-  border:1px solid #333;
-  border-radius:18px;
-  padding:18px;
-}
-
-.rank-card b{
-  color:var(--gold);
-}
-
-.form-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:16px;
-}
-
-.form-card{
-  background:#151518;
-  border:1px solid #333;
-  border-radius:22px;
-  padding:20px;
-}
-
-.form-card a{
-  display:inline-block;
-  margin-top:12px;
-  background:var(--gold);
-  color:#111;
-  text-decoration:none;
-  font-weight:800;
-  padding:11px 14px;
-  border-radius:12px;
-}
-
-.catalog-tools{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:12px;
-  margin:18px 0;
-}
-
-.catalog-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:20px;
-  margin-top:22px;
-}
-
-.catalog-card{
-  background:#151518;
-  border:1px solid #333;
-  border-radius:24px;
-  overflow:hidden;
-  box-shadow:0 14px 45px rgba(0,0,0,0.35);
-}
-
-.catalog-image{
-  height:240px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:linear-gradient(135deg,#2a210e,#111);
-}
-
-.catalog-image img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.catalog-image span{
-  font-size:72px;
-}
-
-.catalog-body{
-  padding:18px;
-  display:grid;
-  gap:8px;
-}
-
-.catalog-body h3{
-  margin:0;
-}
-
-.catalog-body strong{
-  color:var(--gold);
-  font-size:24px;
-}
-
-.catalog-body button{
-  width:100%;
-}
-
-.whatsapp-btn{
-  display:block;
-  text-align:center;
-  background:var(--green);
-  color:#111;
-  font-weight:800;
-  text-decoration:none;
-  padding:12px 18px;
-  border-radius:14px;
-}
-
-.danger-btn{
-  background:var(--red);
-  color:white;
-}
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.78);
-  z-index:2000;
-  justify-content:center;
-  align-items:center;
-  padding:18px;
-}
-
-.modal-content{
-  width:min(900px,100%);
-  max-height:92vh;
-  overflow-y:auto;
-  background:#151518;
-  border:1px solid #333;
-  border-radius:24px;
-  padding:24px;
-  position:relative;
-  box-shadow:0 30px 90px rgba(0,0,0,0.65);
-}
-
-.modal-close{
-  position:absolute;
-  top:14px;
-  right:14px;
-  padding:8px 14px;
-  border-radius:50%;
-}
-
-.product-gallery{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:12px;
-  margin:18px 0;
-}
-
-.product-gallery img{
-  width:100%;
-  max-height:650px;
-  height:auto;
-  object-fit:contain;
-  background:#111;
-  border-radius:18px;
-  border:1px solid #333;
-}
-
-.chat-box{
-  margin-top:22px;
-}
-
-.chat-messages{
-  background:#101013;
-  border:1px solid #333;
-  border-radius:14px;
-  padding:14px;
-  max-height:280px;
-  overflow-y:auto;
-  display:grid;
-  gap:10px;
-  margin:14px 0;
-}
-
-.chat-message{
-  background:#1b1b20;
-  border:1px solid #2f2f35;
-  padding:10px;
-  border-radius:12px;
-}
-
-.chat-message strong{
-  color:var(--gold);
-}
-
-.chat-input-row{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:10px;
-}
-
-footer{
-  text-align:center;
-  margin-top:45px;
-  padding:30px;
-  border-top:1px solid #2b2b2f;
-  color:#999;
-}
-
-@media(max-width:900px){
-  .hero{
-    flex-direction:column;
-    align-items:flex-start;
-    padding:30px 18px;
-  }
-
-  h1{
-    font-size:34px;
-  }
-
-  .xp-card{
-    width:100%;
-    min-width:0;
-  }
-
-  nav{
-    justify-content:flex-start;
-    overflow-x:auto;
-    flex-wrap:nowrap;
-    padding-bottom:12px;
-  }
-
-  nav button{
-    white-space:nowrap;
-    flex:none;
-  }
-
-  .cards{
-    grid-template-columns:1fr;
-  }
-
-  form{
-    grid-template-columns:1fr;
-  }
-
-  table{
-    min-width:760px;
-    font-size:13px;
-  }
-
-  .chat-input-row,
-  .catalog-tools{
-    grid-template-columns:1fr;
-  }
-}
-
-@media(max-width:500px){
-  main{
-    padding:0 12px;
-  }
-
-  .login-card{
-    padding:25px;
-  }
-
-  h1{
-    font-size:28px;
-  }
-
-  h2{
-    font-size:22px;
-  }
-
-  button{
-    width:100%;
-  }
-
-  .catalog-image{
-    height:210px;
-  }
-
-  .product-gallery img{
-    max-height:520px;
-  }
-
-  .chat-message.mine{
-  border-color:var(--green);
-}
-
-.chat-message.theirs{
-  border-color:var(--gold);
-}
-}
-/* MOBILE-FIRST FIXES */
-
-@media(max-width:700px){
-
-  body{
-    font-size:14px;
-  }
-
-  .hero{
-    padding:24px 16px;
-  }
-
-  .hero h1{
-    font-size:26px;
-    line-height:1.15;
-  }
-
-  .hero p{
-    font-size:13px;
-  }
-
-  .xp-card{
-    padding:16px;
-  }
-
-  .xp-card strong{
-    font-size:30px;
-  }
-
-  nav{
-    position:sticky;
-    top:0;
-    display:flex;
-    flex-wrap:nowrap;
-    justify-content:flex-start;
-    overflow-x:auto;
-    gap:8px;
-    padding:10px;
-  }
-
-  nav button{
-    width:auto;
-    min-width:max-content;
-    padding:10px 12px;
-    font-size:13px;
-  }
-
-  main{
-    margin:18px auto;
-    padding:0 12px;
-  }
-
-  .cards,
-  .catalog-grid,
-  .form-grid{
-    grid-template-columns:1fr;
-  }
-
-  .catalog-card{
-    border-radius:18px;
-  }
-
-  .catalog-image{
-    height:260px;
-  }
-
-  .catalog-body{
-    padding:14px;
-  }
-
-  .catalog-body h3{
-    font-size:18px;
-  }
-
-  .catalog-body strong{
-    font-size:22px;
-  }
-
-  .catalog-tools{
-    grid-template-columns:1fr;
-  }
-
-  form{
-    grid-template-columns:1fr;
-  }
-
-  input,
-  select,
-  textarea,
-  button{
-    font-size:15px;
-  }
-
-  .table-wrap{
-    border-radius:14px;
-    overflow-x:auto;
-  }
-
-  table{
-    min-width:760px;
-  }
-
-  th,
-  td{
-    padding:10px;
-    font-size:12px;
-  }
-
-  .modal{
-    align-items:flex-start;
-    padding:10px;
-  }
-
-  .modal-content{
-    width:100%;
-    max-height:94vh;
-    padding:18px;
-    border-radius:18px;
-  }
-
-  .modal-close{
-    top:8px;
-    right:8px;
-    width:38px;
-    height:38px;
-    padding:0;
-  }
-
-  .product-gallery img{
-    max-height:75vh;
-    width:100%;
-    object-fit:contain;
-  }
-
-  .chat-box{
-    padding:14px;
-  }
-
-  .chat-messages{
-    max-height:360px;
-  }
-
-  .chat-input-row{
-    grid-template-columns:1fr;
-  }
-
-  .chat-input-row button{
-    width:100%;
-  }
-}
-
-@media(max-width:420px){
-
-  .hero h1{
-    font-size:23px;
-  }
-
-  h2{
-    font-size:20px;
-  }
-
-  .catalog-image{
-    height:230px;
-  }
-
-  button{
-    padding:11px 12px;
-  }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Timzy Fashion OS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- PUBLIC APP HEADER -->
+  <header class="public-header">
+    <div>
+      <p class="eyebrow">TIMZY FASHION OS</p>
+      <h1>Modern Fashion Catalog & Business OS</h1>
+      <p>
+        Browse available products, view styles, and request customer access to place orders.
+      </p>
+    </div>
+
+    <div class="public-actions">
+      <button type="button" onclick="showPublicCatalog()">🛍️ Catalog</button>
+      <button type="button" onclick="openLoginModal()">🔐 Login</button>
+      <a
+        class="whatsapp-btn"
+        href="https://wa.me/2348118103510?text=Hello,%20I%20need%20customer%20login%20details%20for%20Timzy%20Fashion%20OS"
+        target="_blank"
+      >
+        Request Access
+      </a>
+    </div>
+  </header>
+
+
+  <!-- PUBLIC CATALOG -->
+  <section id="publicCatalog" class="public-section">
+    <div class="section-head">
+      <div>
+        <h2>Product Catalog</h2>
+        <p class="note">
+          View available Timzy Fashion products before logging in.
+        </p>
+      </div>
+    </div>
+
+    <div class="catalog-tools">
+      <input
+        id="catalogSearch"
+        placeholder="Search product..."
+        oninput="render()"
+      />
+
+      <select id="catalogCategoryFilter" onchange="render()">
+        <option value="">All Categories</option>
+        <option value="Senator">Senator</option>
+        <option value="Agbada">Agbada</option>
+        <option value="Female Wear">Female Wear</option>
+        <option value="Adire">Adire</option>
+        <option value="Children">Children</option>
+        <option value="Fabrics">Fabrics</option>
+        <option value="Accessories">Accessories</option>
+        <option value="Men / Senator">Men / Senator</option>
+      </select>
+    </div>
+
+    <div id="catalogGrid" class="catalog-grid"></div>
+  </section>
+
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="modal" style="display:none;">
+    <div class="modal-content login-modal-card">
+      <button class="modal-close" type="button" onclick="closeLoginModal()">×</button>
+
+      <p class="eyebrow">SECURE LOGIN</p>
+      <h2>Access Timzy Fashion OS</h2>
+
+      <p class="note">
+        Admin, staff, and customers should log in here.
+      </p>
+
+      <input
+        id="loginEmail"
+        type="email"
+        placeholder="Enter Email"
+        autocomplete="email"
+      />
+
+      <input
+        id="loginPassword"
+        type="password"
+        placeholder="Enter Password"
+        autocomplete="current-password"
+      />
+
+      <button type="button" onclick="loginUser()">
+        Login
+      </button>
+
+      <p class="note">
+        Need customer login details?
+        <a
+          href="https://wa.me/2348118103510?text=Hello,%20I%20need%20customer%20login%20details%20for%20Timzy%20Fashion%20OS"
+          target="_blank"
+        >
+          Contact Timzy Fashion
+        </a>
+      </p>
+    </div>
+  </div>
+
+
+  <!-- PRIVATE APP -->
+  <div id="app" style="display:none;">
+
+    <!-- PRIVATE HERO -->
+    <header class="hero">
+      <div>
+        <p class="eyebrow">TIMZY FASHION OS</p>
+        <h1>Business Command Center</h1>
+        <p>
+          Technical dashboard • Catalog • Orders • Customers • Expenses • Inventory
+        </p>
+      </div>
+
+      <div class="xp-card">
+        <span>Business Health</span>
+        <strong id="healthScore">85%</strong>
+
+        <div class="bar">
+          <i style="width:85%"></i>
+        </div>
+
+        <br />
+
+        <button type="button" onclick="logoutUser()">
+          Logout
+        </button>
+      </div>
+    </header>
+
+
+    <!-- PRIVATE NAV -->
+    <nav class="nav-buttons">
+      <button id="dashboardBtn" type="button" onclick="showTab('dashboard')">📊 Dashboard</button>
+      <button id="catalogBtn" type="button" onclick="showTab('catalog')">🛍️ Catalog</button>
+      <button id="catalogManagerBtn" type="button" onclick="showTab('catalogManager')">🖼️ Catalog Manager</button>
+      <button id="salesBtn" type="button" onclick="showTab('sales')">💰 Sales</button>
+      <button id="expensesBtn" type="button" onclick="showTab('expenses')">💸 Expenses</button>
+      <button id="inventoryBtn" type="button" onclick="showTab('inventory')">📦 Inventory</button>
+      <button id="ordersBtn" type="button" onclick="showTab('orders')">🧵 Orders</button>
+      <button id="customersBtn" type="button" onclick="showTab('customers')">👗 Customers</button>
+      <button id="staffBtn" type="button" onclick="showTab('staff')">🏆 Staff XP</button>
+      <button id="formsBtn" type="button" onclick="showTab('forms')">📝 Forms</button>
+    </nav>
+
+
+    <main>
+
+      <!-- TECHNICAL DASHBOARD -->
+      <section id="dashboard" class="tab active">
+        <div class="dashboard-head">
+          <div>
+            <h2>Executive Intelligence Dashboard</h2>
+            <p class="note">
+              Live overview of sales, expenses, inventory, orders, and operational health.
+            </p>
+          </div>
+
+          <div class="system-badge">
+            <span>System Status</span>
+            <strong>ONLINE</strong>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="tech-card">
+            <span>Total Sales</span>
+            <strong id="totalSales">₦0</strong>
+            <small>Revenue captured from sales records</small>
+          </div>
+
+          <div class="tech-card">
+            <span>Total Expenses</span>
+            <strong id="totalExpenses">₦0</strong>
+            <small>Operational cost movement</small>
+          </div>
+
+          <div class="tech-card">
+            <span>Net Profit</span>
+            <strong id="netProfit">₦0</strong>
+            <small>Sales minus expenses</small>
+          </div>
+
+          <div class="tech-card">
+            <span>Inventory Value</span>
+            <strong id="inventoryValue">₦0</strong>
+            <small>Current stock valuation</small>
+          </div>
+
+          <div class="tech-card warning">
+            <span>Low Stock Alerts</span>
+            <strong id="lowStock">0</strong>
+            <small>Items requiring attention</small>
+          </div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <div class="chart-header">
+              <h3>Sales vs Expenses</h3>
+              <span>Financial signal</span>
+            </div>
+
+            <div id="financeChart" class="chart-box">
+              <div class="chart-placeholder">
+                <span>📈</span>
+                <p>Chart will render from live sales and expense data.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <div class="chart-header">
+              <h3>Order Status</h3>
+              <span>Pipeline health</span>
+            </div>
+
+            <div id="orderStatusChart" class="chart-box">
+              <div class="chart-placeholder">
+                <span>🧵</span>
+                <p>Pending, approved, and rejected orders will appear here.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <div class="chart-header">
+              <h3>Inventory Health</h3>
+              <span>Stock intelligence</span>
+            </div>
+
+            <div id="inventoryHealthChart" class="chart-box">
+              <div class="chart-placeholder">
+                <span>📦</span>
+                <p>Stock value and low-stock signals will appear here.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <div class="chart-header">
+              <h3>Staff Performance</h3>
+              <span>XP leaderboard signal</span>
+            </div>
+
+            <div id="staffPerformanceChart" class="chart-box">
+              <div class="chart-placeholder">
+                <span>🏆</span>
+                <p>Staff XP and productivity metrics will appear here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="operations-grid">
+          <div class="analytics-card">
+            <h3>Recent Operational Activity</h3>
+            <div id="recentActivity" class="activity-list">
+              <p class="note">Recent orders, catalog updates, and customer activities will show here.</p>
+            </div>
+          </div>
+
+          <div class="analytics-card">
+            <h3>Critical Alerts</h3>
+            <div id="criticalAlerts" class="activity-list">
+              <p class="note">Low stock, pending reviews, and rejected orders will show here.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- PRIVATE CATALOG -->
+      <section id="catalog" class="tab">
+        <h2>Product Catalog</h2>
+        <p class="note">
+          Search products, view images, and request an order.
+        </p>
+
+        <div class="catalog-tools">
+          <input
+            id="privateCatalogSearch"
+            placeholder="Search product..."
+            oninput="render()"
+          />
+
+          <select id="privateCatalogCategoryFilter" onchange="render()">
+            <option value="">All Categories</option>
+            <option value="Senator">Senator</option>
+            <option value="Agbada">Agbada</option>
+            <option value="Female Wear">Female Wear</option>
+            <option value="Adire">Adire</option>
+            <option value="Children">Children</option>
+            <option value="Fabrics">Fabrics</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Men / Senator">Men / Senator</option>
+          </select>
+        </div>
+
+        <div id="privateCatalogGrid" class="catalog-grid"></div>
+      </section>
+
+
+      <!-- CATALOG MANAGER -->
+      <section id="catalogManager" class="tab">
+        <h2>Catalog Manager</h2>
+        <p class="note">
+          Admin can publish catalog products using GitHub image URLs.
+        </p>
+
+        <div class="card">
+          <h3>Add / Publish Product</h3>
+
+          <form>
+            <input id="catProductName" placeholder="Product Name" />
+            <input id="catCategory" placeholder="Category" />
+            <input id="catColor" placeholder="Color / Material Color" />
+            <input id="catPrice" type="number" placeholder="Price" />
+            <input id="catQuantity" type="number" placeholder="Available Quantity" />
+            <input id="catSizes" placeholder="Sizes e.g. S, M, L, XL" />
+            <input id="catImage1" placeholder="Image URL 1" />
+            <input id="catImage2" placeholder="Image URL 2" />
+            <input id="catImage3" placeholder="Image URL 3" />
+            <textarea id="catDescription" placeholder="Product Description"></textarea>
+
+            <button type="button" onclick="saveCatalogProduct()">
+              Publish Product
+            </button>
+          </form>
+        </div>
+      </section>
+
+
+      <!-- SALES -->
+      <section id="sales" class="tab">
+        <h2>Sales Records</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Category</th>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+
+            <tbody id="salesTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- EXPENSES -->
+      <section id="expenses" class="tab">
+        <h2>Expenses</h2>
+        <p class="note">
+          Staff can record and view expenses. Admin can view all expenses.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Staff</th>
+                <th>Category</th>
+                <th>Expense Item</th>
+                <th>Supplier</th>
+                <th>Qty</th>
+                <th>Unit Cost</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+
+            <tbody id="expensesTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- INVENTORY -->
+      <section id="inventory" class="tab">
+        <h2>Inventory Control</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Product</th>
+                <th>SKU</th>
+                <th>Supplier</th>
+                <th>Qty Added</th>
+                <th>Cost Price</th>
+                <th>Selling Price</th>
+              </tr>
+            </thead>
+
+            <tbody id="inventoryTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- ORDERS -->
+      <section id="orders" class="tab">
+        <h2>Orders</h2>
+        <p class="note">
+          Admin can approve/reject orders. Customers, staff, and admin can chat on each order.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Style</th>
+                <th>Status</th>
+                <th>Delivery</th>
+                <th>Final Amount</th>
+                <th>Payment Method</th>
+                <th>Admin Note</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="ordersTable"></tbody>
+          </table>
+        </div>
+
+        <div id="chatBox" class="card chat-box" style="display:none;">
+          <h3>Order Communication Center</h3>
+
+          <div id="chatMessages" class="chat-messages"></div>
+
+          <div class="chat-input-row">
+            <input id="chatInput" type="text" placeholder="Type your message..." />
+            <button type="button" onclick="sendChatMessage()">Send</button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- CUSTOMERS -->
+      <section id="customers" class="tab">
+        <h2>Customer Portal</h2>
+        <p class="note">
+          Customers see only their own measurements and orders. Staff/Admin can submit records for customers using email.
+        </p>
+
+        <div class="cards">
+          <div class="card">
+            <h3>Submit Measurement</h3>
+
+            <form>
+              <input id="targetCustomerEmail" class="staff-admin-only" type="email" placeholder="Customer Email — Staff/Admin only" />
+              <input id="cmName" placeholder="Customer Name" />
+              <input id="cmPhone" placeholder="Phone Number" />
+              <input id="cmShoulder" placeholder="Shoulder" />
+              <input id="cmChest" placeholder="Chest/Bust" />
+              <input id="cmWaist" placeholder="Waist" />
+              <input id="cmHip" placeholder="Hip" />
+              <input id="cmSleeve" placeholder="Sleeve" />
+              <input id="cmLength" placeholder="Length" />
+              <textarea id="cmNotes" placeholder="Style Notes"></textarea>
+
+              <button type="button" onclick="submitMeasurement()">
+                Save Measurement
+              </button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h3>Submit Order Request</h3>
+
+            <form>
+              <input id="targetCustomerEmailOrder" class="staff-admin-only" type="email" placeholder="Customer Email — Staff/Admin only" />
+              <input id="coName" placeholder="Customer Name" />
+              <input id="coPhone" placeholder="Phone Number" />
+              <input id="coStyle" placeholder="Product / Style" />
+              <input id="coDelivery" type="date" />
+              <input id="coAmount" type="number" placeholder="Final Amount — Admin can confirm later" />
+
+              <select id="coPaymentMethod">
+                <option value="">Select Payment Method</option>
+                <option value="Cash">Cash</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+
+              <button type="button" onclick="submitOrder()">
+                Submit Order Request
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <h3>Measurements</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Measurements</th>
+                <th>Style Notes</th>
+              </tr>
+            </thead>
+
+            <tbody id="customersTable"></tbody>
+          </table>
+        </div>
+
+        <h3>Orders</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Style</th>
+                <th>Status</th>
+                <th>Delivery</th>
+                <th>Final Amount</th>
+                <th>Payment Method</th>
+                <th>Admin Note</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="customerOrdersTable"></tbody>
+          </table>
+        </div>
+
+        <div id="customerChatBox" class="card chat-box" style="display:none;">
+          <h3>Order Chat</h3>
+
+          <div id="customerChatMessages" class="chat-messages"></div>
+
+          <div class="chat-input-row">
+            <input id="customerChatInput" type="text" placeholder="Type your message..." />
+            <button type="button" onclick="sendChatMessage()">Send</button>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- STAFF -->
+      <section id="staff" class="tab">
+        <h2>Staff XP Leaderboard</h2>
+
+        <div id="leaderboard" class="leaderboard"></div>
+      </section>
+
+
+      <!-- FORMS -->
+      <section id="forms" class="tab">
+        <h2>Google Forms Hub</h2>
+        <p class="note">
+          Internal Google Forms remain available for admin/staff operations.
+        </p>
+
+        <div class="form-grid" id="formLinks"></div>
+      </section>
+
+    </main>
+  </div>
+
+
+  <!-- PRODUCT MODAL -->
+  <div id="productModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <button class="modal-close" type="button" onclick="closeProductModal()">×</button>
+      <div id="modalProductContent"></div>
+    </div>
+  </div>
+
+
+  <!-- PUBLIC LOGIN REQUIRED MODAL -->
+  <div id="accessModal" class="modal" style="display:none;">
+    <div class="modal-content login-modal-card">
+      <button class="modal-close" type="button" onclick="closeAccessModal()">×</button>
+
+      <h2>Customer Login Required</h2>
+      <p class="note">
+        To request an order, you need customer login details.
+      </p>
+
+      <a
+        class="whatsapp-btn"
+        href="https://wa.me/2348118103510?text=Hello,%20I%20want%20customer%20login%20details%20for%20Timzy%20Fashion%20OS"
+        target="_blank"
+      >
+        Request Login Details
+      </a>
+
+      <button type="button" onclick="openLoginModal()">
+        I Already Have Login
+      </button>
+    </div>
+  </div>
+
+
+  <footer>
+    <p>Timzy Fashion OS Cloud Edition</p>
+  </footer>
+
+
+  <script src="forms-config.js"></script>
+  <script type="module" src="script.js"></script>
+
+</body>
+</html>
