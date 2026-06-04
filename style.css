@@ -6,10 +6,7 @@
 
 :root{
   --bg:#08080a;
-  --bg2:#101014;
-  --card:rgba(22,22,28,0.82);
-  --card-solid:#151518;
-  --card2:#1b1b22;
+  --card:rgba(22,22,28,0.84);
   --border:rgba(255,255,255,0.09);
   --gold:#d9a441;
   --gold2:#f3c86a;
@@ -18,7 +15,6 @@
   --green:#18c964;
   --red:#ff4d6d;
   --yellow:#ffb224;
-  --blue:#6ea8ff;
   --shadow:0 22px 70px rgba(0,0,0,0.42);
 }
 
@@ -178,6 +174,7 @@ a{
   background:linear-gradient(90deg,var(--gold),var(--green));
 }
 
+/* TWO-COLUMN MOBILE-FRIENDLY MENU */
 nav{
   position:sticky;
   top:0;
@@ -293,6 +290,7 @@ main{
   background:linear-gradient(90deg,var(--red),transparent);
 }
 
+/* DASHBOARD */
 .analytics-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -369,6 +367,7 @@ main{
   border-color:rgba(255,77,109,0.35);
 }
 
+/* FORMS */
 form{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
@@ -401,11 +400,46 @@ textarea:focus{
   box-shadow:0 0 0 3px rgba(217,164,65,0.16);
 }
 
+/* CATALOG */
 .catalog-tools{
   display:grid;
   grid-template-columns:2fr 1fr;
   gap:12px;
   margin:18px 0;
+}
+
+.category-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:16px 0;
+}
+
+.chip{
+  padding:9px 12px;
+  border-radius:999px;
+  font-size:13px;
+  background:rgba(255,255,255,0.07);
+  color:var(--text);
+  border:1px solid var(--border);
+}
+
+.chip.active{
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#111;
+}
+
+.category-badge{
+  width:max-content;
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(217,164,65,0.14);
+  border:1px solid rgba(217,164,65,0.28);
+  color:var(--gold2);
+  font-size:12px;
+  font-weight:900;
 }
 
 .catalog-grid{
@@ -462,6 +496,7 @@ textarea:focus{
   width:100%;
 }
 
+/* TABLES */
 .table-wrap{
   overflow-x:auto;
   margin-top:18px;
@@ -512,6 +547,7 @@ tr:hover{
   font-weight:900;
 }
 
+/* STAFF / FORMS */
 .leaderboard,
 .form-grid{
   display:grid;
@@ -536,6 +572,7 @@ tr:hover{
   color:var(--gold2);
 }
 
+/* MODALS */
 .modal{
   position:fixed;
   inset:0;
@@ -590,6 +627,7 @@ tr:hover{
   border:1px solid var(--border);
 }
 
+/* CHAT */
 .chat-box{
   margin-top:22px;
 }
@@ -639,6 +677,7 @@ footer{
   color:var(--muted);
 }
 
+/* RESPONSIVE */
 @media(max-width:980px){
   .public-header,
   .hero,
@@ -715,6 +754,16 @@ footer{
   .catalog-grid,
   .form-grid{
     grid-template-columns:1fr;
+  }
+
+  .category-chips{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .chip{
+    width:100%;
+    justify-content:center;
   }
 
   .catalog-image{
