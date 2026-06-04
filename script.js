@@ -1,808 +1,1050 @@
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-}
-
-:root{
-  --bg:#08080a;
-  --bg2:#101014;
-  --card:rgba(22,22,28,0.82);
-  --card-solid:#151518;
-  --card2:#1b1b22;
-  --border:rgba(255,255,255,0.09);
-  --gold:#d9a441;
-  --gold2:#f3c86a;
-  --text:#f7f7f7;
-  --muted:#a8a8ad;
-  --green:#18c964;
-  --red:#ff4d6d;
-  --yellow:#ffb224;
-  --blue:#6ea8ff;
-  --shadow:0 22px 70px rgba(0,0,0,0.42);
-}
-
-body{
-  min-height:100vh;
-  background:
-    radial-gradient(circle at top left,rgba(217,164,65,0.16),transparent 38%),
-    radial-gradient(circle at top right,rgba(24,201,100,0.08),transparent 35%),
-    linear-gradient(180deg,#08080a,#0d0d10 55%,#09090b);
-  color:var(--text);
-  font-family:Inter,Arial,sans-serif;
-  line-height:1.5;
-}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
-  background-size:48px 48px;
-  mask-image:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent 85%);
-}
-
-/* Typography */
-
-.eyebrow{
-  color:var(--gold2);
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:3px;
-  text-transform:uppercase;
-}
-
-h1{
-  font-size:clamp(32px,5vw,58px);
-  line-height:1.05;
-  margin:8px 0;
-  font-weight:950;
-}
-
-h2{
-  color:var(--gold2);
-  margin-bottom:14px;
-  font-size:clamp(23px,3vw,31px);
-}
-
-h3{
-  margin:18px 0 12px;
-}
-
-p,.note,small{
-  color:var(--muted);
-}
-
-a{
-  color:var(--gold2);
-}
-
-/* Public storefront */
-
-.public-header{
-  display:grid;
-  grid-template-columns:1.4fr auto;
-  gap:24px;
-  align-items:center;
-  padding:38px 28px;
-  border-bottom:1px solid var(--border);
-  background:
-    linear-gradient(135deg,rgba(217,164,65,0.14),rgba(0,0,0,0.1)),
-    rgba(12,12,15,0.72);
-  backdrop-filter:blur(16px);
-}
-
-.public-header p{
-  max-width:760px;
-}
-
-.public-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-
-.public-section{
-  max-width:1400px;
-  margin:28px auto;
-  padding:0 18px 28px;
-}
-
-.section-head,
-.dashboard-head{
-  display:flex;
-  justify-content:space-between;
-  gap:18px;
-  align-items:center;
-  margin-bottom:18px;
-}
-
-/* Private hero */
-
-.hero{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
-  padding:34px 28px;
-  background:
-    radial-gradient(circle at top left,rgba(217,164,65,0.22),transparent 34%),
-    rgba(13,13,16,0.72);
-  border-bottom:1px solid var(--border);
-  backdrop-filter:blur(16px);
-}
-
-.xp-card,
-.system-badge{
-  min-width:245px;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:24px;
-  padding:18px;
-  box-shadow:var(--shadow);
-  backdrop-filter:blur(16px);
-}
-
-.xp-card span,
-.system-badge span,
-.tech-card span{
-  color:var(--muted);
-  font-size:13px;
-}
-
-.xp-card strong,
-.system-badge strong{
-  display:block;
-  font-size:34px;
-  color:var(--text);
-  margin-top:5px;
-}
-
-.system-badge strong{
-  color:var(--green);
-  letter-spacing:2px;
-}
-
-.bar{
-  margin-top:12px;
-  width:100%;
-  height:10px;
-  background:#2c2c32;
-  border-radius:30px;
-  overflow:hidden;
-}
-
-.bar i{
-  display:block;
-  height:100%;
-  background:linear-gradient(90deg,var(--gold),var(--green));
-}
-
-/* Navigation */
-
-nav{
-  position:sticky;
-  top:0;
-  z-index:900;
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-  padding:14px;
-  background:rgba(12,12,16,0.88);
-  backdrop-filter:blur(18px);
-  border-bottom:1px solid var(--border);
-}
-
-button,
-.whatsapp-btn,
-.form-card a{
-  border:none;
-  outline:none;
-  cursor:pointer;
-  border-radius:15px;
-  padding:12px 16px;
-  font-weight:900;
-  transition:0.22s ease;
-  background:linear-gradient(135deg,var(--gold2),var(--gold));
-  color:#111;
-  text-decoration:none;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-}
-
-button:hover,
-.whatsapp-btn:hover,
-.form-card a:hover{
-  transform:translateY(-2px);
-  filter:brightness(1.06);
-}
-
-button:active{
-  transform:scale(0.98);
-}
-
-.danger-btn{
-  background:linear-gradient(135deg,#ff6b82,var(--red));
-  color:white;
-}
-
-.whatsapp-btn{
-  background:linear-gradient(135deg,#23e272,var(--green));
-  color:#071108;
-}
-
-/* Layout */
-
-main{
-  max-width:1400px;
-  margin:28px auto;
-  padding:0 18px;
-}
-
-.tab{
-  display:none;
-}
-
-.tab.active{
-  display:block;
-}
-
-.cards,
-.kpi-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-  gap:18px;
-}
-
-.card,
-.tech-card,
-.analytics-card,
-.form-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:24px;
-  padding:22px;
-  box-shadow:var(--shadow);
-  backdrop-filter:blur(16px);
-}
-
-.card strong,
-.tech-card strong{
-  display:block;
-  margin-top:8px;
-  font-size:clamp(26px,3vw,38px);
-}
-
-.tech-card{
-  position:relative;
-  overflow:hidden;
-}
-
-.tech-card::after{
-  content:"";
-  position:absolute;
-  inset:auto 18px 0 18px;
-  height:3px;
-  background:linear-gradient(90deg,var(--gold),transparent);
-  opacity:0.8;
-}
-
-.warning{
-  border-color:rgba(255,77,109,0.35);
-}
-
-.warning::after{
-  background:linear-gradient(90deg,var(--red),transparent);
-}
-
-/* Technical dashboard */
-
-.analytics-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:18px;
-  margin-top:18px;
-}
-
-.operations-grid{
-  display:grid;
-  grid-template-columns:1.2fr 0.8fr;
-  gap:18px;
-  margin-top:18px;
-}
-
-.chart-header{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:center;
-  margin-bottom:12px;
-}
-
-.chart-header span{
-  color:var(--gold2);
-  font-size:12px;
-  font-weight:800;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
-.chart-box{
-  min-height:260px;
-  background:linear-gradient(180deg,rgba(255,255,255,0.035),rgba(0,0,0,0.14));
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:12px;
-  overflow:hidden;
-}
-
-.chart-box canvas{
-  width:100%;
-  max-width:100%;
-}
-
-.chart-placeholder{
-  min-height:230px;
-  display:grid;
-  place-items:center;
-  text-align:center;
-  color:var(--muted);
-}
-
-.chart-placeholder span{
-  font-size:46px;
-}
-
-.activity-list{
-  display:grid;
-  gap:10px;
-}
-
-.activity-item{
-  display:grid;
-  gap:3px;
-  padding:12px;
-  border:1px solid var(--border);
-  border-radius:16px;
-  background:rgba(255,255,255,0.035);
-}
-
-.activity-item strong{
-  color:var(--text);
-}
-
-.activity-item.danger{
-  border-color:rgba(255,77,109,0.35);
-}
-
-/* Forms */
-
-form{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:12px;
-  margin-top:18px;
-}
-
-input,
-select,
-textarea{
-  width:100%;
-  padding:14px;
-  border-radius:15px;
-  border:1px solid var(--border);
-  background:rgba(10,10,13,0.86);
-  color:white;
-  transition:0.2s ease;
-}
-
-textarea{
-  min-height:96px;
-  resize:vertical;
-}
-
-input:focus,
-select:focus,
-textarea:focus{
-  border-color:var(--gold);
-  outline:none;
-  box-shadow:0 0 0 3px rgba(217,164,65,0.16);
-}
-
-/* Catalog */
-
-.catalog-tools{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:12px;
-  margin:18px 0;
-}
-
-.catalog-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(245px,1fr));
-  gap:20px;
-  margin-top:22px;
-}
-
-.catalog-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:26px;
-  overflow:hidden;
-  box-shadow:var(--shadow);
-  backdrop-filter:blur(16px);
-}
-
-.catalog-image{
-  height:255px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:linear-gradient(135deg,#2a210e,#0b0b0d);
-}
-
-.catalog-image img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.catalog-image span{
-  font-size:72px;
-}
-
-.catalog-body{
-  padding:18px;
-  display:grid;
-  gap:9px;
-}
-
-.catalog-body h3{
-  margin:0;
-}
-
-.catalog-body strong{
-  color:var(--gold2);
-  font-size:24px;
-}
-
-.catalog-body button,
-.catalog-body .whatsapp-btn{
-  width:100%;
-}
-
-/* Tables */
-
-.table-wrap{
-  overflow-x:auto;
-  margin-top:18px;
-  border-radius:20px;
-  border:1px solid var(--border);
-  background:var(--card);
-  box-shadow:var(--shadow);
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:900px;
-}
-
-th{
-  background:rgba(255,255,255,0.055);
-  color:var(--gold2);
-  font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
-
-th,
-td{
-  padding:14px;
-  border-bottom:1px solid var(--border);
-  text-align:left;
-  vertical-align:top;
-}
-
-tr:hover{
-  background:rgba(255,255,255,0.035);
-}
-
-.status-rejected{
-  color:var(--red);
-  font-weight:900;
-}
-
-.status-approved{
-  color:var(--green);
-  font-weight:900;
-}
-
-.status-pending{
-  color:var(--yellow);
-  font-weight:900;
-}
-
-/* Leaderboard and forms */
-
-.leaderboard,
-.form-grid{
-  display:grid;
-  gap:14px;
-}
-
-.form-grid{
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-}
-
-.rank-card{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:18px;
-}
-
-.rank-card b{
-  color:var(--gold2);
-}
-
-/* Modal */
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.78);
-  z-index:2000;
-  justify-content:center;
-  align-items:center;
-  padding:18px;
-}
-
-.modal-content{
-  width:min(920px,100%);
-  max-height:92vh;
-  overflow-y:auto;
-  background:rgba(18,18,23,0.96);
-  border:1px solid var(--border);
-  border-radius:26px;
-  padding:24px;
-  position:relative;
-  box-shadow:0 30px 100px rgba(0,0,0,0.74);
-  backdrop-filter:blur(18px);
-}
-
-.login-modal-card{
-  width:min(440px,100%);
-  display:grid;
-  gap:14px;
-}
-
-.modal-close{
-  position:absolute;
-  top:14px;
-  right:14px;
-  padding:8px 14px;
-  border-radius:50%;
-}
-
-.product-gallery{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:12px;
-  margin:18px 0;
-}
-
-.product-gallery img{
-  width:100%;
-  max-height:650px;
-  height:auto;
-  object-fit:contain;
-  background:#111;
-  border-radius:18px;
-  border:1px solid var(--border);
-}
-
-/* Chat */
-
-.chat-box{
-  margin-top:22px;
-}
-
-.chat-messages{
-  background:rgba(10,10,13,0.86);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:14px;
-  max-height:330px;
-  overflow-y:auto;
-  display:grid;
-  gap:10px;
-  margin:14px 0;
-}
-
-.chat-message{
-  background:rgba(255,255,255,0.045);
-  border:1px solid var(--border);
-  padding:10px;
-  border-radius:14px;
-}
-
-.chat-message strong{
-  color:var(--gold2);
-}
-
-.chat-message.mine{
-  border-color:rgba(24,201,100,0.55);
-}
-
-.chat-message.theirs{
-  border-color:rgba(217,164,65,0.55);
-}
-
-.chat-input-row{
-  display:grid;
-  grid-template-columns:1fr auto;
-  gap:10px;
-}
-
-footer{
-  text-align:center;
-  margin-top:45px;
-  padding:30px;
-  border-top:1px solid var(--border);
-  color:var(--muted);
-}
-
-/* Mobile-first polish */
-
-@media(max-width:980px){
-  .public-header,
-  .hero,
-  .section-head,
-  .dashboard-head{
-    grid-template-columns:1fr;
-    flex-direction:column;
-    align-items:flex-start;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU",
+  authDomain: "timzy-fashion-os.firebaseapp.com",
+  projectId: "timzy-fashion-os",
+  storageBucket: "timzy-fashion-os.firebasestorage.app",
+  messagingSenderId: "515655826693",
+  appId: "1:515655826693:web:4085b86651f39ffa03cb6c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const SALES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Responses";
+const INVENTORY_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Inventory%20Restock";
+const EXPENSES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Expense%20Responses";
+
+let sales = [];
+let inventory = [];
+let expenses = [];
+let catalog = [];
+let customers = [];
+let orders = [];
+
+let currentRole = "public";
+let currentUserEmail = "";
+let activeChatOrderId = "";
+let unsubscribeChat = null;
+
+const money = n => "₦" + Number(n || 0).toLocaleString();
+
+function cleanNumber(value) {
+  return Number(String(value || "0").replace(/[₦,\s]/g, "")) || 0;
+}
+
+function normalize(row) {
+  const obj = {};
+  Object.keys(row || {}).forEach(key => {
+    obj[key.trim().toLowerCase()] = row[key];
+  });
+  return obj;
+}
+
+async function getUserRole(email) {
+  try {
+    const snap = await getDoc(doc(db, "users", email));
+    if (snap.exists() && snap.data().role) return snap.data().role;
+  } catch (error) {
+    console.warn("Role lookup failed:", error);
   }
 
-  .public-actions{
-    justify-content:flex-start;
-    width:100%;
+  if (email === "admin@timzyfashion.com") return "admin";
+  if (email.includes("staff")) return "staff";
+  return "customer";
+}
+
+/* PUBLIC / LOGIN CONTROLS */
+
+window.openLoginModal = function () {
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.style.display = "flex";
+};
+
+window.closeLoginModal = function () {
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.showPublicCatalog = function () {
+  const publicCatalog = document.getElementById("publicCatalog");
+  if (publicCatalog) publicCatalog.scrollIntoView({ behavior: "smooth" });
+};
+
+window.openAccessModal = function () {
+  const modal = document.getElementById("accessModal");
+  if (modal) modal.style.display = "flex";
+};
+
+window.closeAccessModal = function () {
+  const modal = document.getElementById("accessModal");
+  if (modal) modal.style.display = "none";
+};
+
+/* AUTH */
+
+window.loginUser = async function () {
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    alert(error.message);
+    console.error(error);
+  }
+};
+
+window.logoutUser = async function () {
+  if (unsubscribeChat) unsubscribeChat();
+
+  await signOut(auth);
+
+  currentRole = "public";
+  currentUserEmail = "";
+
+  const appView = document.getElementById("app");
+  if (appView) appView.style.display = "none";
+
+  render();
+};
+
+onAuthStateChanged(auth, async user => {
+  const appView = document.getElementById("app");
+
+  if (user) {
+    currentUserEmail = user.email.toLowerCase();
+    currentRole = await getUserRole(currentUserEmail);
+
+    if (appView) appView.style.display = "block";
+
+    closeLoginModal();
+    setupRoleAccess();
+    await loadFirestoreData();
+    render();
+  } else {
+    currentUserEmail = "";
+    currentRole = "public";
+
+    if (appView) appView.style.display = "none";
+
+    render();
+  }
+});
+
+/* ROLE ROUTING */
+
+function setupRoleAccess() {
+  hideAllSections();
+
+  if (currentRole === "admin") {
+    showRoleSections([
+      "dashboard",
+      "catalog",
+      "catalogManager",
+      "sales",
+      "expenses",
+      "inventory",
+      "orders",
+      "customers",
+      "staff",
+      "forms"
+    ]);
+    showStaffAdminFields(true);
+    showTab("dashboard");
+    return;
   }
 
-  .analytics-grid,
-  .operations-grid{
-    grid-template-columns:1fr;
+  if (currentRole === "staff") {
+    showRoleSections([
+      "catalog",
+      "sales",
+      "expenses",
+      "orders",
+      "customers",
+      "forms"
+    ]);
+    showStaffAdminFields(true);
+    showTab("catalog");
+    return;
   }
 
-  .xp-card,
-  .system-badge{
-    width:100%;
-    min-width:0;
-  }
-
-  nav{
-    justify-content:flex-start;
-    overflow-x:auto;
-    flex-wrap:nowrap;
-    padding:10px;
-  }
-
-  nav button{
-    white-space:nowrap;
-    flex:none;
-    width:auto;
+  if (currentRole === "customer") {
+    showRoleSections(["catalog", "customers"]);
+    showStaffAdminFields(false);
+    showTab("catalog");
   }
 }
 
-@media(max-width:700px){
-  body{
-    font-size:14px;
-  }
+function hideAllSections() {
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.style.display = "none";
+    tab.classList.remove("active");
+  });
 
-  .public-header,
-  .hero{
-    padding:24px 16px;
-  }
+  document.querySelectorAll("nav button").forEach(btn => {
+    btn.style.display = "none";
+  });
+}
 
-  main,
-  .public-section{
-    margin:18px auto;
-    padding:0 12px;
-  }
+function showRoleSections(sectionIds) {
+  sectionIds.forEach(id => {
+    const section = document.getElementById(id);
+    const button = document.querySelector(`button[onclick="showTab('${id}')"]`);
 
-  .public-actions,
-  .catalog-tools,
-  .chat-input-row{
-    grid-template-columns:1fr;
-    flex-direction:column;
-  }
+    if (section) section.style.display = "";
+    if (button) button.style.display = "inline-block";
+  });
+}
 
-  .public-actions button,
-  .public-actions .whatsapp-btn{
-    width:100%;
-  }
+function showStaffAdminFields(show) {
+  document.querySelectorAll(".staff-admin-only").forEach(field => {
+    field.style.display = show ? "block" : "none";
+  });
+}
 
-  .cards,
-  .kpi-grid,
-  .catalog-grid,
-  .form-grid{
-    grid-template-columns:1fr;
-  }
+window.showTab = function (id) {
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
 
-  .catalog-image{
-    height:270px;
-  }
+  const selected = document.getElementById(id);
+  if (selected) selected.classList.add("active");
+};
 
-  form{
-    grid-template-columns:1fr;
-  }
+/* DATA LOADING */
 
-  input,
-  select,
-  textarea,
-  button{
-    font-size:15px;
-  }
+async function fetchSheet(api) {
+  try {
+    const response = await fetch(api);
+    if (!response.ok) return [];
 
-  table{
-    min-width:760px;
-    font-size:12px;
-  }
-
-  th,
-  td{
-    padding:10px;
-  }
-
-  .modal{
-    align-items:flex-start;
-    padding:10px;
-  }
-
-  .modal-content{
-    width:100%;
-    max-height:94vh;
-    padding:18px;
-    border-radius:20px;
-  }
-
-  .modal-close{
-    top:8px;
-    right:8px;
-    width:38px;
-    height:38px;
-    padding:0;
-  }
-
-  .product-gallery img{
-    max-height:75vh;
-  }
-
-  .chart-box{
-    min-height:230px;
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error("SheetDB error:", error);
+    return [];
   }
 }
 
-@media(max-width:420px){
-  .catalog-image{
-    height:230px;
-  }
+async function loadAllData() {
+  const [salesData, inventoryData, expensesData] = await Promise.all([
+    fetchSheet(SALES_API),
+    fetchSheet(INVENTORY_API),
+    fetchSheet(EXPENSES_API)
+  ]);
 
-  button,
-  .whatsapp-btn,
-  .form-card a{
-    width:100%;
+  sales = salesData.map(row => {
+    const n = normalize(row);
+    const qty = cleanNumber(n["quantity sold"] || n["qty sold"] || n["quantity"] || n["qty"]);
+    const unitPrice = cleanNumber(n["unit selling price"] || n["selling price"] || n["total sales"] || n["total sales ₦"] || n["amount"]);
+
+    return {
+      staff: n["staff name"] || "-",
+      category: n["category"] || "-",
+      product: n["product/vsku"] || n["product/sku"] || n["product name"] || n["product"] || "-",
+      qty,
+      amount: qty * unitPrice || unitPrice
+    };
+  });
+
+  inventory = inventoryData.map(row => {
+    const n = normalize(row);
+    const quantity = cleanNumber(n["quantity added"] || n["qty added"] || n["quantity"] || n["qty"] || n["stock"] || n["stock quantity"]);
+
+    return {
+      category: n["category"] || "-",
+      product: n["product name"] || n["product"] || n["product/sku"] || "-",
+      sku: n["sku"] || n["product/sku"] || "-",
+      supplier: n["supplier/vendor"] || n["supplier"] || "-",
+      quantity,
+      cost: cleanNumber(n["cost price"] || n["unit cost"] || n["cost"]),
+      selling: cleanNumber(n["selling price"] || n["price"] || n["unit selling price"]),
+      color: n["color"] || n["material color"] || "",
+      sizes: n["sizes"] || "",
+      image1: n["image url"] || n["image 1"] || n["product image"] || n["image"] || "",
+      image2: n["image url 2"] || n["image 2"] || "",
+      image3: n["image url 3"] || n["image 3"] || "",
+      description: n["description"] || n["product description"] || ""
+    };
+  });
+
+  expenses = expensesData.map(row => {
+    const n = normalize(row);
+    const qty = cleanNumber(n["quantity"] || n["qty"] || 1);
+    const unitCost = cleanNumber(n["unit cost"] || n["amount"] || n["cost"]);
+
+    return {
+      staff: n["staff name"] || "-",
+      category: n["category"] || "-",
+      item: n["expense item"] || n["item"] || "-",
+      supplier: n["supplier/vendor"] || n["supplier"] || "-",
+      qty,
+      unitCost,
+      total: qty * unitCost
+    };
+  });
+
+  await loadCatalog();
+  render();
+}
+
+async function loadCatalog() {
+  try {
+    const snap = await getDocs(collection(db, "catalog"));
+
+    const firestoreCatalog = snap.docs.map(docSnap => ({
+      id: docSnap.id,
+      source: "catalog",
+      ...docSnap.data()
+    }));
+
+    const inventoryCatalog = inventory
+      .filter(x => x.product && x.product !== "-")
+      .map(x => ({
+        id: `inventory-${x.sku || x.product}`,
+        source: "inventory",
+        name: x.product,
+        category: x.category,
+        price: x.selling,
+        quantity: x.quantity,
+        color: x.color,
+        sizes: x.sizes,
+        image1: x.image1,
+        image2: x.image2,
+        image3: x.image3,
+        description: x.description
+      }));
+
+    catalog = [...firestoreCatalog, ...inventoryCatalog];
+  } catch (error) {
+    console.error("Catalog load failed:", error);
+    catalog = inventory.map(x => ({
+      id: `inventory-${x.sku || x.product}`,
+      source: "inventory",
+      name: x.product,
+      category: x.category,
+      price: x.selling,
+      quantity: x.quantity,
+      color: x.color,
+      sizes: x.sizes,
+      image1: x.image1,
+      image2: x.image2,
+      image3: x.image3,
+      description: x.description
+    }));
   }
 }
+
+async function loadFirestoreData() {
+  if (currentRole === "public") return;
+
+  let measurementQuery;
+  let orderQuery;
+
+  if (currentRole === "customer") {
+    measurementQuery = query(
+      collection(db, "customerMeasurements"),
+      where("email", "==", currentUserEmail)
+    );
+
+    orderQuery = query(
+      collection(db, "customerOrders"),
+      where("email", "==", currentUserEmail)
+    );
+  } else {
+    measurementQuery = collection(db, "customerMeasurements");
+    orderQuery = collection(db, "customerOrders");
+  }
+
+  const measurementSnapshot = await getDocs(measurementQuery);
+  customers = measurementSnapshot.docs.map(docSnap => ({
+    id: docSnap.id,
+    ...docSnap.data()
+  }));
+
+  const orderSnapshot = await getDocs(orderQuery);
+  orders = orderSnapshot.docs.map(docSnap => ({
+    id: docSnap.id,
+    ...docSnap.data()
+  }));
+}
+
+/* CATALOG MANAGER */
+
+window.saveCatalogProduct = async function () {
+  if (currentRole !== "admin") {
+    alert("Only admin can publish catalog products.");
+    return;
+  }
+
+  const product = {
+    name: document.getElementById("catProductName").value.trim(),
+    category: document.getElementById("catCategory").value.trim(),
+    color: document.getElementById("catColor").value.trim(),
+    price: cleanNumber(document.getElementById("catPrice").value),
+    quantity: cleanNumber(document.getElementById("catQuantity").value),
+    sizes: document.getElementById("catSizes").value.trim(),
+    image1: document.getElementById("catImage1").value.trim(),
+    image2: document.getElementById("catImage2").value.trim(),
+    image3: document.getElementById("catImage3").value.trim(),
+    description: document.getElementById("catDescription").value.trim(),
+    publishedBy: currentUserEmail,
+    createdAt: serverTimestamp()
+  };
+
+  if (!product.name) {
+    alert("Product name is required.");
+    return;
+  }
+
+  await addDoc(collection(db, "catalog"), product);
+
+  alert("Product published successfully.");
+  clearCatalogForm();
+  await loadAllData();
+};
+
+window.deleteCatalogProduct = async function (productId) {
+  if (currentRole !== "admin") {
+    alert("Only admin can delete catalog products.");
+    return;
+  }
+
+  if (String(productId).startsWith("inventory-")) {
+    alert("This product came from Inventory. Remove it from Inventory instead.");
+    return;
+  }
+
+  if (!confirm("Delete this product from catalog?")) return;
+
+  await deleteDoc(doc(db, "catalog", productId));
+  alert("Product deleted.");
+  await loadAllData();
+};
+
+function clearCatalogForm() {
+  [
+    "catProductName",
+    "catCategory",
+    "catColor",
+    "catPrice",
+    "catQuantity",
+    "catSizes",
+    "catImage1",
+    "catImage2",
+    "catImage3",
+    "catDescription"
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+}
+
+/* CUSTOMER ACTIONS */
+
+function getTargetCustomerEmail(inputId) {
+  if (currentRole === "customer") return currentUserEmail;
+
+  const field = document.getElementById(inputId);
+  const email = field ? field.value.trim().toLowerCase() : "";
+
+  if (!email) {
+    alert("Enter customer email.");
+    return "";
+  }
+
+  return email;
+}
+
+window.submitMeasurement = async function () {
+  try {
+    const targetEmail = getTargetCustomerEmail("targetCustomerEmail");
+    if (!targetEmail) return;
+
+    await addDoc(collection(db, "customerMeasurements"), {
+      email: targetEmail,
+      uploadedBy: currentUserEmail,
+      name: document.getElementById("cmName").value,
+      phone: document.getElementById("cmPhone").value,
+      shoulder: document.getElementById("cmShoulder").value,
+      chest: document.getElementById("cmChest").value,
+      waist: document.getElementById("cmWaist").value,
+      hip: document.getElementById("cmHip").value,
+      sleeve: document.getElementById("cmSleeve").value,
+      length: document.getElementById("cmLength").value,
+      notes: document.getElementById("cmNotes").value,
+      createdAt: serverTimestamp()
+    });
+
+    alert("Measurement saved successfully.");
+    clearInputs(["cmName", "cmPhone", "cmShoulder", "cmChest", "cmWaist", "cmHip", "cmSleeve", "cmLength", "cmNotes"]);
+    await loadFirestoreData();
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Could not save measurement.");
+  }
+};
+
+window.submitOrder = async function () {
+  try {
+    const targetEmail = getTargetCustomerEmail("targetCustomerEmailOrder");
+    if (!targetEmail) return;
+
+    await addDoc(collection(db, "customerOrders"), {
+      email: targetEmail,
+      uploadedBy: currentUserEmail,
+      customer: document.getElementById("coName").value,
+      phone: document.getElementById("coPhone").value,
+      product: document.getElementById("coStyle").value,
+      status: "Pending Review",
+      delivery: document.getElementById("coDelivery").value,
+      finalAmount: cleanNumber(document.getElementById("coAmount").value),
+      paymentMethod: document.getElementById("coPaymentMethod").value,
+      adminNote: "",
+      createdAt: serverTimestamp()
+    });
+
+    alert("Order request submitted successfully.");
+    clearInputs(["coName", "coPhone", "coStyle", "coDelivery", "coAmount", "coPaymentMethod"]);
+    await loadFirestoreData();
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Could not submit order.");
+  }
+};
+
+function clearInputs(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+}
+
+window.requestCatalogOrder = function (productName, price = "") {
+  if (currentRole === "public") {
+    openAccessModal();
+    return;
+  }
+
+  if (currentRole !== "customer" && currentRole !== "staff" && currentRole !== "admin") {
+    openAccessModal();
+    return;
+  }
+
+  showTab("customers");
+
+  const styleInput = document.getElementById("coStyle");
+  const amountInput = document.getElementById("coAmount");
+
+  if (styleInput) styleInput.value = productName;
+  if (amountInput) amountInput.value = price || "";
+
+  alert("Product selected. Complete your order request below.");
+};
+
+/* PRODUCT MODAL */
+
+window.openProductDetails = function (encodedProduct) {
+  const product = JSON.parse(decodeURIComponent(encodedProduct));
+  const modal = document.getElementById("productModal");
+  const content = document.getElementById("modalProductContent");
+
+  if (!modal || !content) return;
+
+  const images = [product.image1, product.image2, product.image3].filter(Boolean);
+  const whatsappText = encodeURIComponent(`Hello, I want to order ${product.name}`);
+  const whatsappLink = `https://wa.me/2348118103510?text=${whatsappText}`;
+
+  content.innerHTML = `
+    <h2>${product.name}</h2>
+
+    <div class="product-gallery">
+      ${
+        images.length
+          ? images.map(img => `<img src="${img}" alt="${product.name}">`).join("")
+          : `<div class="catalog-image"><span>👗</span></div>`
+      }
+    </div>
+
+    <p><strong>Category:</strong> ${product.category || "-"}</p>
+    <p><strong>Color:</strong> ${product.color || "-"}</p>
+    <p><strong>Sizes:</strong> ${product.sizes || "-"}</p>
+    <p><strong>Price:</strong> ${money(product.price)}</p>
+    <p><strong>Available:</strong> ${product.quantity || "Check stock"}</p>
+    <p>${product.description || "No description available."}</p>
+
+    <button type="button" onclick='requestCatalogOrder(${JSON.stringify(product.name)}, ${JSON.stringify(product.price || "")})'>
+      Request Order
+    </button>
+
+    <a class="whatsapp-btn" href="${whatsappLink}" target="_blank">
+      WhatsApp Order
+    </a>
+  `;
+
+  modal.style.display = "flex";
+};
+
+window.closeProductModal = function () {
+  const modal = document.getElementById("productModal");
+  if (modal) modal.style.display = "none";
+};
+
+/* ORDERS + CHAT */
+
+window.approveOrder = async function (orderId) {
+  if (currentRole !== "admin") {
+    alert("Only admin can approve orders.");
+    return;
+  }
+
+  const amount = prompt("Enter final amount:");
+  const note = prompt("Approval note:", "Order approved.");
+
+  await updateDoc(doc(db, "customerOrders", orderId), {
+    status: "Approved",
+    finalAmount: cleanNumber(amount),
+    adminNote: note || "Order approved.",
+    reviewedBy: currentUserEmail,
+    reviewedAt: serverTimestamp()
+  });
+
+  await loadFirestoreData();
+  render();
+};
+
+window.rejectOrder = async function (orderId) {
+  if (currentRole !== "admin") {
+    alert("Only admin can reject orders.");
+    return;
+  }
+
+  const note = prompt("Rejection reason:");
+  if (!note) return alert("Rejection note is required.");
+
+  await updateDoc(doc(db, "customerOrders", orderId), {
+    status: "Rejected",
+    adminNote: note,
+    reviewedBy: currentUserEmail,
+    reviewedAt: serverTimestamp()
+  });
+
+  await loadFirestoreData();
+  render();
+};
+
+window.openOrderChat = function (orderId) {
+  activeChatOrderId = orderId;
+
+  const chatBox = document.getElementById("chatBox");
+  const customerChatBox = document.getElementById("customerChatBox");
+  const chatMessages = document.getElementById("chatMessages");
+  const customerChatMessages = document.getElementById("customerChatMessages");
+
+  if (chatBox) chatBox.style.display = "block";
+  if (customerChatBox) customerChatBox.style.display = "block";
+
+  if (chatMessages) chatMessages.innerHTML = "Loading chat...";
+  if (customerChatMessages) customerChatMessages.innerHTML = "Loading chat...";
+
+  if (unsubscribeChat) unsubscribeChat();
+
+  const q = query(
+    collection(db, "orderChats"),
+    where("orderId", "==", orderId)
+  );
+
+  unsubscribeChat = onSnapshot(q, snapshot => {
+    const messages = snapshot.docs
+      .map(d => d.data())
+      .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+
+    const html = messages.map(msg => `
+      <div class="chat-message ${msg.senderEmail === currentUserEmail ? "mine" : "theirs"}">
+        <strong>${msg.senderRole || "user"}:</strong>
+        <span>${msg.message || ""}</span>
+      </div>
+    `).join("") || "<p>No messages yet.</p>";
+
+    if (chatMessages) chatMessages.innerHTML = html;
+    if (customerChatMessages) customerChatMessages.innerHTML = html;
+  });
+};
+
+window.sendChatMessage = async function () {
+  const chatInput = document.getElementById("chatInput");
+  const customerChatInput = document.getElementById("customerChatInput");
+
+  const input =
+    customerChatInput && customerChatInput.value.trim()
+      ? customerChatInput
+      : chatInput;
+
+  if (!activeChatOrderId) {
+    alert("Open an order chat first.");
+    return;
+  }
+
+  if (!input || !input.value.trim()) return;
+
+  await addDoc(collection(db, "orderChats"), {
+    orderId: activeChatOrderId,
+    senderEmail: currentUserEmail,
+    senderRole: currentRole,
+    message: input.value.trim(),
+    createdAt: serverTimestamp()
+  });
+
+  input.value = "";
+};
+
+/* DASHBOARD ANALYTICS */
+
+function dashboardStats() {
+  const totalSalesAmount = sales.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  const totalExpensesAmount = expenses.reduce((sum, item) => sum + Number(item.total || 0), 0);
+  const netProfitAmount = totalSalesAmount - totalExpensesAmount;
+  const inventoryValueAmount = inventory.reduce((sum, item) => sum + Number((item.quantity || 0) * (item.cost || 0)), 0);
+  const lowStockCount = inventory.filter(item => Number(item.quantity || 0) <= 5).length;
+
+  return {
+    totalSalesAmount,
+    totalExpensesAmount,
+    netProfitAmount,
+    inventoryValueAmount,
+    lowStockCount
+  };
+}
+
+function orderStatusCounts() {
+  return {
+    pending: orders.filter(o => String(o.status || "").toLowerCase().includes("pending")).length,
+    approved: orders.filter(o => String(o.status || "").toLowerCase().includes("approved")).length,
+    rejected: orders.filter(o => String(o.status || "").toLowerCase().includes("rejected")).length
+  };
+}
+
+function drawBarChart(containerId, labels, values) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = `<canvas></canvas>`;
+  const canvas = container.querySelector("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const width = container.clientWidth || 400;
+  const height = 240;
+  canvas.width = width;
+  canvas.height = height;
+
+  const max = Math.max(...values, 1);
+  const barWidth = width / values.length - 22;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.font = "12px Arial";
+  ctx.fillStyle = "#9d9d9d";
+
+  values.forEach((value, i) => {
+    const x = i * (barWidth + 22) + 20;
+    const barHeight = (value / max) * 150;
+    const y = 175 - barHeight;
+
+    ctx.fillStyle = "#d9a441";
+    ctx.fillRect(x, y, barWidth, barHeight);
+
+    ctx.fillStyle = "#f7f7f7";
+    ctx.fillText(labels[i], x, 210);
+
+    ctx.fillStyle = "#9d9d9d";
+    ctx.fillText(Number(value).toLocaleString(), x, y - 8);
+  });
+}
+
+function renderDashboardCharts() {
+  const stats = dashboardStats();
+  const orderCounts = orderStatusCounts();
+
+  drawBarChart(
+    "financeChart",
+    ["Sales", "Expenses", "Profit"],
+    [stats.totalSalesAmount, stats.totalExpensesAmount, Math.max(stats.netProfitAmount, 0)]
+  );
+
+  drawBarChart(
+    "orderStatusChart",
+    ["Pending", "Approved", "Rejected"],
+    [orderCounts.pending, orderCounts.approved, orderCounts.rejected]
+  );
+
+  drawBarChart(
+    "inventoryHealthChart",
+    ["Value", "Low Stock"],
+    [stats.inventoryValueAmount, stats.lowStockCount]
+  );
+
+  const xp = staffXP().slice(0, 5);
+  drawBarChart(
+    "staffPerformanceChart",
+    xp.length ? xp.map(x => x.name.slice(0, 8)) : ["No XP"],
+    xp.length ? xp.map(x => x.points) : [0]
+  );
+}
+
+function renderActivityPanels() {
+  const recentActivity = document.getElementById("recentActivity");
+  const criticalAlerts = document.getElementById("criticalAlerts");
+
+  if (recentActivity) {
+    recentActivity.innerHTML = orders.slice(0, 5).map(o => `
+      <div class="activity-item">
+        <strong>${o.customer || "Customer"}</strong>
+        <span>${o.product || "Order"} — ${o.status || "Pending"}</span>
+      </div>
+    `).join("") || `<p class="note">No recent activity yet.</p>`;
+  }
+
+  if (criticalAlerts) {
+    const lowStock = inventory.filter(i => Number(i.quantity || 0) <= 5).slice(0, 5);
+
+    criticalAlerts.innerHTML = lowStock.map(i => `
+      <div class="activity-item danger">
+        <strong>${i.product}</strong>
+        <span>Low stock: ${i.quantity}</span>
+      </div>
+    `).join("") || `<p class="note">No critical alerts.</p>`;
+  }
+}
+
+/* RENDERING */
+
+function staffXP() {
+  let xp = {};
+
+  sales.forEach(x => {
+    if (x.staff && x.staff !== "-") xp[x.staff] = (xp[x.staff] || 0) + 10;
+  });
+
+  orders.forEach(x => {
+    if (x.uploadedBy && x.status === "Completed") xp[x.uploadedBy] = (xp[x.uploadedBy] || 0) + 15;
+  });
+
+  return Object.entries(xp)
+    .map(([name, points]) => ({
+      name,
+      points,
+      rank:
+        points >= 700 ? "Fashion Master" :
+        points >= 300 ? "Gold Stylist" :
+        points >= 100 ? "Silver Stylist" :
+        "Bronze Stylist"
+    }))
+    .sort((a, b) => b.points - a.points);
+}
+
+function statusClass(status = "") {
+  const value = status.toLowerCase();
+  if (value.includes("approved")) return "status-approved";
+  if (value.includes("rejected")) return "status-rejected";
+  return "status-pending";
+}
+
+function renderCatalog(targetId, searchId, categoryId) {
+  const grid = document.getElementById(targetId);
+  if (!grid) return;
+
+  const searchValue = document.getElementById(searchId)?.value.toLowerCase() || "";
+  const categoryValue = document.getElementById(categoryId)?.value || "";
+
+  const filteredCatalog = catalog.filter(item => {
+    const name = String(item.name || "").toLowerCase();
+    const category = String(item.category || "");
+
+    return name.includes(searchValue) && (!categoryValue || category === categoryValue);
+  });
+
+  grid.innerHTML = filteredCatalog.length
+    ? filteredCatalog.map(item => {
+        const product = {
+          id: item.id,
+          name: item.name,
+          category: item.category,
+          price: item.price,
+          quantity: item.quantity,
+          color: item.color,
+          sizes: item.sizes,
+          image1: item.image1,
+          image2: item.image2,
+          image3: item.image3,
+          description: item.description
+        };
+
+        const encoded = encodeURIComponent(JSON.stringify(product));
+        const whatsappText = encodeURIComponent(`Hello, I want to order ${item.name}`);
+        const whatsappLink = `https://wa.me/2348118103510?text=${whatsappText}`;
+
+        return `
+          <div class="catalog-card">
+            <div class="catalog-image">
+              ${item.image1 ? `<img src="${item.image1}" alt="${item.name}">` : `<span>👗</span>`}
+            </div>
+
+            <div class="catalog-body">
+              <h3>${item.name}</h3>
+              <p>${item.category || "-"}</p>
+              <small>Color: ${item.color || "-"}</small>
+              <small>${item.description || "Available product"}</small>
+              <strong>${money(item.price)}</strong>
+              <small>Available: ${item.quantity || "Check stock"}</small>
+
+              <button type="button" onclick='openProductDetails("${encoded}")'>View Details</button>
+              <button type="button" onclick='requestCatalogOrder(${JSON.stringify(item.name)}, ${JSON.stringify(item.price || "")})'>Request Order</button>
+              <a class="whatsapp-btn" href="${whatsappLink}" target="_blank">WhatsApp Order</a>
+
+              ${
+                currentRole === "admin" && !String(item.id).startsWith("inventory-")
+                  ? `<button class="danger-btn" type="button" onclick="deleteCatalogProduct('${item.id}')">Delete Product</button>`
+                  : ""
+              }
+            </div>
+          </div>
+        `;
+      }).join("")
+    : `<p class="note">No products found.</p>`;
+}
+
+window.render = function () {
+  renderCatalog("catalogGrid", "catalogSearch", "catalogCategoryFilter");
+  renderCatalog("privateCatalogGrid", "privateCatalogSearch", "privateCatalogCategoryFilter");
+
+  const stats = dashboardStats();
+
+  if (document.getElementById("totalSales")) document.getElementById("totalSales").textContent = money(stats.totalSalesAmount);
+  if (document.getElementById("totalExpenses")) document.getElementById("totalExpenses").textContent = money(stats.totalExpensesAmount);
+  if (document.getElementById("netProfit")) document.getElementById("netProfit").textContent = money(stats.netProfitAmount);
+  if (document.getElementById("inventoryValue")) document.getElementById("inventoryValue").textContent = money(stats.inventoryValueAmount);
+  if (document.getElementById("lowStock")) document.getElementById("lowStock").textContent = stats.lowStockCount;
+
+  const salesTable = document.getElementById("salesTable");
+  if (salesTable) {
+    salesTable.innerHTML = sales.map(x => `
+      <tr><td>${x.staff}</td><td>${x.category}</td><td>${x.product}</td><td>${x.qty}</td><td>${money(x.amount)}</td></tr>
+    `).join("");
+  }
+
+  const expensesTable = document.getElementById("expensesTable");
+  if (expensesTable) {
+    expensesTable.innerHTML = expenses.map(x => `
+      <tr><td>${x.staff}</td><td>${x.category}</td><td>${x.item}</td><td>${x.supplier}</td><td>${x.qty}</td><td>${money(x.unitCost)}</td><td>${money(x.total)}</td></tr>
+    `).join("");
+  }
+
+  const inventoryTable = document.getElementById("inventoryTable");
+  if (inventoryTable) {
+    inventoryTable.innerHTML = inventory.map(x => `
+      <tr><td>${x.category}</td><td>${x.product}</td><td>${x.sku}</td><td>${x.supplier}</td><td>${x.quantity}</td><td>${money(x.cost)}</td><td>${money(x.selling)}</td></tr>
+    `).join("");
+  }
+
+  const orderRows = orders.length
+    ? orders.map(x => `
+      <tr>
+        <td>${x.customer || "-"}</td>
+        <td>${x.phone || "-"}</td>
+        <td>${x.product || "-"}</td>
+        <td class="${statusClass(x.status)}">${x.status || "-"}</td>
+        <td>${x.delivery || "-"}</td>
+        <td>${money(x.finalAmount || 0)}</td>
+        <td>${x.paymentMethod || "-"}</td>
+        <td>${x.adminNote || "-"}</td>
+        <td>
+          ${currentRole === "admin" ? `<button type="button" onclick="approveOrder('${x.id}')">Approve</button><button type="button" onclick="rejectOrder('${x.id}')">Reject</button>` : ""}
+          <button type="button" onclick="openOrderChat('${x.id}')">Chat</button>
+        </td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="9">No orders found.</td></tr>`;
+
+  if (document.getElementById("ordersTable")) document.getElementById("ordersTable").innerHTML = orderRows;
+  if (document.getElementById("customerOrdersTable")) document.getElementById("customerOrdersTable").innerHTML = orderRows;
+
+  const customersTable = document.getElementById("customersTable");
+  if (customersTable) {
+    customersTable.innerHTML = customers.length
+      ? customers.map(x => `
+        <tr>
+          <td>${x.name || "-"}</td>
+          <td>${x.phone || "-"}</td>
+          <td>Shoulder: ${x.shoulder || "-"}<br>Chest: ${x.chest || "-"}<br>Waist: ${x.waist || "-"}<br>Hip: ${x.hip || "-"}<br>Sleeve: ${x.sleeve || "-"}<br>Length: ${x.length || "-"}</td>
+          <td>${x.notes || "-"}</td>
+        </tr>
+      `).join("")
+      : `<tr><td colspan="4">No measurements found.</td></tr>`;
+  }
+
+  const leaderboard = document.getElementById("leaderboard");
+  if (leaderboard) {
+    leaderboard.innerHTML = staffXP().map((x, i) => `
+      <div class="rank-card">
+        <span>#${i + 1} <b>${x.name}</b><br>${x.rank}</span>
+        <strong>${x.points} XP</strong>
+      </div>
+    `).join("") || "<p>No staff points yet.</p>";
+  }
+
+  const formLinks = document.getElementById("formLinks");
+  if (formLinks) {
+    let allowedForms = window.TIMZY_FORMS || [];
+
+    if (currentRole === "staff") {
+      allowedForms = allowedForms.filter(f =>
+        f.name.includes("Sales") ||
+        f.name.includes("Expense") ||
+        f.name.includes("Customer Measurement") ||
+        f.name.includes("Order")
+      );
+    }
+
+    if (currentRole === "customer") allowedForms = [];
+
+    formLinks.innerHTML = allowedForms.map(f => `
+      <div class="form-card">
+        <h3>${f.name}</h3>
+        <p>${f.description}</p>
+        <a href="${f.url}" target="_blank">Open Form</a>
+      </div>
+    `).join("");
+  }
+
+  renderDashboardCharts();
+  renderActivityPanels();
+};
+
+/* START PUBLIC APP */
+loadAllData();
