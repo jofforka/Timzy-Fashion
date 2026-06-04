@@ -572,6 +572,11 @@ window.requestCatalogOrder = function (productName, price = "") {
 /* PRODUCT MODAL */
 
 window.openProductDetails = function (encodedProduct) {
+  if (currentRole === "public") {
+    openAccessModal();
+    return;
+  }
+
   const product = JSON.parse(decodeURIComponent(encodedProduct));
   const modal = document.getElementById("productModal");
   const content = document.getElementById("modalProductContent");
