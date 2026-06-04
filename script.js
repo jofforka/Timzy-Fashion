@@ -236,7 +236,7 @@ function showRoleSections(sectionIds) {
     const button = document.querySelector(`button[onclick="showTab('${id}')"]`);
 
     if (section) section.style.display = "";
-    if (button) button.style.display = "inline-block";
+    if (button) button.style.display = "inline-flex";
   });
 }
 
@@ -253,6 +253,11 @@ window.showTab = function (id) {
 
   const selected = document.getElementById(id);
   if (selected) selected.classList.add("active");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 };
 
 async function fetchSheet(api) {
@@ -360,6 +365,7 @@ async function loadCatalog() {
     catalog = [...firestoreCatalog, ...inventoryCatalog];
   } catch (error) {
     console.error("Catalog load failed:", error);
+
     catalog = inventory.map(x => ({
       id: `inventory-${x.sku || x.product}`,
       source: "inventory",
@@ -471,6 +477,7 @@ window.deleteCatalogProduct = async function (productId) {
 
   await deleteDoc(doc(db, "catalog", productId));
   alert("Product deleted.");
+
   await loadAllData();
 };
 
@@ -509,6 +516,7 @@ window.submitMeasurement = async function () {
     });
 
     alert("Measurement saved successfully.");
+
     clearInputs(["cmName", "cmPhone", "cmShoulder", "cmChest", "cmWaist", "cmHip", "cmSleeve", "cmLength", "cmNotes"]);
 
     await loadFirestoreData();
@@ -539,6 +547,7 @@ window.submitOrder = async function () {
     });
 
     alert("Order request submitted successfully.");
+
     clearInputs(["coName", "coPhone", "coStyle", "coDelivery", "coAmount", "coPaymentMethod"]);
 
     await loadFirestoreData();
@@ -758,30 +767,57 @@ function drawBarChart(containerId, labels, values) {
   const canvas = container.querySelector("canvas");
   const ctx = canvas.getContext("2d");
 
-  const width = container.clientWidth || 400;
-  const height = 240;
+  const width = container.clientWidth || 420;
+  const height = 280;
+  const padding = 42;
 
   canvas.width = width;
   canvas.height = height;
 
   const max = Math.max(...values, 1);
-  const barWidth = width / values.length - 22;
+  const chartHeight = height - 95;
+  const chartWidth = width - padding * 2;
+  const barGap = 18;
+  const barWidth = Math.max(26, (chartWidth / values.length) - barGap);
 
   ctx.clearRect(0, 0, width, height);
-  ctx.font = "12px Arial";
+
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 1;
+
+  for (let i = 0; i <= 4; i++) {
+    const y = padding + (chartHeight / 4) * i;
+    ctx.beginPath();
+    ctx.moveTo(padding, y);
+    ctx.lineTo(width - padding, y);
+    ctx.stroke();
+  }
 
   values.forEach((value, i) => {
-    const x = i * (barWidth + 22) + 20;
-    const barHeight = (value / max) * 150;
-    const y = 175 - barHeight;
+    const x = padding + i * (barWidth + barGap);
+    const barHeight = (value / max) * chartHeight;
+    const y = padding + chartHeight - barHeight;
 
-    ctx.fillStyle = "#d9a441";
-    ctx.fillRect(x, y, barWidth, barHeight);
+    const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+    gradient.addColorStop(0, "#f3c86a");
+    gradient.addColorStop(1, "#d9a441");
+
+    ctx.fillStyle = gradient;
+
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, barWidth, barHeight, 8);
+      ctx.fill();
+    } else {
+      ctx.fillRect(x, y, barWidth, barHeight);
+    }
 
     ctx.fillStyle = "#f7f7f7";
-    ctx.fillText(labels[i], x, 210);
+    ctx.font = "bold 12px Arial";
+    ctx.fillText(labels[i], x, height - 28);
 
-    ctx.fillStyle = "#9d9d9d";
+    ctx.fillStyle = "#a8a8ad";
+    ctx.font = "11px Arial";
     ctx.fillText(Number(value).toLocaleString(), x, y - 8);
   });
 }
@@ -815,6 +851,43 @@ function renderDashboardCharts() {
     xp.length ? xp.map(x => x.name.slice(0, 8)) : ["No XP"],
     xp.length ? xp.map(x => x.points) : [0]
   );
+}
+
+function renderDashboardInsights() {
+  const stats = dashboardStats();
+  const orderCounts = orderStatusCounts();
+
+  const financeInsight = document.getElementById("financeInsight");
+  const orderInsight = document.getElementById("orderInsight");
+  const inventoryInsight = document.getElementById("inventoryInsight");
+  const staffInsight = document.getElementById("staffInsight");
+
+  if (financeInsight) {
+    financeInsight.textContent =
+      stats.netProfitAmount >= 0
+        ? "Business is currently profitable based on captured sales and expenses."
+        : "Expenses are higher than captured sales. Review cost leakage.";
+  }
+
+  if (orderInsight) {
+    orderInsight.textContent =
+      `${orderCounts.pending} pending, ${orderCounts.approved} approved, ${orderCounts.rejected} rejected orders.`;
+  }
+
+  if (inventoryInsight) {
+    inventoryInsight.textContent =
+      stats.lowStockCount > 0
+        ? `${stats.lowStockCount} product(s) need restocking attention.`
+        : "Inventory health looks stable. No low-stock alert currently.";
+  }
+
+  if (staffInsight) {
+    const topStaff = staffXP()[0];
+
+    staffInsight.textContent = topStaff
+      ? `${topStaff.name} is currently leading with ${topStaff.points} XP.`
+      : "No staff XP activity captured yet.";
+  }
 }
 
 function renderActivityPanels() {
@@ -868,8 +941,10 @@ function staffXP() {
 
 function statusClass(status = "") {
   const value = status.toLowerCase();
+
   if (value.includes("approved")) return "status-approved";
   if (value.includes("rejected")) return "status-rejected";
+
   return "status-pending";
 }
 
@@ -1082,6 +1157,7 @@ window.render = function () {
   }
 
   renderDashboardCharts();
+  renderDashboardInsights();
   renderActivityPanels();
 };
 
