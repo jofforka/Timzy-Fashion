@@ -65,6 +65,22 @@ function normalize(row) {
   return obj;
 }
 
+function driveToImage(url) {
+  if (!url) return "";
+  const match = String(url).match(/[-\w]{25,}/);
+  if (!match) return String(url).trim();
+  return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`;
+}
+
+function driveImages(value) {
+  if (!value) return [];
+
+  return String(value)
+    .split(",")
+    .map(link => driveToImage(link.trim()))
+    .filter(Boolean);
+}
+
 async function getUserRole(email) {
   try {
     const snap = await getDoc(doc(db, "users", email));
@@ -98,7 +114,6 @@ function showPublicView() {
 
 window.openLoginModal = function () {
   closeAccessModal();
-
   const modal = document.getElementById("loginModal");
   if (modal) modal.style.display = "flex";
 };
@@ -254,10 +269,7 @@ window.showTab = function (id) {
   const selected = document.getElementById(id);
   if (selected) selected.classList.add("active");
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 async function fetchSheet(api) {
@@ -296,7 +308,29 @@ async function loadAllData() {
 
   inventory = inventoryData.map(row => {
     const n = normalize(row);
-    const quantity = cleanNumber(n["quantity added"] || n["qty added"] || n["quantity"] || n["qty"] || n["stock"] || n["stock quantity"]);
+
+    const quantity = cleanNumber(
+      n["quantity added"] ||
+      n["qty added"] ||
+      n["quantity"] ||
+      n["qty"] ||
+      n["stock"] ||
+      n["stock quantity"]
+    );
+
+    const uploadedImages = driveImages(
+      n["product image"] ||
+      n["product images"] ||
+      n["image upload"] ||
+      n["upload product image"] ||
+      n["product photo"] ||
+      n["image"] ||
+      ""
+    );
+
+    const manualImage1 = n["image url"] || n["image 1"] || n["product image url"] || "";
+    const manualImage2 = n["image url 2"] || n["image 2"] || "";
+    const manualImage3 = n["image url 3"] || n["image 3"] || "";
 
     return {
       category: n["category"] || "-",
@@ -308,9 +342,9 @@ async function loadAllData() {
       selling: cleanNumber(n["selling price"] || n["price"] || n["unit selling price"]),
       color: n["color"] || n["material color"] || "",
       sizes: n["sizes"] || "",
-      image1: n["image url"] || n["image 1"] || n["product image"] || n["image"] || "",
-      image2: n["image url 2"] || n["image 2"] || "",
-      image3: n["image url 3"] || n["image 3"] || "",
+      image1: uploadedImages[0] || driveToImage(manualImage1),
+      image2: uploadedImages[1] || driveToImage(manualImage2),
+      image3: uploadedImages[2] || driveToImage(manualImage3),
       description: n["description"] || n["product description"] || ""
     };
   });
@@ -390,15 +424,8 @@ async function loadFirestoreData() {
   let orderQuery;
 
   if (currentRole === "customer") {
-    measurementQuery = query(
-      collection(db, "customerMeasurements"),
-      where("email", "==", currentUserEmail)
-    );
-
-    orderQuery = query(
-      collection(db, "customerOrders"),
-      where("email", "==", currentUserEmail)
-    );
+    measurementQuery = query(collection(db, "customerMeasurements"), where("email", "==", currentUserEmail));
+    orderQuery = query(collection(db, "customerOrders"), where("email", "==", currentUserEmail));
   } else {
     measurementQuery = collection(db, "customerMeasurements");
     orderQuery = collection(db, "customerOrders");
@@ -430,9 +457,9 @@ window.saveCatalogProduct = async function () {
     price: cleanNumber(document.getElementById("catPrice").value),
     quantity: cleanNumber(document.getElementById("catQuantity").value),
     sizes: document.getElementById("catSizes").value.trim(),
-    image1: document.getElementById("catImage1").value.trim(),
-    image2: document.getElementById("catImage2").value.trim(),
-    image3: document.getElementById("catImage3").value.trim(),
+    image1: driveToImage(document.getElementById("catImage1").value.trim()),
+    image2: driveToImage(document.getElementById("catImage2").value.trim()),
+    image3: driveToImage(document.getElementById("catImage3").value.trim()),
     description: document.getElementById("catDescription").value.trim(),
     publishedBy: currentUserEmail,
     createdAt: serverTimestamp()
@@ -477,7 +504,6 @@ window.deleteCatalogProduct = async function (productId) {
 
   await deleteDoc(doc(db, "catalog", productId));
   alert("Product deleted.");
-
   await loadAllData();
 };
 
@@ -516,7 +542,6 @@ window.submitMeasurement = async function () {
     });
 
     alert("Measurement saved successfully.");
-
     clearInputs(["cmName", "cmPhone", "cmShoulder", "cmChest", "cmWaist", "cmHip", "cmSleeve", "cmLength", "cmNotes"]);
 
     await loadFirestoreData();
@@ -547,7 +572,6 @@ window.submitOrder = async function () {
     });
 
     alert("Order request submitted successfully.");
-
     clearInputs(["coName", "coPhone", "coStyle", "coDelivery", "coAmount", "coPaymentMethod"]);
 
     await loadFirestoreData();
@@ -685,10 +709,7 @@ window.openOrderChat = function (orderId) {
 
   if (unsubscribeChat) unsubscribeChat();
 
-  const q = query(
-    collection(db, "orderChats"),
-    where("orderId", "==", orderId)
-  );
+  const q = query(collection(db, "orderChats"), where("orderId", "==", orderId));
 
   unsubscribeChat = onSnapshot(q, snapshot => {
     const messages = snapshot.docs
@@ -826,23 +847,22 @@ function renderDashboardCharts() {
   const stats = dashboardStats();
   const orderCounts = orderStatusCounts();
 
-  drawBarChart(
-    "financeChart",
-    ["Sales", "Expenses", "Profit"],
-    [stats.totalSalesAmount, stats.totalExpensesAmount, Math.max(stats.netProfitAmount, 0)]
-  );
+  drawBarChart("financeChart", ["Sales", "Expenses", "Profit"], [
+    stats.totalSalesAmount,
+    stats.totalExpensesAmount,
+    Math.max(stats.netProfitAmount, 0)
+  ]);
 
-  drawBarChart(
-    "orderStatusChart",
-    ["Pending", "Approved", "Rejected"],
-    [orderCounts.pending, orderCounts.approved, orderCounts.rejected]
-  );
+  drawBarChart("orderStatusChart", ["Pending", "Approved", "Rejected"], [
+    orderCounts.pending,
+    orderCounts.approved,
+    orderCounts.rejected
+  ]);
 
-  drawBarChart(
-    "inventoryHealthChart",
-    ["Value", "Low"],
-    [stats.inventoryValueAmount, stats.lowStockCount]
-  );
+  drawBarChart("inventoryHealthChart", ["Value", "Low"], [
+    stats.inventoryValueAmount,
+    stats.lowStockCount
+  ]);
 
   const xp = staffXP().slice(0, 5);
 
