@@ -40,6 +40,10 @@ const SALES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Respons
 const INVENTORY_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Inventory%20Restock";
 const EXPENSES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Expense%20Responses";
 
+// SECURITY NOTE: Do not paste your CheckoutPay API key here.
+// Use a Google Apps Script or backend proxy URL that safely stores the key.
+const PAYMENT_PROXY_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
 const DEFAULT_CATEGORIES = [
   "Senator",
   "Agbada",
@@ -725,21 +729,64 @@ window.submitOrder = async function () {
 
     if (!targetEmail) return;
 
+    const customer = document.getElementById("coName").value.trim();
+    const phone = document.getElementById("coPhone").value.trim();
+    const product = document.getElementById("coStyle").value.trim();
+    const delivery = document.getElementById("coDelivery").value;
+    const finalAmount = cleanNumber(document.getElementById("coAmount").value);
+    const paymentMethod = document.getElementById("coPaymentMethod").value;
+
+    if (!customer || !phone || !product) {
+      alert("Customer name, phone, and product/style are required.");
+      return;
+    }
+
+    if (!finalAmount || finalAmount <= 0) {
+      alert("Final amount is required before submitting an order.");
+      return;
+    }
+
+    if (!paymentMethod) {
+      alert("Please select a payment method.");
+      return;
+    }
+
+    let status = "Pending Payment";
+    let paymentStatus = "Pending";
+
+    if (paymentMethod === "Cash on Delivery") {
+      status = "COD - Awaiting Fulfillment";
+      paymentStatus = "Cash on Delivery";
+    }
+
+    if (paymentMethod === "Bank Transfer") {
+      status = "Bank Transfer - Awaiting Confirmation";
+      paymentStatus = "Pending Confirmation";
+    }
+
+    const orderRef = `ORD-${Date.now()}`;
+
     await addDoc(collection(db, "customerOrders"), {
+      orderRef,
       email: targetEmail,
       uploadedBy: currentUserEmail,
-      customer: document.getElementById("coName").value,
-      phone: document.getElementById("coPhone").value,
-      product: document.getElementById("coStyle").value,
-      status: "Pending Review",
-      delivery: document.getElementById("coDelivery").value,
-      finalAmount: cleanNumber(document.getElementById("coAmount").value),
-      paymentMethod: document.getElementById("coPaymentMethod").value,
+      customer,
+      phone,
+      product,
+      status,
+      paymentStatus,
+      delivery,
+      finalAmount,
+      paymentMethod,
       adminNote: "",
+      transactionId: "",
+      paymentAccountNumber: "",
+      paymentBankName: "",
+      paymentAccountName: "",
       createdAt: serverTimestamp()
     });
 
-    alert("Order request submitted successfully.");
+    alert("Order submitted successfully.");
 
     clearInputs([
       "coName",
@@ -835,42 +882,219 @@ window.closeProductModal = function () {
 
 /* ORDERS + CHAT */
 
-window.approveOrder = async function (orderId) {
+window.payOrder = async function (orderId, amount, customerName, phone, productName) {
+  try {
+    if (!PAYMENT_PROXY_URL || PAYMENT_PROXY_URL.includes("PASTE_")) {
+      alert("Payment service is not connected yet. Add your Google Apps Script payment proxy URL first.");
+      return;
+    }
+
+    if (!amount || Number(amount) <= 0) {
+      alert("Payment cannot start because the order amount is missing.");
+      return;
+    }
+
+    const orderReference = `TIMZY-${orderId}`;
+
+    const response = await fetch(PAYMENT_PROXY_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "createPaymentRequest",
+        orderId,
+        order_reference: orderReference,
+        amount: Number(amount),
+        payer_name: customerName || "Timzy Customer",
+        phone: phone || "",
+        product: productName || "Timzy Fashion Order",
+        service: productName || "Timzy Fashion Order",
+        website_url: window.location.origin
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      console.error(data);
+      alert(data.message || "Payment request failed.");
+      return;
+    }
+
+    const paymentData = data.data || data;
+    const transactionId = paymentData.transaction_id || data.transaction_id || "";
+    const charges = paymentData.charges || {};
+    const amountToPay = charges.amount_to_pay || paymentData.amount || amount;
+
+    await updateDoc(doc(db, "customerOrders", orderId), {
+      transactionId,
+      paymentStatus: "Payment Requested",
+      status: "Pending Payment",
+      paymentAccountNumber: paymentData.account_number || "",
+      paymentBankName: paymentData.bank_name || "",
+      paymentAccountName: paymentData.account_name || "",
+      amountToPay: Number(amountToPay || amount),
+      adminNote: "Payment request created. Awaiting customer payment confirmation.",
+      updatedAt: serverTimestamp()
+    });
+
+    alert(
+      `Payment Details:
+
+Bank: ${paymentData.bank_name || "-"}
+Account Name: ${paymentData.account_name || "-"}
+Account Number: ${paymentData.account_number || "-"}
+Amount: ₦${Number(amountToPay || amount).toLocaleString()}
+
+After payment is confirmed, your order will move to fulfillment.`
+    );
+
+    await loadFirestoreData();
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Payment request error.");
+  }
+};
+
+window.checkPaymentStatus = async function (orderId, transactionId) {
+  try {
+    if (!transactionId) {
+      alert("No payment transaction found for this order yet.");
+      return;
+    }
+
+    if (!PAYMENT_PROXY_URL || PAYMENT_PROXY_URL.includes("PASTE_")) {
+      alert("Payment verification service is not connected yet.");
+      return;
+    }
+
+    const response = await fetch(PAYMENT_PROXY_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "verifyPayment",
+        orderId,
+        transactionId
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      console.error(data);
+      alert(data.message || "Payment could not be verified yet.");
+      return;
+    }
+
+    const paymentData = data.data || data;
+    const status = String(paymentData.status || "").toLowerCase();
+
+    if (status === "approved" || status === "paid" || status === "completed") {
+      await updateDoc(doc(db, "customerOrders", orderId), {
+        paymentStatus: "Paid",
+        status: "Paid - Awaiting Fulfillment",
+        paidAt: serverTimestamp(),
+        adminNote: "Payment confirmed. Awaiting fulfillment approval."
+      });
+
+      alert("Payment confirmed successfully.");
+    } else {
+      alert(`Payment status: ${paymentData.status || "pending"}`);
+    }
+
+    await loadFirestoreData();
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Payment verification error.");
+  }
+};
+
+window.approveFulfillment = async function (orderId) {
   if (currentRole !== "admin") {
-    alert("Only admin can approve orders.");
+    alert("Only admin can approve fulfillment.");
     return;
   }
 
-  const amount = prompt("Enter final amount:");
-  const note = prompt("Approval note:", "Order approved.");
+  const order = orders.find(item => item.id === orderId);
+
+  if (!order) {
+    alert("Order not found.");
+    return;
+  }
+
+  const paymentStatus = String(order.paymentStatus || "").toLowerCase();
+  const paymentMethod = order.paymentMethod || "";
+
+  if (paymentMethod === "Online Payment" && paymentStatus !== "paid") {
+    alert("Online payment must be confirmed before fulfillment approval.");
+    return;
+  }
+
+  const note = prompt("Fulfillment note:", "Order approved for production/delivery.");
 
   await updateDoc(doc(db, "customerOrders", orderId), {
-    status: "Approved",
-    finalAmount: cleanNumber(amount),
-    adminNote: note || "Order approved.",
-    reviewedBy: currentUserEmail,
-    reviewedAt: serverTimestamp()
+    status: "Approved for Fulfillment",
+    adminNote: note || "Order approved for fulfillment.",
+    fulfilledBy: currentUserEmail,
+    fulfilledAt: serverTimestamp()
   });
 
   await loadFirestoreData();
   render();
 };
 
-window.rejectOrder = async function (orderId) {
+window.markReady = async function (orderId) {
   if (currentRole !== "admin") {
-    alert("Only admin can reject orders.");
+    alert("Only admin can mark order ready.");
     return;
   }
 
-  const note = prompt("Rejection reason:");
+  await updateDoc(doc(db, "customerOrders", orderId), {
+    status: "Ready for Pickup/Delivery",
+    adminNote: "Order is ready for pickup or delivery.",
+    updatedAt: serverTimestamp()
+  });
 
-  if (!note) return alert("Rejection note is required.");
+  await loadFirestoreData();
+  render();
+};
+
+window.markDelivered = async function (orderId) {
+  if (currentRole !== "admin") {
+    alert("Only admin can mark delivered.");
+    return;
+  }
 
   await updateDoc(doc(db, "customerOrders", orderId), {
-    status: "Rejected",
+    status: "Delivered",
+    adminNote: "Order delivered successfully.",
+    deliveredAt: serverTimestamp()
+  });
+
+  await loadFirestoreData();
+  render();
+};
+
+window.cancelOrder = async function (orderId) {
+  if (currentRole !== "admin") {
+    alert("Only admin can cancel orders.");
+    return;
+  }
+
+  const note = prompt("Cancellation reason:");
+
+  if (!note) return alert("Cancellation note is required.");
+
+  await updateDoc(doc(db, "customerOrders", orderId), {
+    status: "Cancelled",
     adminNote: note,
-    reviewedBy: currentUserEmail,
-    reviewedAt: serverTimestamp()
+    cancelledBy: currentUserEmail,
+    cancelledAt: serverTimestamp()
   });
 
   await loadFirestoreData();
@@ -963,8 +1187,10 @@ function dashboardStats() {
 function orderStatusCounts() {
   return {
     pending: orders.filter(o => String(o.status || "").toLowerCase().includes("pending")).length,
-    approved: orders.filter(o => String(o.status || "").toLowerCase().includes("approved")).length,
-    rejected: orders.filter(o => String(o.status || "").toLowerCase().includes("rejected")).length
+    paid: orders.filter(o => String(o.paymentStatus || "").toLowerCase() === "paid").length,
+    fulfillment: orders.filter(o => String(o.status || "").toLowerCase().includes("fulfillment")).length,
+    delivered: orders.filter(o => String(o.status || "").toLowerCase().includes("delivered")).length,
+    cancelled: orders.filter(o => String(o.status || "").toLowerCase().includes("cancelled")).length
   };
 }
 
@@ -1042,10 +1268,11 @@ function renderDashboardCharts() {
     Math.max(stats.netProfitAmount, 0)
   ]);
 
-  drawBarChart("orderStatusChart", ["Pending", "Approved", "Rejected"], [
+  drawBarChart("orderStatusChart", ["Pending", "Paid", "Fulfill", "Delivered"], [
     orderCounts.pending,
-    orderCounts.approved,
-    orderCounts.rejected
+    orderCounts.paid,
+    orderCounts.fulfillment,
+    orderCounts.delivered
   ]);
 
   drawBarChart("inventoryHealthChart", ["Value", "Low"], [
@@ -1080,7 +1307,7 @@ function renderDashboardInsights() {
 
   if (orderInsight) {
     orderInsight.textContent =
-      `${orderCounts.pending} pending, ${orderCounts.approved} approved, ${orderCounts.rejected} rejected orders.`;
+      `${orderCounts.pending} pending payment/review, ${orderCounts.paid} paid, ${orderCounts.fulfillment} in fulfillment, ${orderCounts.delivered} delivered orders.`;
   }
 
   if (inventoryInsight) {
@@ -1157,8 +1384,8 @@ function staffXP() {
 function statusClass(status = "") {
   const value = status.toLowerCase();
 
-  if (value.includes("approved")) return "status-approved";
-  if (value.includes("rejected")) return "status-rejected";
+  if (value.includes("cancelled") || value.includes("rejected")) return "status-rejected";
+  if (value.includes("delivered") || value.includes("paid") || value.includes("approved") || value.includes("ready")) return "status-approved";
 
   return "status-pending";
 }
@@ -1406,16 +1633,32 @@ window.render = function () {
         <td>${x.phone || "-"}</td>
         <td>${x.product || "-"}</td>
         <td class="${statusClass(x.status)}">${x.status || "-"}</td>
+        <td class="${statusClass(x.paymentStatus)}">${x.paymentStatus || "Pending"}</td>
         <td>${x.delivery || "-"}</td>
         <td>${money(x.finalAmount || 0)}</td>
         <td>${x.paymentMethod || "-"}</td>
         <td>${x.adminNote || "-"}</td>
         <td>
           ${
+            x.paymentMethod === "Online Payment" &&
+            String(x.paymentStatus || "").toLowerCase() !== "paid"
+              ? `<button type="button" onclick="payOrder('${x.id}', '${x.finalAmount || 0}', '${x.customer || ""}', '${x.phone || ""}', '${x.product || ""}')">Pay Now</button>`
+              : ""
+          }
+
+          ${
+            x.transactionId && String(x.paymentStatus || "").toLowerCase() !== "paid"
+              ? `<button type="button" onclick="checkPaymentStatus('${x.id}', '${x.transactionId}')">Check Payment</button>`
+              : ""
+          }
+
+          ${
             currentRole === "admin"
               ? `
-                <button type="button" onclick="approveOrder('${x.id}')">Approve</button>
-                <button type="button" onclick="rejectOrder('${x.id}')">Reject</button>
+                <button type="button" onclick="approveFulfillment('${x.id}')">Approve Fulfillment</button>
+                <button type="button" onclick="markReady('${x.id}')">Mark Ready</button>
+                <button type="button" onclick="markDelivered('${x.id}')">Delivered</button>
+                <button type="button" class="danger-btn" onclick="cancelOrder('${x.id}')">Cancel</button>
               `
               : ""
           }
@@ -1424,9 +1667,9 @@ window.render = function () {
         </td>
       </tr>
     `).join("")
-    : `<tr><td colspan="9">No orders found.</td></tr>`;
+    : `<tr><td colspan="10">No orders found.</td></tr>`;
 
-  if (document.getElementById("ordersTable")) {
+  if (document.getElementById("ordersTable") {
     document.getElementById("ordersTable").innerHTML = orderRows;
   }
 
