@@ -10,9 +10,9 @@
 
 <body>
 
-  <!-- PUBLIC HEADER -->
-  <header id="publicHeader" class="public-header">
-    <div>
+  <!-- PUBLIC APP HEADER -->
+  <header id="publicHeader" class="app-header public-app-header">
+    <div class="brand-block">
       <p class="eyebrow">TIMZY FASHION OS</p>
       <h1>Timzy Fashion Catalog</h1>
       <p>
@@ -20,7 +20,7 @@
       </p>
     </div>
 
-    <div class="public-actions">
+    <div class="top-actions">
       <button type="button" onclick="showPublicCatalog()">🛍️ Catalog</button>
       <button type="button" onclick="openLoginModal()">🔐 Login</button>
 
@@ -36,7 +36,7 @@
 
 
   <!-- PUBLIC CATALOG -->
-  <section id="publicCatalog" class="public-section">
+  <section id="publicCatalog" class="app-section">
     <div class="section-head">
       <div>
         <h2>Product Catalog</h2>
@@ -46,17 +46,28 @@
       </div>
     </div>
 
-    <div id="publicCategoryChips" class="category-chips"></div>
-
-    <div class="catalog-tools">
+    <div class="filter-bar">
       <input
         id="catalogSearch"
-        placeholder="Search product..."
+        placeholder="Search products..."
         oninput="render()"
       />
 
       <select id="catalogCategoryFilter" onchange="render()">
         <option value="">All Categories</option>
+        <option value="Senator">Senator</option>
+        <option value="Agbada">Agbada</option>
+        <option value="Kaftan">Kaftan</option>
+        <option value="Female Wear">Female Wear</option>
+        <option value="Ready-to-Wear">Ready-to-Wear</option>
+        <option value="Adire">Adire</option>
+        <option value="Aso Oke">Aso Oke</option>
+        <option value="Children">Children</option>
+        <option value="Fabrics">Fabrics</option>
+        <option value="Accessories">Accessories</option>
+        <option value="Bags">Bags</option>
+        <option value="Shoes">Shoes</option>
+        <option value="Men / Senator">Men / Senator</option>
       </select>
     </div>
 
@@ -71,6 +82,8 @@
 
       <p class="eyebrow">SECURE LOGIN</p>
       <h2>Access Timzy Fashion OS</h2>
+
+      <p class="note">Login as admin, staff, or customer.</p>
 
       <input
         id="loginEmail"
@@ -128,37 +141,47 @@
   <!-- PRIVATE APP -->
   <div id="app" style="display:none;">
 
-    <header class="hero">
-      <div>
+    <!-- PRIVATE APP HEADER -->
+    <header class="app-header private-app-header">
+      <div class="brand-block">
         <p class="eyebrow">TIMZY FASHION OS</p>
         <h1>Business Command Center</h1>
-        <p>Catalog • Customers • Orders • Inventory • Expenses • Staff Operations</p>
+        <p>Catalog • Orders • Customers • Inventory • Sales • Expenses</p>
       </div>
 
-      <div class="xp-card">
+      <div class="health-card">
         <span>Business Health</span>
         <strong id="healthScore">85%</strong>
-        <div class="bar"><i style="width:85%"></i></div>
-        <br />
+
+        <div class="bar">
+          <i style="width:85%"></i>
+        </div>
+
         <button type="button" onclick="logoutUser()">Logout</button>
       </div>
     </header>
 
 
-    <!-- PRIVATE NAV -->
-    <nav class="nav-buttons">
-      <button id="dashboardBtn" type="button" onclick="showTab('dashboard')">📊 Dashboard</button>
-      <button id="catalogBtn" type="button" onclick="showTab('catalog')">🛍️ Catalog</button>
-      <button id="catalogManagerBtn" type="button" onclick="showTab('catalogManager')">🖼️ Catalog Manager</button>
-      <button id="customerManagerBtn" type="button" onclick="showTab('customerManager')">👤 Customer Manager</button>
-      <button id="salesBtn" type="button" onclick="showTab('sales')">💰 Sales</button>
-      <button id="expensesBtn" type="button" onclick="showTab('expenses')">💸 Expenses</button>
-      <button id="inventoryBtn" type="button" onclick="showTab('inventory')">📦 Inventory</button>
-      <button id="ordersBtn" type="button" onclick="showTab('orders')">🧵 Orders</button>
-      <button id="customersBtn" type="button" onclick="showTab('customers')">👗 Customers</button>
-      <button id="staffBtn" type="button" onclick="showTab('staff')">🏆 Staff XP</button>
-      <button id="formsBtn" type="button" onclick="showTab('forms')">📝 Forms</button>
-    </nav>
+    <!-- APP MENU DROPDOWN -->
+    <section class="app-menu-shell">
+      <button type="button" class="menu-toggle" onclick="toggleAppMenu()">
+        ☰ Menu
+      </button>
+
+      <div id="appMenu" class="app-menu" style="display:none;">
+        <button id="dashboardBtn" type="button" onclick="selectAppMenu('dashboard')">📊 Dashboard</button>
+        <button id="catalogBtn" type="button" onclick="selectAppMenu('catalog')">🛍️ Catalog</button>
+        <button id="catalogManagerBtn" type="button" onclick="selectAppMenu('catalogManager')">🖼️ Catalog Manager</button>
+        <button id="customerManagerBtn" type="button" onclick="selectAppMenu('customerManager')">👤 Customer Manager</button>
+        <button id="salesBtn" type="button" onclick="selectAppMenu('sales')">💰 Sales</button>
+        <button id="expensesBtn" type="button" onclick="selectAppMenu('expenses')">💸 Expenses</button>
+        <button id="inventoryBtn" type="button" onclick="selectAppMenu('inventory')">📦 Inventory</button>
+        <button id="ordersBtn" type="button" onclick="selectAppMenu('orders')">🧵 Orders</button>
+        <button id="customersBtn" type="button" onclick="selectAppMenu('customers')">👗 Customers</button>
+        <button id="staffBtn" type="button" onclick="selectAppMenu('staff')">🏆 Staff XP</button>
+        <button id="formsBtn" type="button" onclick="selectAppMenu('forms')">📝 Forms</button>
+      </div>
+    </section>
 
 
     <main>
@@ -183,13 +206,13 @@
           <div class="tech-card">
             <span>Total Sales</span>
             <strong id="totalSales">₦0</strong>
-            <small>Revenue captured</small>
+            <small>Revenue captured from sales records</small>
           </div>
 
           <div class="tech-card">
             <span>Total Expenses</span>
             <strong id="totalExpenses">₦0</strong>
-            <small>Operational cost</small>
+            <small>Operational cost movement</small>
           </div>
 
           <div class="tech-card">
@@ -201,13 +224,13 @@
           <div class="tech-card">
             <span>Inventory Value</span>
             <strong id="inventoryValue">₦0</strong>
-            <small>Stock valuation</small>
+            <small>Current stock valuation</small>
           </div>
 
           <div class="tech-card warning">
-            <span>Low Stock</span>
+            <span>Low Stock Alerts</span>
             <strong id="lowStock">0</strong>
-            <small>Restock alerts</small>
+            <small>Items requiring attention</small>
           </div>
         </div>
 
@@ -215,7 +238,7 @@
           <div class="analytics-card">
             <div class="chart-header">
               <h3>Sales vs Expenses</h3>
-              <span>Finance</span>
+              <span>Financial Signal</span>
             </div>
             <div id="financeChart" class="chart-box"></div>
             <p id="financeInsight" class="insight-text"></p>
@@ -224,7 +247,7 @@
           <div class="analytics-card">
             <div class="chart-header">
               <h3>Order Status</h3>
-              <span>Pipeline</span>
+              <span>Pipeline Health</span>
             </div>
             <div id="orderStatusChart" class="chart-box"></div>
             <p id="orderInsight" class="insight-text"></p>
@@ -233,7 +256,7 @@
           <div class="analytics-card">
             <div class="chart-header">
               <h3>Inventory Health</h3>
-              <span>Stock</span>
+              <span>Stock Intelligence</span>
             </div>
             <div id="inventoryHealthChart" class="chart-box"></div>
             <p id="inventoryInsight" class="insight-text"></p>
@@ -242,7 +265,7 @@
           <div class="analytics-card">
             <div class="chart-header">
               <h3>Staff Performance</h3>
-              <span>XP</span>
+              <span>XP Signal</span>
             </div>
             <div id="staffPerformanceChart" class="chart-box"></div>
             <p id="staffInsight" class="insight-text"></p>
@@ -266,18 +289,30 @@
       <!-- PRIVATE CATALOG -->
       <section id="catalog" class="tab">
         <h2>Product Catalog</h2>
+        <p class="note">Search products, view images, and request orders.</p>
 
-        <div id="privateCategoryChips" class="category-chips"></div>
-
-        <div class="catalog-tools">
+        <div class="filter-bar">
           <input
             id="privateCatalogSearch"
-            placeholder="Search product..."
+            placeholder="Search products..."
             oninput="render()"
           />
 
           <select id="privateCatalogCategoryFilter" onchange="render()">
             <option value="">All Categories</option>
+            <option value="Senator">Senator</option>
+            <option value="Agbada">Agbada</option>
+            <option value="Kaftan">Kaftan</option>
+            <option value="Female Wear">Female Wear</option>
+            <option value="Ready-to-Wear">Ready-to-Wear</option>
+            <option value="Adire">Adire</option>
+            <option value="Aso Oke">Aso Oke</option>
+            <option value="Children">Children</option>
+            <option value="Fabrics">Fabrics</option>
+            <option value="Accessories">Accessories</option>
+            <option value="Bags">Bags</option>
+            <option value="Shoes">Shoes</option>
+            <option value="Men / Senator">Men / Senator</option>
           </select>
         </div>
 
@@ -288,21 +323,21 @@
       <!-- CATALOG MANAGER -->
       <section id="catalogManager" class="tab">
         <h2>Catalog Manager</h2>
-        <p class="note">
-          Admin can publish products manually. Inventory Google Form remains the preferred source.
-        </p>
+        <p class="note">Admin can publish catalog products manually using image URLs.</p>
 
         <div class="card">
+          <h3>Add / Publish Product</h3>
+
           <form>
             <input id="catProductName" placeholder="Product Name" />
             <input id="catCategory" placeholder="Category" />
-            <input id="catColor" placeholder="Color" />
+            <input id="catColor" placeholder="Color / Material Color" />
             <input id="catPrice" type="number" placeholder="Price" />
             <input id="catQuantity" type="number" placeholder="Available Quantity" />
-            <input id="catSizes" placeholder="Sizes" />
-            <input id="catImage1" placeholder="Image URL / Drive Link 1" />
-            <input id="catImage2" placeholder="Image URL / Drive Link 2" />
-            <input id="catImage3" placeholder="Image URL / Drive Link 3" />
+            <input id="catSizes" placeholder="Sizes e.g. S, M, L, XL" />
+            <input id="catImage1" placeholder="Image URL or Google Drive Link 1" />
+            <input id="catImage2" placeholder="Image URL or Google Drive Link 2" />
+            <input id="catImage3" placeholder="Image URL or Google Drive Link 3" />
             <textarea id="catDescription" placeholder="Product Description"></textarea>
 
             <button type="button" onclick="saveCatalogProduct()">Publish Product</button>
@@ -315,45 +350,14 @@
       <section id="customerManager" class="tab">
         <h2>Customer Manager</h2>
         <p class="note">
-          Create customer profiles here. Then create the same email/password in Firebase Authentication.
+          Admin area for creating and managing customer accounts. Full Firebase account creation will be added here.
         </p>
 
-        <div class="cards">
-          <div class="card">
-            <h3>Create Customer Profile</h3>
-
-            <form>
-              <input id="newCustomerName" placeholder="Customer Name" />
-              <input id="newCustomerEmail" type="email" placeholder="Customer Email" />
-              <input id="newCustomerPhone" placeholder="Phone Number" />
-              <input id="newCustomerPassword" placeholder="Suggested Temporary Password" />
-
-              <button type="button" onclick="saveCustomerProfile()">Save Customer Profile</button>
-            </form>
-          </div>
-
-          <div class="card">
-            <h3>Customer Access Note</h3>
-            <p class="note">
-              Frontend cannot securely create Firebase Auth users. Create the Auth user manually or later add a backend/Admin SDK.
-            </p>
-          </div>
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            <tbody id="customerProfilesTable"></tbody>
-          </table>
+        <div class="card">
+          <h3>Customer Account Placeholder</h3>
+          <p class="note">
+            Next upgrade: admin creates customer login details and assigns customer role.
+          </p>
         </div>
       </section>
 
@@ -383,6 +387,7 @@
       <!-- EXPENSES -->
       <section id="expenses" class="tab">
         <h2>Expenses</h2>
+        <p class="note">Staff can record and view expenses. Admin can view all expenses.</p>
 
         <div class="table-wrap">
           <table>
@@ -390,7 +395,7 @@
               <tr>
                 <th>Staff</th>
                 <th>Category</th>
-                <th>Item</th>
+                <th>Expense Item</th>
                 <th>Supplier</th>
                 <th>Qty</th>
                 <th>Unit Cost</th>
@@ -416,9 +421,9 @@
                 <th>Product</th>
                 <th>SKU</th>
                 <th>Supplier</th>
-                <th>Qty</th>
-                <th>Cost</th>
-                <th>Selling</th>
+                <th>Qty Added</th>
+                <th>Cost Price</th>
+                <th>Selling Price</th>
               </tr>
             </thead>
 
@@ -431,6 +436,9 @@
       <!-- ORDERS -->
       <section id="orders" class="tab">
         <h2>Orders</h2>
+        <p class="note">
+          Customers pay first. Admin approval is for fulfillment, production, pickup, delivery, or cancellation.
+        </p>
 
         <div class="table-wrap">
           <table>
@@ -459,16 +467,19 @@
           <div id="chatMessages" class="chat-messages"></div>
 
           <div class="chat-input-row">
-            <input id="chatInput" type="text" placeholder="Type message..." />
+            <input id="chatInput" type="text" placeholder="Type your message..." />
             <button type="button" onclick="sendChatMessage()">Send</button>
           </div>
         </div>
       </section>
 
 
-      <!-- CUSTOMER PORTAL -->
+      <!-- CUSTOMERS -->
       <section id="customers" class="tab">
         <h2>Customer Portal</h2>
+        <p class="note">
+          Customers can save measurements and request orders. Staff/Admin can submit records for customers using email.
+        </p>
 
         <div class="cards">
           <div class="card">
@@ -477,7 +488,7 @@
             <form>
               <input id="targetCustomerEmail" class="staff-admin-only" type="email" placeholder="Customer Email — Staff/Admin only" />
               <input id="cmName" placeholder="Customer Name" />
-              <input id="cmPhone" placeholder="Phone" />
+              <input id="cmPhone" placeholder="Phone Number" />
               <input id="cmShoulder" placeholder="Shoulder" />
               <input id="cmChest" placeholder="Chest/Bust" />
               <input id="cmWaist" placeholder="Waist" />
@@ -496,7 +507,7 @@
             <form>
               <input id="targetCustomerEmailOrder" class="staff-admin-only" type="email" placeholder="Customer Email — Staff/Admin only" />
               <input id="coName" placeholder="Customer Name" />
-              <input id="coPhone" placeholder="Phone" />
+              <input id="coPhone" placeholder="Phone Number" />
               <input id="coStyle" placeholder="Product / Style" />
               <input id="coDelivery" type="date" />
               <input id="coAmount" type="number" placeholder="Final Amount" />
@@ -522,7 +533,7 @@
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Measurements</th>
-                <th>Notes</th>
+                <th>Style Notes</th>
               </tr>
             </thead>
 
@@ -559,7 +570,7 @@
           <div id="customerChatMessages" class="chat-messages"></div>
 
           <div class="chat-input-row">
-            <input id="customerChatInput" type="text" placeholder="Type message..." />
+            <input id="customerChatInput" type="text" placeholder="Type your message..." />
             <button type="button" onclick="sendChatMessage()">Send</button>
           </div>
         </div>
@@ -576,6 +587,7 @@
       <!-- FORMS -->
       <section id="forms" class="tab">
         <h2>Google Forms Hub</h2>
+        <p class="note">Internal Google Forms remain available for admin/staff operations.</p>
         <div class="form-grid" id="formLinks"></div>
       </section>
 
@@ -597,8 +609,24 @@
   </footer>
 
 
-  <script src="forms-config.js"></script>
-  <script type="module" src="script.js?v=20260605b"></script>
+  <script src="forms-config.js?v=20260605c"></script>
+
+  <script>
+    window.showPublicCatalog = window.showPublicCatalog || function(){
+      const section = document.getElementById("publicCatalog");
+      if(section) section.scrollIntoView({ behavior: "smooth" });
+    };
+
+    window.openLoginModal = window.openLoginModal || function(){
+      const accessModal = document.getElementById("accessModal");
+      const loginModal = document.getElementById("loginModal");
+
+      if(accessModal) accessModal.style.display = "none";
+      if(loginModal) loginModal.style.display = "flex";
+    };
+  </script>
+
+  <script type="module" src="script.js?v=20260605c"></script>
 
 </body>
 </html>
