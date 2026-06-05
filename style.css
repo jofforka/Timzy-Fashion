@@ -762,3 +762,109 @@ footer{
     width:100%;
   }
 }
+html,
+body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+.public-header,
+.hero,
+.public-section,
+main{
+  width:100%;
+  max-width:100%;
+}
+
+.public-header,
+.hero{
+  padding:28px 18px;
+}
+
+.public-header h1,
+.hero h1{
+  font-size:clamp(34px,9vw,54px);
+  line-height:1.05;
+}
+
+.public-actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+  width:100%;
+  margin-top:20px;
+}
+
+.public-actions button,
+.public-actions .whatsapp-btn{
+  width:100%;
+  min-height:54px;
+  border-radius:18px;
+  font-size:16px;
+}
+
+.catalog-tools{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+
+.catalog-tools input,
+.catalog-tools select{
+  height:52px;
+  font-size:15px;
+  border-radius:14px;
+}
+
+nav{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  padding:16px;
+}
+
+nav button{
+  width:100%;
+  min-height:58px;
+  border-radius:18px;
+  font-size:15px;
+  padding:12px;
+}
+
+.catalog-grid{
+  grid-template-columns:1fr;
+}
+
+.catalog-card{
+  border-radius:22px;
+}
+
+.catalog-image{
+  height:260px;
+}
+
+@media(max-width:480px){
+  .public-header,
+  .hero{
+    padding:24px 16px;
+  }
+
+  .public-header h1,
+  .hero h1{
+    font-size:38px;
+  }
+
+  .public-section,
+  main{
+    padding:0 14px;
+  }
+
+  h2{
+    font-size:30px;
+  }
+
+  nav{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
