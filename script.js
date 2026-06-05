@@ -1669,7 +1669,7 @@ window.render = function () {
     `).join("")
     : `<tr><td colspan="10">No orders found.</td></tr>`;
 
-  if (document.getElementById("ordersTable") {
+  if (document.getElementById("ordersTable")) {
     document.getElementById("ordersTable").innerHTML = orderRows;
   }
 
