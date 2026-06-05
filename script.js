@@ -884,8 +884,8 @@ window.closeProductModal = function () {
 
 window.payOrder = async function (orderId, amount, customerName, phone, productName) {
   try {
-    if (!PAYMENT_PROXY_URL || PAYMENT_PROXY_URL.includes("PASTE_")) {
-      alert("Payment service is not connected yet. Add your Google Apps Script payment proxy URL first.");
+    if (!PAYMENT_PROXY_URL || PAYMENT_PROXY_URL.includes("https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec_")) {
+      alert("Done");
       return;
     }
 
