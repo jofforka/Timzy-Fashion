@@ -42,7 +42,7 @@ const EXPENSES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Expense%20Re
 
 // SECURITY NOTE: Do not paste your CheckoutPay API key here.
 // Use a Google Apps Script or backend proxy URL that safely stores the key.
-const PAYMENT_PROXY_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+const PAYMENT_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec";
 
 const DEFAULT_CATEGORIES = [
   "Senator",
