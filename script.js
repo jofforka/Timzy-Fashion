@@ -16,7 +16,6 @@ import {
   where,
   doc,
   getDoc,
-  setDoc,
   updateDoc,
   deleteDoc,
   serverTimestamp,
@@ -40,25 +39,7 @@ const SALES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Respons
 const INVENTORY_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Inventory%20Restock";
 const EXPENSES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Expense%20Responses";
 
-// SECURITY NOTE: Do not paste your CheckoutPay API key here.
-// Use a Google Apps Script or backend proxy URL that safely stores the key.
 const PAYMENT_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec";
-
-const DEFAULT_CATEGORIES = [
-  "Senator",
-  "Agbada",
-  "Kaftan",
-  "Female Wear",
-  "Ready-to-Wear",
-  "Adire",
-  "Aso Oke",
-  "Children",
-  "Fabrics",
-  "Accessories",
-  "Bags",
-  "Shoes",
-  "Men / Senator"
-];
 
 let sales = [];
 let inventory = [];
@@ -66,7 +47,6 @@ let expenses = [];
 let catalog = [];
 let customers = [];
 let orders = [];
-let customerProfiles = [];
 
 let currentRole = "public";
 let currentUserEmail = "";
@@ -89,11 +69,8 @@ function normalize(row) {
 
 function driveToImage(url) {
   if (!url) return "";
-
   const match = String(url).match(/[-\w]{25,}/);
-
   if (!match) return String(url).trim();
-
   return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`;
 }
 
@@ -109,21 +86,17 @@ function driveImages(value) {
 async function getUserRole(email) {
   try {
     const snap = await getDoc(doc(db, "users", email));
-
-    if (snap.exists() && snap.data().role) {
-      return snap.data().role;
-    }
+    if (snap.exists() && snap.data().role) return snap.data().role;
   } catch (error) {
     console.warn("Role lookup failed:", error);
   }
 
   if (email === "admin@timzyfashion.com") return "admin";
   if (email.includes("staff")) return "staff";
-
   return "customer";
 }
 
-/* PUBLIC / PRIVATE VIEW */
+/* VIEW CONTROLS */
 
 function hidePublicView() {
   const publicHeader = document.getElementById("publicHeader");
@@ -143,38 +116,56 @@ function showPublicView() {
   if (appView) appView.style.display = "none";
 }
 
+window.showPublicCatalog = function () {
+  const publicCatalog = document.getElementById("publicCatalog");
+  if (publicCatalog) publicCatalog.scrollIntoView({ behavior: "smooth" });
+};
+
 window.openLoginModal = function () {
   closeAccessModal();
 
   const modal = document.getElementById("loginModal");
-
   if (modal) modal.style.display = "flex";
 };
 
 window.closeLoginModal = function () {
   const modal = document.getElementById("loginModal");
-
   if (modal) modal.style.display = "none";
-};
-
-window.showPublicCatalog = function () {
-  const publicCatalog = document.getElementById("publicCatalog");
-
-  if (publicCatalog) {
-    publicCatalog.scrollIntoView({ behavior: "smooth" });
-  }
 };
 
 window.openAccessModal = function () {
   const modal = document.getElementById("accessModal");
-
   if (modal) modal.style.display = "flex";
 };
 
 window.closeAccessModal = function () {
   const modal = document.getElementById("accessModal");
-
   if (modal) modal.style.display = "none";
+};
+
+window.toggleAppMenu = function () {
+  const menu = document.getElementById("appMenu");
+  if (!menu) return;
+
+  menu.style.display = menu.style.display === "none" || !menu.style.display ? "grid" : "none";
+};
+
+window.selectAppMenu = function (id) {
+  showTab(id);
+
+  const menu = document.getElementById("appMenu");
+  if (menu) menu.style.display = "none";
+};
+
+window.showTab = function (id) {
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
+
+  const selected = document.getElementById(id);
+  if (selected) selected.classList.add("active");
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 /* AUTH */
@@ -220,14 +211,11 @@ onAuthStateChanged(auth, async user => {
     if (appView) appView.style.display = "block";
 
     setupRoleAccess();
-
     await loadFirestoreData();
-
     render();
   } else {
     currentUserEmail = "";
     currentRole = "public";
-
     showPublicView();
     render();
   }
@@ -252,7 +240,6 @@ function setupRoleAccess() {
       "staff",
       "forms"
     ]);
-
     showStaffAdminFields(true);
     showTab("dashboard");
     return;
@@ -267,7 +254,6 @@ function setupRoleAccess() {
       "customers",
       "forms"
     ]);
-
     showStaffAdminFields(true);
     showTab("catalog");
     return;
@@ -286,7 +272,7 @@ function hideAllSections() {
     tab.classList.remove("active");
   });
 
-  document.querySelectorAll("nav button").forEach(btn => {
+  document.querySelectorAll("#appMenu button").forEach(btn => {
     btn.style.display = "none";
   });
 }
@@ -294,7 +280,7 @@ function hideAllSections() {
 function showRoleSections(sectionIds) {
   sectionIds.forEach(id => {
     const section = document.getElementById(id);
-    const button = document.querySelector(`button[onclick="showTab('${id}')"]`);
+    const button = document.querySelector(`#appMenu button[onclick="selectAppMenu('${id}')"]`);
 
     if (section) section.style.display = "";
     if (button) button.style.display = "inline-flex";
@@ -307,31 +293,14 @@ function showStaffAdminFields(show) {
   });
 }
 
-window.showTab = function (id) {
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.classList.remove("active");
-  });
-
-  const selected = document.getElementById(id);
-
-  if (selected) selected.classList.add("active");
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-};
-
 /* DATA LOADING */
 
 async function fetchSheet(api) {
   try {
     const response = await fetch(api);
-
     if (!response.ok) return [];
 
     const data = await response.json();
-
     return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error("SheetDB error:", error);
@@ -348,21 +317,8 @@ async function loadAllData() {
 
   sales = salesData.map(row => {
     const n = normalize(row);
-
-    const qty = cleanNumber(
-      n["quantity sold"] ||
-      n["qty sold"] ||
-      n["quantity"] ||
-      n["qty"]
-    );
-
-    const unitPrice = cleanNumber(
-      n["unit selling price"] ||
-      n["selling price"] ||
-      n["total sales"] ||
-      n["total sales ₦"] ||
-      n["amount"]
-    );
+    const qty = cleanNumber(n["quantity sold"] || n["qty sold"] || n["quantity"] || n["qty"]);
+    const unitPrice = cleanNumber(n["unit selling price"] || n["selling price"] || n["total sales"] || n["total sales ₦"] || n["amount"]);
 
     return {
       staff: n["staff name"] || "-",
@@ -376,49 +332,37 @@ async function loadAllData() {
   inventory = inventoryData.map(row => {
     const n = normalize(row);
 
-    const quantity = cleanNumber(
-      n["quantity added"] ||
-      n["qty added"] ||
-      n["quantity"] ||
-      n["qty"] ||
-      n["stock"] ||
-      n["stock quantity"]
-    );
-
     const uploadedImages = driveImages(
       n["product image"] ||
       n["product images"] ||
       n["image upload"] ||
       n["upload product image"] ||
       n["product photo"] ||
+      n["product picture"] ||
+      n["upload product picture"] ||
       n["image"] ||
       ""
     );
-
-    const manualImage1 = n["image url"] || n["image 1"] || n["product image url"] || "";
-    const manualImage2 = n["image url 2"] || n["image 2"] || "";
-    const manualImage3 = n["image url 3"] || n["image 3"] || "";
 
     return {
       category: n["category"] || "-",
       product: n["product name"] || n["product"] || n["product/sku"] || "-",
       sku: n["sku"] || n["product/sku"] || "-",
       supplier: n["supplier/vendor"] || n["supplier"] || "-",
-      quantity,
+      quantity: cleanNumber(n["quantity added"] || n["qty added"] || n["quantity"] || n["qty"] || n["stock"] || n["stock quantity"]),
       cost: cleanNumber(n["cost price"] || n["unit cost"] || n["cost"]),
       selling: cleanNumber(n["selling price"] || n["price"] || n["unit selling price"]),
       color: n["color"] || n["material color"] || "",
       sizes: n["sizes"] || "",
-      image1: uploadedImages[0] || driveToImage(manualImage1),
-      image2: uploadedImages[1] || driveToImage(manualImage2),
-      image3: uploadedImages[2] || driveToImage(manualImage3),
+      image1: uploadedImages[0] || driveToImage(n["image url"] || n["image 1"] || n["product image url"] || ""),
+      image2: uploadedImages[1] || driveToImage(n["image url 2"] || n["image 2"] || ""),
+      image3: uploadedImages[2] || driveToImage(n["image url 3"] || n["image 3"] || ""),
       description: n["description"] || n["product description"] || ""
     };
   });
 
   expenses = expensesData.map(row => {
     const n = normalize(row);
-
     const qty = cleanNumber(n["quantity"] || n["qty"] || 1);
     const unitCost = cleanNumber(n["unit cost"] || n["amount"] || n["cost"]);
 
@@ -492,54 +436,27 @@ async function loadFirestoreData() {
   let orderQuery;
 
   if (currentRole === "customer") {
-    measurementQuery = query(
-      collection(db, "customerMeasurements"),
-      where("email", "==", currentUserEmail)
-    );
-
-    orderQuery = query(
-      collection(db, "customerOrders"),
-      where("email", "==", currentUserEmail)
-    );
+    measurementQuery = query(collection(db, "customerMeasurements"), where("email", "==", currentUserEmail));
+    orderQuery = query(collection(db, "customerOrders"), where("email", "==", currentUserEmail));
   } else {
     measurementQuery = collection(db, "customerMeasurements");
     orderQuery = collection(db, "customerOrders");
-
-    await loadCustomerProfiles();
   }
 
   const measurementSnapshot = await getDocs(measurementQuery);
-
   customers = measurementSnapshot.docs.map(docSnap => ({
     id: docSnap.id,
     ...docSnap.data()
   }));
 
   const orderSnapshot = await getDocs(orderQuery);
-
   orders = orderSnapshot.docs.map(docSnap => ({
     id: docSnap.id,
     ...docSnap.data()
   }));
 }
 
-async function loadCustomerProfiles() {
-  try {
-    const snap = await getDocs(collection(db, "users"));
-
-    customerProfiles = snap.docs
-      .map(d => ({
-        id: d.id,
-        ...d.data()
-      }))
-      .filter(user => user.role === "customer");
-  } catch (error) {
-    console.error("Customer profiles failed:", error);
-    customerProfiles = [];
-  }
-}
-
-/* CATALOG MANAGER */
+/* CATALOG */
 
 window.saveCatalogProduct = async function () {
   if (currentRole !== "admin") {
@@ -568,7 +485,6 @@ window.saveCatalogProduct = async function () {
   }
 
   await addDoc(collection(db, "catalog"), product);
-
   alert("Product published successfully.");
 
   clearInputs([
@@ -601,240 +517,12 @@ window.deleteCatalogProduct = async function (productId) {
   if (!confirm("Delete this product from catalog?")) return;
 
   await deleteDoc(doc(db, "catalog", productId));
-
   alert("Product deleted.");
-
   await loadAllData();
 };
 
-/* CUSTOMER MANAGER */
-
-window.saveCustomerProfile = async function () {
-  if (currentRole !== "admin") {
-    alert("Only admin can create customer profiles.");
-    return;
-  }
-
-  const name = document.getElementById("newCustomerName").value.trim();
-  const email = document.getElementById("newCustomerEmail").value.trim().toLowerCase();
-  const phone = document.getElementById("newCustomerPhone").value.trim();
-  const tempPassword = document.getElementById("newCustomerPassword").value.trim();
-
-  if (!name || !email) {
-    alert("Customer name and email are required.");
-    return;
-  }
-
-  await setDoc(doc(db, "users", email), {
-    role: "customer",
-    name,
-    email,
-    phone,
-    status: "active",
-    tempPasswordNote: tempPassword || "",
-    createdBy: currentUserEmail,
-    createdAt: serverTimestamp()
-  });
-
-  alert("Customer profile saved. Now create the same email/password in Firebase Authentication.");
-
-  clearInputs([
-    "newCustomerName",
-    "newCustomerEmail",
-    "newCustomerPhone",
-    "newCustomerPassword"
-  ]);
-
-  await loadCustomerProfiles();
-  render();
-};
-
-window.toggleCustomerStatus = async function (email, currentStatus) {
-  if (currentRole !== "admin") return;
-
-  const nextStatus = currentStatus === "active" ? "disabled" : "active";
-
-  await updateDoc(doc(db, "users", email), {
-    status: nextStatus,
-    updatedBy: currentUserEmail,
-    updatedAt: serverTimestamp()
-  });
-
-  await loadCustomerProfiles();
-  render();
-};
-
-/* CUSTOMER PORTAL */
-
-function getTargetCustomerEmail(inputId) {
-  if (currentRole === "customer") return currentUserEmail;
-
-  const field = document.getElementById(inputId);
-  const email = field ? field.value.trim().toLowerCase() : "";
-
-  if (!email) {
-    alert("Enter customer email.");
-    return "";
-  }
-
-  return email;
-}
-
-window.submitMeasurement = async function () {
-  try {
-    const targetEmail = getTargetCustomerEmail("targetCustomerEmail");
-
-    if (!targetEmail) return;
-
-    await addDoc(collection(db, "customerMeasurements"), {
-      email: targetEmail,
-      uploadedBy: currentUserEmail,
-      name: document.getElementById("cmName").value,
-      phone: document.getElementById("cmPhone").value,
-      shoulder: document.getElementById("cmShoulder").value,
-      chest: document.getElementById("cmChest").value,
-      waist: document.getElementById("cmWaist").value,
-      hip: document.getElementById("cmHip").value,
-      sleeve: document.getElementById("cmSleeve").value,
-      length: document.getElementById("cmLength").value,
-      notes: document.getElementById("cmNotes").value,
-      createdAt: serverTimestamp()
-    });
-
-    alert("Measurement saved successfully.");
-
-    clearInputs([
-      "cmName",
-      "cmPhone",
-      "cmShoulder",
-      "cmChest",
-      "cmWaist",
-      "cmHip",
-      "cmSleeve",
-      "cmLength",
-      "cmNotes"
-    ]);
-
-    await loadFirestoreData();
-    render();
-  } catch (error) {
-    console.error(error);
-    alert("Could not save measurement.");
-  }
-};
-
-window.submitOrder = async function () {
-  try {
-    const targetEmail = getTargetCustomerEmail("targetCustomerEmailOrder");
-
-    if (!targetEmail) return;
-
-    const customer = document.getElementById("coName").value.trim();
-    const phone = document.getElementById("coPhone").value.trim();
-    const product = document.getElementById("coStyle").value.trim();
-    const delivery = document.getElementById("coDelivery").value;
-    const finalAmount = cleanNumber(document.getElementById("coAmount").value);
-    const paymentMethod = document.getElementById("coPaymentMethod").value;
-
-    if (!customer || !phone || !product) {
-      alert("Customer name, phone, and product/style are required.");
-      return;
-    }
-
-    if (!finalAmount || finalAmount <= 0) {
-      alert("Final amount is required before submitting an order.");
-      return;
-    }
-
-    if (!paymentMethod) {
-      alert("Please select a payment method.");
-      return;
-    }
-
-    let status = "Pending Payment";
-    let paymentStatus = "Pending";
-
-    if (paymentMethod === "Cash on Delivery") {
-      status = "COD - Awaiting Fulfillment";
-      paymentStatus = "Cash on Delivery";
-    }
-
-    if (paymentMethod === "Bank Transfer") {
-      status = "Bank Transfer - Awaiting Confirmation";
-      paymentStatus = "Pending Confirmation";
-    }
-
-    const orderRef = `ORD-${Date.now()}`;
-
-    await addDoc(collection(db, "customerOrders"), {
-      orderRef,
-      email: targetEmail,
-      uploadedBy: currentUserEmail,
-      customer,
-      phone,
-      product,
-      status,
-      paymentStatus,
-      delivery,
-      finalAmount,
-      paymentMethod,
-      adminNote: "",
-      transactionId: "",
-      paymentAccountNumber: "",
-      paymentBankName: "",
-      paymentAccountName: "",
-      createdAt: serverTimestamp()
-    });
-
-    alert("Order submitted successfully.");
-
-    clearInputs([
-      "coName",
-      "coPhone",
-      "coStyle",
-      "coDelivery",
-      "coAmount",
-      "coPaymentMethod"
-    ]);
-
-    await loadFirestoreData();
-    render();
-  } catch (error) {
-    console.error(error);
-    alert("Could not submit order.");
-  }
-};
-
-function clearInputs(ids) {
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-
-    if (el) el.value = "";
-  });
-}
-
-window.requestCatalogOrder = function (productName, price = "") {
-  if (currentRole === "public") {
-    openAccessModal();
-    return;
-  }
-
-  showTab("customers");
-
-  const styleInput = document.getElementById("coStyle");
-  const amountInput = document.getElementById("coAmount");
-
-  if (styleInput) styleInput.value = productName;
-  if (amountInput) amountInput.value = price || "";
-
-  alert("Product selected. Complete your order request below.");
-};
-
-/* PRODUCT DETAILS */
-
 window.openProductDetails = function (encodedProduct) {
   const product = JSON.parse(decodeURIComponent(encodedProduct));
-
   const modal = document.getElementById("productModal");
   const content = document.getElementById("modalProductContent");
 
@@ -866,9 +554,7 @@ window.openProductDetails = function (encodedProduct) {
       Request Order
     </button>
 
-    <a class="whatsapp-btn" href="${whatsappLink}" target="_blank">
-      WhatsApp Order
-    </a>
+    <a class="whatsapp-btn" href="${whatsappLink}" target="_blank">WhatsApp Order</a>
   `;
 
   modal.style.display = "flex";
@@ -876,41 +562,137 @@ window.openProductDetails = function (encodedProduct) {
 
 window.closeProductModal = function () {
   const modal = document.getElementById("productModal");
-
   if (modal) modal.style.display = "none";
 };
 
-/* ORDERS + CHAT */
+window.requestCatalogOrder = function (productName, price = "") {
+  if (currentRole === "public") {
+    openAccessModal();
+    return;
+  }
+
+  showTab("customers");
+
+  const styleInput = document.getElementById("coStyle");
+  const amountInput = document.getElementById("coAmount");
+
+  if (styleInput) styleInput.value = productName;
+  if (amountInput) amountInput.value = price || "";
+
+  alert("Product selected. Complete your order request below.");
+};
+
+/* CUSTOMERS / ORDERS */
+
+function getTargetCustomerEmail(inputId) {
+  if (currentRole === "customer") return currentUserEmail;
+
+  const field = document.getElementById(inputId);
+  const email = field ? field.value.trim().toLowerCase() : "";
+
+  if (!email) {
+    alert("Enter customer email.");
+    return "";
+  }
+
+  return email;
+}
+
+window.submitMeasurement = async function () {
+  try {
+    const targetEmail = getTargetCustomerEmail("targetCustomerEmail");
+    if (!targetEmail) return;
+
+    await addDoc(collection(db, "customerMeasurements"), {
+      email: targetEmail,
+      uploadedBy: currentUserEmail,
+      name: document.getElementById("cmName").value,
+      phone: document.getElementById("cmPhone").value,
+      shoulder: document.getElementById("cmShoulder").value,
+      chest: document.getElementById("cmChest").value,
+      waist: document.getElementById("cmWaist").value,
+      hip: document.getElementById("cmHip").value,
+      sleeve: document.getElementById("cmSleeve").value,
+      length: document.getElementById("cmLength").value,
+      notes: document.getElementById("cmNotes").value,
+      createdAt: serverTimestamp()
+    });
+
+    alert("Measurement saved successfully.");
+
+    clearInputs(["cmName", "cmPhone", "cmShoulder", "cmChest", "cmWaist", "cmHip", "cmSleeve", "cmLength", "cmNotes"]);
+
+    await loadFirestoreData();
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Could not save measurement.");
+  }
+};
+
+window.submitOrder = async function () {
+  try {
+    const targetEmail = getTargetCustomerEmail("targetCustomerEmailOrder");
+    if (!targetEmail) return;
+
+    const paymentMethod = document.getElementById("coPaymentMethod").value;
+
+    let status = "Pending Payment";
+    let paymentStatus = "Pending";
+
+    if (paymentMethod === "Cash on Delivery") {
+      status = "COD - Awaiting Fulfillment";
+      paymentStatus = "Cash on Delivery";
+    }
+
+    if (paymentMethod === "Bank Transfer") {
+      status = "Bank Transfer - Awaiting Confirmation";
+      paymentStatus = "Pending Confirmation";
+    }
+
+    await addDoc(collection(db, "customerOrders"), {
+      email: targetEmail,
+      uploadedBy: currentUserEmail,
+      customer: document.getElementById("coName").value,
+      phone: document.getElementById("coPhone").value,
+      product: document.getElementById("coStyle").value,
+      status,
+      paymentStatus,
+      delivery: document.getElementById("coDelivery").value,
+      finalAmount: cleanNumber(document.getElementById("coAmount").value),
+      paymentMethod,
+      adminNote: "",
+      transactionId: "",
+      createdAt: serverTimestamp()
+    });
+
+    alert("Order request submitted successfully.");
+
+    clearInputs(["coName", "coPhone", "coStyle", "coDelivery", "coAmount", "coPaymentMethod"]);
+
+    await loadFirestoreData();
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Could not submit order.");
+  }
+};
 
 window.payOrder = async function (orderId, amount, customerName, phone, productName) {
   try {
     if (!PAYMENT_PROXY_URL || PAYMENT_PROXY_URL.includes("https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec_")) {
-      alert("Done");
+      alert("Payment service is not connected yet.");
       return;
     }
-
-    if (!amount || Number(amount) <= 0) {
-      alert("Payment cannot start because the order amount is missing.");
-      return;
-    }
-
-    const orderReference = `TIMZY-${orderId}`;
 
     const response = await fetch(PAYMENT_PROXY_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
       body: JSON.stringify({
-        action: "createPaymentRequest",
         orderId,
-        order_reference: orderReference,
         amount: Number(amount),
         payer_name: customerName || "Timzy Customer",
         phone: phone || "",
-        product: productName || "Timzy Fashion Order",
-        service: productName || "Timzy Fashion Order",
-        website_url: window.location.origin
+        product: productName || "Timzy Fashion Order"
       })
     });
 
@@ -922,33 +704,19 @@ window.payOrder = async function (orderId, amount, customerName, phone, productN
       return;
     }
 
-    const paymentData = data.data || data;
-    const transactionId = paymentData.transaction_id || data.transaction_id || "";
-    const charges = paymentData.charges || {};
-    const amountToPay = charges.amount_to_pay || paymentData.amount || amount;
+    alert(
+      `Payment Account:\n\nBank: ${data.bank_name}\nAccount Name: ${data.account_name}\nAccount Number: ${data.account_number}\nAmount: ₦${Number(data.amount_to_pay || amount).toLocaleString()}`
+    );
 
     await updateDoc(doc(db, "customerOrders", orderId), {
-      transactionId,
+      transactionId: data.transaction_id || "",
       paymentStatus: "Payment Requested",
       status: "Pending Payment",
-      paymentAccountNumber: paymentData.account_number || "",
-      paymentBankName: paymentData.bank_name || "",
-      paymentAccountName: paymentData.account_name || "",
-      amountToPay: Number(amountToPay || amount),
-      adminNote: "Payment request created. Awaiting customer payment confirmation.",
+      paymentAccountNumber: data.account_number || "",
+      paymentBankName: data.bank_name || "",
+      paymentAccountName: data.account_name || "",
       updatedAt: serverTimestamp()
     });
-
-    alert(
-      `Payment Details:
-
-Bank: ${paymentData.bank_name || "-"}
-Account Name: ${paymentData.account_name || "-"}
-Account Number: ${paymentData.account_number || "-"}
-Amount: ₦${Number(amountToPay || amount).toLocaleString()}
-
-After payment is confirmed, your order will move to fulfillment.`
-    );
 
     await loadFirestoreData();
     render();
@@ -958,80 +726,9 @@ After payment is confirmed, your order will move to fulfillment.`
   }
 };
 
-window.checkPaymentStatus = async function (orderId, transactionId) {
-  try {
-    if (!transactionId) {
-      alert("No payment transaction found for this order yet.");
-      return;
-    }
-
-    if (!PAYMENT_PROXY_URL || PAYMENT_PROXY_URL.includes("PASTE_")) {
-      alert("Payment verification service is not connected yet.");
-      return;
-    }
-
-    const response = await fetch(PAYMENT_PROXY_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        action: "verifyPayment",
-        orderId,
-        transactionId
-      })
-    });
-
-    const data = await response.json();
-
-    if (!data.success) {
-      console.error(data);
-      alert(data.message || "Payment could not be verified yet.");
-      return;
-    }
-
-    const paymentData = data.data || data;
-    const status = String(paymentData.status || "").toLowerCase();
-
-    if (status === "approved" || status === "paid" || status === "completed") {
-      await updateDoc(doc(db, "customerOrders", orderId), {
-        paymentStatus: "Paid",
-        status: "Paid - Awaiting Fulfillment",
-        paidAt: serverTimestamp(),
-        adminNote: "Payment confirmed. Awaiting fulfillment approval."
-      });
-
-      alert("Payment confirmed successfully.");
-    } else {
-      alert(`Payment status: ${paymentData.status || "pending"}`);
-    }
-
-    await loadFirestoreData();
-    render();
-  } catch (error) {
-    console.error(error);
-    alert("Payment verification error.");
-  }
-};
-
 window.approveFulfillment = async function (orderId) {
   if (currentRole !== "admin") {
     alert("Only admin can approve fulfillment.");
-    return;
-  }
-
-  const order = orders.find(item => item.id === orderId);
-
-  if (!order) {
-    alert("Order not found.");
-    return;
-  }
-
-  const paymentStatus = String(order.paymentStatus || "").toLowerCase();
-  const paymentMethod = order.paymentMethod || "";
-
-  if (paymentMethod === "Online Payment" && paymentStatus !== "paid") {
-    alert("Online payment must be confirmed before fulfillment approval.");
     return;
   }
 
@@ -1087,7 +784,6 @@ window.cancelOrder = async function (orderId) {
   }
 
   const note = prompt("Cancellation reason:");
-
   if (!note) return alert("Cancellation note is required.");
 
   await updateDoc(doc(db, "customerOrders", orderId), {
@@ -1100,6 +796,8 @@ window.cancelOrder = async function (orderId) {
   await loadFirestoreData();
   render();
 };
+
+/* CHAT */
 
 window.openOrderChat = function (orderId) {
   activeChatOrderId = orderId;
@@ -1117,10 +815,7 @@ window.openOrderChat = function (orderId) {
 
   if (unsubscribeChat) unsubscribeChat();
 
-  const q = query(
-    collection(db, "orderChats"),
-    where("orderId", "==", orderId)
-  );
+  const q = query(collection(db, "orderChats"), where("orderId", "==", orderId));
 
   unsubscribeChat = onSnapshot(q, snapshot => {
     const messages = snapshot.docs
@@ -1187,16 +882,13 @@ function dashboardStats() {
 function orderStatusCounts() {
   return {
     pending: orders.filter(o => String(o.status || "").toLowerCase().includes("pending")).length,
-    paid: orders.filter(o => String(o.paymentStatus || "").toLowerCase() === "paid").length,
-    fulfillment: orders.filter(o => String(o.status || "").toLowerCase().includes("fulfillment")).length,
-    delivered: orders.filter(o => String(o.status || "").toLowerCase().includes("delivered")).length,
-    cancelled: orders.filter(o => String(o.status || "").toLowerCase().includes("cancelled")).length
+    approved: orders.filter(o => String(o.status || "").toLowerCase().includes("approved")).length,
+    rejected: orders.filter(o => String(o.status || "").toLowerCase().includes("rejected") || String(o.status || "").toLowerCase().includes("cancelled")).length
   };
 }
 
 function drawBarChart(containerId, labels, values) {
   const container = document.getElementById(containerId);
-
   if (!container) return;
 
   container.innerHTML = `<canvas></canvas>`;
@@ -1215,9 +907,10 @@ function drawBarChart(containerId, labels, values) {
   const chartHeight = height - 95;
   const chartWidth = width - padding * 2;
   const barGap = 18;
-  const barWidth = Math.max(26, chartWidth / values.length - barGap);
+  const barWidth = Math.max(26, (chartWidth / values.length) - barGap);
 
   ctx.clearRect(0, 0, width, height);
+
   ctx.strokeStyle = "rgba(255,255,255,0.08)";
   ctx.lineWidth = 1;
 
@@ -1268,11 +961,10 @@ function renderDashboardCharts() {
     Math.max(stats.netProfitAmount, 0)
   ]);
 
-  drawBarChart("orderStatusChart", ["Pending", "Paid", "Fulfill", "Delivered"], [
+  drawBarChart("orderStatusChart", ["Pending", "Approved", "Cancelled"], [
     orderCounts.pending,
-    orderCounts.paid,
-    orderCounts.fulfillment,
-    orderCounts.delivered
+    orderCounts.approved,
+    orderCounts.rejected
   ]);
 
   drawBarChart("inventoryHealthChart", ["Value", "Low"], [
@@ -1307,7 +999,7 @@ function renderDashboardInsights() {
 
   if (orderInsight) {
     orderInsight.textContent =
-      `${orderCounts.pending} pending payment/review, ${orderCounts.paid} paid, ${orderCounts.fulfillment} in fulfillment, ${orderCounts.delivered} delivered orders.`;
+      `${orderCounts.pending} pending, ${orderCounts.approved} approved, ${orderCounts.rejected} cancelled/rejected orders.`;
   }
 
   if (inventoryInsight) {
@@ -1351,21 +1043,15 @@ function renderActivityPanels() {
   }
 }
 
-/* RENDER HELPERS */
-
 function staffXP() {
   let xp = {};
 
   sales.forEach(x => {
-    if (x.staff && x.staff !== "-") {
-      xp[x.staff] = (xp[x.staff] || 0) + 10;
-    }
+    if (x.staff && x.staff !== "-") xp[x.staff] = (xp[x.staff] || 0) + 10;
   });
 
   orders.forEach(x => {
-    if (x.uploadedBy && x.status === "Completed") {
-      xp[x.uploadedBy] = (xp[x.uploadedBy] || 0) + 15;
-    }
+    if (x.uploadedBy && x.status === "Delivered") xp[x.uploadedBy] = (xp[x.uploadedBy] || 0) + 15;
   });
 
   return Object.entries(xp)
@@ -1384,70 +1070,16 @@ function staffXP() {
 function statusClass(status = "") {
   const value = status.toLowerCase();
 
-  if (value.includes("cancelled") || value.includes("rejected")) return "status-rejected";
-  if (value.includes("delivered") || value.includes("paid") || value.includes("approved") || value.includes("ready")) return "status-approved";
+  if (value.includes("approved") || value.includes("delivered") || value.includes("ready")) return "status-approved";
+  if (value.includes("rejected") || value.includes("cancelled")) return "status-rejected";
 
   return "status-pending";
 }
 
-function uniqueCategories() {
-  const fromCatalog = catalog
-    .map(item => item.category)
-    .filter(Boolean)
-    .filter(category => category !== "-");
-
-  return [...new Set([...DEFAULT_CATEGORIES, ...fromCatalog])];
-}
-
-function renderCategoryOptions(selectId) {
-  const select = document.getElementById(selectId);
-
-  if (!select) return;
-
-  const current = select.value;
-  const categories = uniqueCategories();
-
-  select.innerHTML = `<option value="">All Categories</option>` +
-    categories.map(cat => `<option value="${cat}">${cat}</option>`).join("");
-
-  select.value = current;
-}
-
-function setCategory(filterId, value) {
-  const select = document.getElementById(filterId);
-
-  if (!select) return;
-
-  select.value = value;
-  render();
-}
-
-function renderCategoryChips(containerId, filterId) {
-  const container = document.getElementById(containerId);
-
-  if (!container) return;
-
-  const active = document.getElementById(filterId)?.value || "";
-
-  const chips = [`<button type="button" class="${!active ? "chip active" : "chip"}" onclick="setCatalogCategory('${filterId}', '')">All</button>`]
-    .concat(
-      uniqueCategories().map(cat => `
-        <button type="button" class="${active === cat ? "chip active" : "chip"}" onclick="setCatalogCategory('${filterId}', '${cat}')">
-          ${cat}
-        </button>
-      `)
-    );
-
-  container.innerHTML = chips.join("");
-}
-
-window.setCatalogCategory = function (filterId, value) {
-  setCategory(filterId, value);
-};
+/* RENDER */
 
 function renderCatalog(targetId, searchId, categoryId) {
   const grid = document.getElementById(targetId);
-
   if (!grid) return;
 
   const searchValue = document.getElementById(searchId)?.value.toLowerCase() || "";
@@ -1456,13 +1088,8 @@ function renderCatalog(targetId, searchId, categoryId) {
   const filteredCatalog = catalog.filter(item => {
     const name = String(item.name || "").toLowerCase();
     const category = String(item.category || "");
-    const description = String(item.description || "").toLowerCase();
-    const color = String(item.color || "").toLowerCase();
 
-    return (
-      (name.includes(searchValue) || description.includes(searchValue) || color.includes(searchValue)) &&
-      (!categoryValue || category === categoryValue)
-    );
+    return name.includes(searchValue) && (!categoryValue || category === categoryValue);
   });
 
   grid.innerHTML = filteredCatalog.length
@@ -1488,31 +1115,20 @@ function renderCatalog(targetId, searchId, categoryId) {
         return `
           <div class="catalog-card">
             <div class="catalog-image">
-              ${
-                item.image1
-                  ? `<img src="${item.image1}" alt="${item.name}">`
-                  : `<span>👗</span>`
-              }
+              ${item.image1 ? `<img src="${item.image1}" alt="${item.name}">` : `<span>👗</span>`}
             </div>
 
             <div class="catalog-body">
-              <span class="category-badge">${item.category || "Fashion"}</span>
               <h3>${item.name}</h3>
-              <p>${item.description || "Available product"}</p>
+              <p>${item.category || "-"}</p>
               <small>Color: ${item.color || "-"}</small>
-              <small>Sizes: ${item.sizes || "Ask for sizes"}</small>
+              <small>${item.description || "Available product"}</small>
               <strong>${money(item.price)}</strong>
               <small>Available: ${item.quantity || "Check stock"}</small>
 
               <button type="button" onclick='openProductDetails("${encoded}")'>View Details</button>
-
-              <button type="button" onclick='requestCatalogOrder(${JSON.stringify(item.name)}, ${JSON.stringify(item.price || "")})'>
-                Request Order
-              </button>
-
-              <a class="whatsapp-btn" href="${whatsappLink}" target="_blank">
-                WhatsApp Order
-              </a>
+              <button type="button" onclick='requestCatalogOrder(${JSON.stringify(item.name)}, ${JSON.stringify(item.price || "")})'>Request Order</button>
+              <a class="whatsapp-btn" href="${whatsappLink}" target="_blank">WhatsApp Order</a>
 
               ${
                 currentRole === "admin" && !String(item.id).startsWith("inventory-")
@@ -1526,62 +1142,19 @@ function renderCatalog(targetId, searchId, categoryId) {
     : `<p class="note">No products found.</p>`;
 }
 
-/* MAIN RENDER */
-
 window.render = function () {
-  renderCategoryOptions("catalogCategoryFilter");
-  renderCategoryOptions("privateCatalogCategoryFilter");
-
-  renderCategoryChips("publicCategoryChips", "catalogCategoryFilter");
-  renderCategoryChips("privateCategoryChips", "privateCatalogCategoryFilter");
-
   renderCatalog("catalogGrid", "catalogSearch", "catalogCategoryFilter");
   renderCatalog("privateCatalogGrid", "privateCatalogSearch", "privateCatalogCategoryFilter");
 
   const stats = dashboardStats();
 
-  if (document.getElementById("totalSales")) {
-    document.getElementById("totalSales").textContent = money(stats.totalSalesAmount);
-  }
-
-  if (document.getElementById("totalExpenses")) {
-    document.getElementById("totalExpenses").textContent = money(stats.totalExpensesAmount);
-  }
-
-  if (document.getElementById("netProfit")) {
-    document.getElementById("netProfit").textContent = money(stats.netProfitAmount);
-  }
-
-  if (document.getElementById("inventoryValue")) {
-    document.getElementById("inventoryValue").textContent = money(stats.inventoryValueAmount);
-  }
-
-  if (document.getElementById("lowStock")) {
-    document.getElementById("lowStock").textContent = stats.lowStockCount;
-  }
-
-  const customerProfilesTable = document.getElementById("customerProfilesTable");
-
-  if (customerProfilesTable) {
-    customerProfilesTable.innerHTML = customerProfiles.length
-      ? customerProfiles.map(c => `
-        <tr>
-          <td>${c.name || "-"}</td>
-          <td>${c.email || c.id || "-"}</td>
-          <td>${c.phone || "-"}</td>
-          <td>${c.status || "active"}</td>
-          <td>
-            <button type="button" onclick="toggleCustomerStatus('${c.email || c.id}', '${c.status || "active"}')">
-              ${(c.status || "active") === "active" ? "Disable" : "Activate"}
-            </button>
-          </td>
-        </tr>
-      `).join("")
-      : `<tr><td colspan="5">No customer profiles yet.</td></tr>`;
-  }
+  if (document.getElementById("totalSales")) document.getElementById("totalSales").textContent = money(stats.totalSalesAmount);
+  if (document.getElementById("totalExpenses")) document.getElementById("totalExpenses").textContent = money(stats.totalExpensesAmount);
+  if (document.getElementById("netProfit")) document.getElementById("netProfit").textContent = money(stats.netProfitAmount);
+  if (document.getElementById("inventoryValue")) document.getElementById("inventoryValue").textContent = money(stats.inventoryValueAmount);
+  if (document.getElementById("lowStock")) document.getElementById("lowStock").textContent = stats.lowStockCount;
 
   const salesTable = document.getElementById("salesTable");
-
   if (salesTable) {
     salesTable.innerHTML = sales.map(x => `
       <tr>
@@ -1595,7 +1168,6 @@ window.render = function () {
   }
 
   const expensesTable = document.getElementById("expensesTable");
-
   if (expensesTable) {
     expensesTable.innerHTML = expenses.map(x => `
       <tr>
@@ -1611,7 +1183,6 @@ window.render = function () {
   }
 
   const inventoryTable = document.getElementById("inventoryTable");
-
   if (inventoryTable) {
     inventoryTable.innerHTML = inventory.map(x => `
       <tr>
@@ -1633,7 +1204,7 @@ window.render = function () {
         <td>${x.phone || "-"}</td>
         <td>${x.product || "-"}</td>
         <td class="${statusClass(x.status)}">${x.status || "-"}</td>
-        <td class="${statusClass(x.paymentStatus)}">${x.paymentStatus || "Pending"}</td>
+        <td>${x.paymentStatus || "Pending"}</td>
         <td>${x.delivery || "-"}</td>
         <td>${money(x.finalAmount || 0)}</td>
         <td>${x.paymentMethod || "-"}</td>
@@ -1643,12 +1214,6 @@ window.render = function () {
             x.paymentMethod === "Online Payment" &&
             String(x.paymentStatus || "").toLowerCase() !== "paid"
               ? `<button type="button" onclick="payOrder('${x.id}', '${x.finalAmount || 0}', '${x.customer || ""}', '${x.phone || ""}', '${x.product || ""}')">Pay Now</button>`
-              : ""
-          }
-
-          ${
-            x.transactionId && String(x.paymentStatus || "").toLowerCase() !== "paid"
-              ? `<button type="button" onclick="checkPaymentStatus('${x.id}', '${x.transactionId}')">Check Payment</button>`
               : ""
           }
 
@@ -1669,16 +1234,10 @@ window.render = function () {
     `).join("")
     : `<tr><td colspan="10">No orders found.</td></tr>`;
 
-  if (document.getElementById("ordersTable")) {
-    document.getElementById("ordersTable").innerHTML = orderRows;
-  }
-
-  if (document.getElementById("customerOrdersTable")) {
-    document.getElementById("customerOrdersTable").innerHTML = orderRows;
-  }
+  if (document.getElementById("ordersTable")) document.getElementById("ordersTable").innerHTML = orderRows;
+  if (document.getElementById("customerOrdersTable")) document.getElementById("customerOrdersTable").innerHTML = orderRows;
 
   const customersTable = document.getElementById("customersTable");
-
   if (customersTable) {
     customersTable.innerHTML = customers.length
       ? customers.map(x => `
@@ -1700,7 +1259,6 @@ window.render = function () {
   }
 
   const leaderboard = document.getElementById("leaderboard");
-
   if (leaderboard) {
     leaderboard.innerHTML = staffXP().map((x, i) => `
       <div class="rank-card">
@@ -1711,7 +1269,6 @@ window.render = function () {
   }
 
   const formLinks = document.getElementById("formLinks");
-
   if (formLinks) {
     let allowedForms = window.TIMZY_FORMS || [];
 
@@ -1739,5 +1296,12 @@ window.render = function () {
   renderDashboardInsights();
   renderActivityPanels();
 };
+
+function clearInputs(ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+}
 
 loadAllData();
