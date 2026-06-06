@@ -1,7 +1,7 @@
 window.TIMZY_FORMS = [
   {
     name: "Sales Entry Form",
-    description: "Use this for every sale. Connect it to Sales Responses in Google Sheets.",
+    description: "Use this for every sale.",
     url: "https://forms.gle/KiSfFM1aJT6jLfv99"
   },
   {
@@ -16,12 +16,12 @@ window.TIMZY_FORMS = [
   },
   {
     name: "Customer Measurement Form",
-    description: "Use this to save customer measurements and style notes.",
+    description: "Use this to save customer measurements.",
     url: "https://forms.gle/wcCqZCnASmEEG7DC6"
   },
   {
     name: "Order Form",
-    description: "Use this to track tailoring/customer orders.",
+    description: "Use this to track tailoring orders.",
     url: "https://forms.gle/pnSjpa753uGRqBZd9"
   }
 ];
