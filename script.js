@@ -36,9 +36,18 @@ function normalize(row){
 
 function driveToImage(url){
   if(!url) return "";
-  const match = String(url).match(/[-\w]{25,}/);
-  if(!match) return String(url).trim();
-  return `https://drive.google.com/thumbnail?id=${match[0]}&sz=w1000`;
+
+  const str = String(url).trim();
+
+  const idMatch =
+    str.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
+    str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+
+  if(idMatch){
+    return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+  }
+
+  return str;
 }
 
 function driveImages(value){
@@ -364,7 +373,12 @@ window.submitOrder = async function(){
 
 window.payOrder = async function(orderId, amount, customerName, phone, productName){
   try{
-    if(!PAYMENT_PROXY_URL || PAYMENT_PROXY_URL.includes("https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec")) return alert("Payment service is not connected.");
+   if(
+ !PAYMENT_PROXY_URL ||
+ PAYMENT_PROXY_URL.includes("https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec")
+){
+  return alert("Payment service is not connected.");
+}
     const r = await fetch(PAYMENT_PROXY_URL, { method:"POST", body:JSON.stringify({ orderId, amount:Number(amount), payer_name:customerName || "Timzy Customer", phone:phone || "", product:productName || "Timzy Fashion Order" }) });
     const data = await r.json();
     if(!data.success) return alert(data.message || "Payment request failed.");
