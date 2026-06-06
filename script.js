@@ -19,7 +19,7 @@ const SALES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Sales%20Respons
 const INVENTORY_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Inventory%20Restock";
 const EXPENSES_API = "https://sheetdb.io/api/v1/75j0rpy9j199t?sheet=Expense%20Responses";
 
-const PAYMENT_PROXY_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+const PAYMENT_PROXY_URL = "https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec";
 
 let sales = [], inventory = [], expenses = [], catalog = [], customers = [], orders = [];
 let currentRole = "public", currentUserEmail = "", activeChatOrderId = "", unsubscribeChat = null;
