@@ -3,630 +3,302 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Timzy Fashion OS</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-  <!-- PUBLIC APP HEADER -->
-  <header id="publicHeader" class="app-header public-app-header">
-    <div class="brand-block">
+<header id="publicHeader" class="top-shell">
+  <div class="app-topbar">
+    <button class="icon-btn" onclick="togglePublicMenu()">☰</button>
+    <div>
       <p class="eyebrow">TIMZY FASHION OS</p>
-      <h1>Timzy Fashion Catalog</h1>
-      <p>
-        Browse products, view styles, order via WhatsApp, or request customer access to save measurements and place orders.
-      </p>
+      <h1>Premium Fashion Catalog</h1>
+    </div>
+  </div>
+
+  <div id="publicMenu" class="dropdown-menu">
+    <button onclick="showPublicCatalog()">Catalog</button>
+    <button onclick="openLoginModal()">Login</button>
+    <a class="btn success" href="https://wa.me/2348118103510?text=Hello,%20I%20want%20my%20login%20details%20into%20the%20Timzy%20Fashion%20OS" target="_blank">Request Access</a>
+  </div>
+</header>
+
+<section id="publicCatalog" class="screen">
+  <div class="hero-card">
+    <p class="eyebrow">NEW ARRIVALS</p>
+    <h2>Browse Timzy Fashion Products</h2>
+    <p class="note">View products freely. Login is required to save measurements or place an order.</p>
+  </div>
+
+  <div class="filter-bar">
+    <input id="catalogSearch" placeholder="Search products..." oninput="render()" />
+    <select id="catalogCategoryFilter" onchange="render()">
+      <option value="">All Categories</option>
+      <option>Senator</option>
+      <option>Agbada</option>
+      <option>Kaftan</option>
+      <option>Female Wear</option>
+      <option>Ready-to-Wear</option>
+      <option>Adire</option>
+      <option>Aso Oke</option>
+      <option>Children</option>
+      <option>Fabrics</option>
+      <option>Accessories</option>
+      <option>Bags</option>
+      <option>Shoes</option>
+      <option>Men / Senator</option>
+    </select>
+  </div>
+
+  <div id="catalogGrid" class="catalog-grid"></div>
+</section>
+
+<div id="loginModal" class="modal" style="display:none;">
+  <div class="modal-card small">
+    <button class="modal-close" onclick="closeLoginModal()">×</button>
+    <p class="eyebrow">SECURE LOGIN</p>
+    <h2>Access Timzy Fashion OS</h2>
+    <input id="loginEmail" type="email" placeholder="Email" />
+    <input id="loginPassword" type="password" placeholder="Password" />
+    <button onclick="loginUser()">Login</button>
+    <p class="note">
+      Need login?
+      <a href="https://wa.me/2348118103510?text=Hello,%20I%20want%20my%20login%20details%20into%20the%20Timzy%20Fashion%20OS" target="_blank">Request access</a>
+    </p>
+  </div>
+</div>
+
+<div id="accessModal" class="modal" style="display:none;">
+  <div class="modal-card small">
+    <button class="modal-close" onclick="closeAccessModal()">×</button>
+    <h2>Customer Login Required</h2>
+    <p class="note">Login is required to place orders, save measurements, and chat with Timzy Fashion.</p>
+    <a class="btn success" href="https://wa.me/2348118103510?text=Hello,%20I%20want%20my%20login%20details%20into%20the%20Timzy%20Fashion%20OS" target="_blank">Request Login Details</a>
+    <button onclick="openLoginModal()">I Already Have Login</button>
+  </div>
+</div>
+
+<div id="productModal" class="modal" style="display:none;">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeProductModal()">×</button>
+    <div id="modalProductContent"></div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <header class="top-shell">
+    <div class="app-topbar">
+      <button class="icon-btn" onclick="toggleAppMenu()">☰</button>
+      <div>
+        <p class="eyebrow">TIMZY FASHION OS</p>
+        <h1>Command Center</h1>
+      </div>
+      <button class="btn ghost" onclick="logoutUser()">Logout</button>
     </div>
 
-    <div class="top-actions">
-      <button type="button" onclick="showPublicCatalog()">🛍️ Catalog</button>
-      <button type="button" onclick="openLoginModal()">🔐 Login</button>
-
-      <a
-        class="whatsapp-btn"
-        href="https://wa.me/2348118103510?text=Hello,%20I%20want%20my%20login%20details%20into%20the%20Timzy%20Fashion%20OS"
-        target="_blank"
-      >
-        Request Access
-      </a>
+    <div id="appMenu" class="dropdown-menu">
+      <button id="dashboardBtn" onclick="selectAppMenu('dashboard')">Dashboard</button>
+      <button id="catalogBtn" onclick="selectAppMenu('catalog')">Catalog</button>
+      <button id="catalogManagerBtn" onclick="selectAppMenu('catalogManager')">Catalog Manager</button>
+      <button id="customerManagerBtn" onclick="selectAppMenu('customerManager')">Customer Manager</button>
+      <button id="salesBtn" onclick="selectAppMenu('sales')">Sales</button>
+      <button id="expensesBtn" onclick="selectAppMenu('expenses')">Expenses</button>
+      <button id="inventoryBtn" onclick="selectAppMenu('inventory')">Inventory</button>
+      <button id="ordersBtn" onclick="selectAppMenu('orders')">Orders</button>
+      <button id="customersBtn" onclick="selectAppMenu('customers')">Customers</button>
+      <button id="staffBtn" onclick="selectAppMenu('staff')">Staff XP</button>
+      <button id="formsBtn" onclick="selectAppMenu('forms')">Forms</button>
     </div>
   </header>
 
+  <main class="screen">
 
-  <!-- PUBLIC CATALOG -->
-  <section id="publicCatalog" class="app-section">
-    <div class="section-head">
-      <div>
-        <h2>Product Catalog</h2>
-        <p class="note">
-          Browse available products. Login is required to request orders and save measurements.
-        </p>
-      </div>
-    </div>
-
-    <div class="filter-bar">
-      <input
-        id="catalogSearch"
-        placeholder="Search products..."
-        oninput="render()"
-      />
-
-      <select id="catalogCategoryFilter" onchange="render()">
-        <option value="">All Categories</option>
-        <option value="Senator">Senator</option>
-        <option value="Agbada">Agbada</option>
-        <option value="Kaftan">Kaftan</option>
-        <option value="Female Wear">Female Wear</option>
-        <option value="Ready-to-Wear">Ready-to-Wear</option>
-        <option value="Adire">Adire</option>
-        <option value="Aso Oke">Aso Oke</option>
-        <option value="Children">Children</option>
-        <option value="Fabrics">Fabrics</option>
-        <option value="Accessories">Accessories</option>
-        <option value="Bags">Bags</option>
-        <option value="Shoes">Shoes</option>
-        <option value="Men / Senator">Men / Senator</option>
-      </select>
-    </div>
-
-    <div id="catalogGrid" class="catalog-grid"></div>
-  </section>
-
-
-  <!-- LOGIN MODAL -->
-  <div id="loginModal" class="modal" style="display:none;">
-    <div class="modal-content login-modal-card">
-      <button class="modal-close" type="button" onclick="closeLoginModal()">×</button>
-
-      <p class="eyebrow">SECURE LOGIN</p>
-      <h2>Access Timzy Fashion OS</h2>
-
-      <p class="note">Login as admin, staff, or customer.</p>
-
-      <input
-        id="loginEmail"
-        type="email"
-        placeholder="Enter Email"
-        autocomplete="email"
-      />
-
-      <input
-        id="loginPassword"
-        type="password"
-        placeholder="Enter Password"
-        autocomplete="current-password"
-      />
-
-      <button type="button" onclick="loginUser()">Login</button>
-
-      <p class="note">
-        Need login details?
-        <a
-          href="https://wa.me/2348118103510?text=Hello,%20I%20want%20my%20login%20details%20into%20the%20Timzy%20Fashion%20OS"
-          target="_blank"
-        >
-          Request access on WhatsApp
-        </a>
-      </p>
-    </div>
-  </div>
-
-
-  <!-- ACCESS REQUIRED MODAL -->
-  <div id="accessModal" class="modal" style="display:none;">
-    <div class="modal-content login-modal-card">
-      <button class="modal-close" type="button" onclick="closeAccessModal()">×</button>
-
-      <h2>Customer Login Required</h2>
-
-      <p class="note">
-        Please sign in as a customer to place orders, chat with Timzy Fashion, and save your measurements for future sewing.
-      </p>
-
-      <a
-        class="whatsapp-btn"
-        href="https://wa.me/2348118103510?text=Hello,%20I%20want%20my%20login%20details%20into%20the%20Timzy%20Fashion%20OS"
-        target="_blank"
-      >
-        Request Login Details
-      </a>
-
-      <button type="button" onclick="openLoginModal()">I Already Have Login</button>
-    </div>
-  </div>
-
-
-  <!-- PRIVATE APP -->
-  <div id="app" style="display:none;">
-
-    <!-- PRIVATE APP HEADER -->
-    <header class="app-header private-app-header">
-      <div class="brand-block">
-        <p class="eyebrow">TIMZY FASHION OS</p>
-        <h1>Business Command Center</h1>
-        <p>Catalog • Orders • Customers • Inventory • Sales • Expenses</p>
+    <section id="dashboard" class="tab active">
+      <div class="hero-card">
+        <p class="eyebrow">BUSINESS INTELLIGENCE</p>
+        <h2>Executive Dashboard</h2>
+        <p class="note">Sales, expenses, inventory, orders, payments, and operational health.</p>
       </div>
 
-      <div class="health-card">
-        <span>Business Health</span>
-        <strong id="healthScore">85%</strong>
-
-        <div class="bar">
-          <i style="width:85%"></i>
-        </div>
-
-        <button type="button" onclick="logoutUser()">Logout</button>
+      <div class="kpi-grid">
+        <div class="mini-card"><span>Total Sales</span><strong id="totalSales">₦0</strong></div>
+        <div class="mini-card"><span>Expenses</span><strong id="totalExpenses">₦0</strong></div>
+        <div class="mini-card"><span>Net Profit</span><strong id="netProfit">₦0</strong></div>
+        <div class="mini-card"><span>Inventory Value</span><strong id="inventoryValue">₦0</strong></div>
+        <div class="mini-card"><span>Low Stock</span><strong id="lowStock">0</strong></div>
       </div>
-    </header>
 
+      <div class="analytics-grid">
+        <div class="glass-card"><h3>Sales vs Expenses</h3><div id="financeChart" class="chart-box"></div><p id="financeInsight" class="note"></p></div>
+        <div class="glass-card"><h3>Order Status</h3><div id="orderStatusChart" class="chart-box"></div><p id="orderInsight" class="note"></p></div>
+        <div class="glass-card"><h3>Inventory Health</h3><div id="inventoryHealthChart" class="chart-box"></div><p id="inventoryInsight" class="note"></p></div>
+        <div class="glass-card"><h3>Staff Performance</h3><div id="staffPerformanceChart" class="chart-box"></div><p id="staffInsight" class="note"></p></div>
+      </div>
 
-    <!-- APP MENU DROPDOWN -->
-    <section class="app-menu-shell">
-      <button type="button" class="menu-toggle" onclick="toggleAppMenu()">
-        ☰ Menu
-      </button>
-
-      <div id="appMenu" class="app-menu" style="display:none;">
-        <button id="dashboardBtn" type="button" onclick="selectAppMenu('dashboard')">📊 Dashboard</button>
-        <button id="catalogBtn" type="button" onclick="selectAppMenu('catalog')">🛍️ Catalog</button>
-        <button id="catalogManagerBtn" type="button" onclick="selectAppMenu('catalogManager')">🖼️ Catalog Manager</button>
-        <button id="customerManagerBtn" type="button" onclick="selectAppMenu('customerManager')">👤 Customer Manager</button>
-        <button id="salesBtn" type="button" onclick="selectAppMenu('sales')">💰 Sales</button>
-        <button id="expensesBtn" type="button" onclick="selectAppMenu('expenses')">💸 Expenses</button>
-        <button id="inventoryBtn" type="button" onclick="selectAppMenu('inventory')">📦 Inventory</button>
-        <button id="ordersBtn" type="button" onclick="selectAppMenu('orders')">🧵 Orders</button>
-        <button id="customersBtn" type="button" onclick="selectAppMenu('customers')">👗 Customers</button>
-        <button id="staffBtn" type="button" onclick="selectAppMenu('staff')">🏆 Staff XP</button>
-        <button id="formsBtn" type="button" onclick="selectAppMenu('forms')">📝 Forms</button>
+      <div class="analytics-grid">
+        <div class="glass-card"><h3>Recent Activity</h3><div id="recentActivity"></div></div>
+        <div class="glass-card"><h3>Critical Alerts</h3><div id="criticalAlerts"></div></div>
       </div>
     </section>
 
+    <section id="catalog" class="tab">
+      <h2>Product Catalog</h2>
+      <div class="filter-bar">
+        <input id="privateCatalogSearch" placeholder="Search products..." oninput="render()" />
+        <select id="privateCatalogCategoryFilter" onchange="render()">
+          <option value="">All Categories</option>
+          <option>Senator</option><option>Agbada</option><option>Kaftan</option>
+          <option>Female Wear</option><option>Ready-to-Wear</option><option>Adire</option>
+          <option>Aso Oke</option><option>Children</option><option>Fabrics</option>
+          <option>Accessories</option><option>Bags</option><option>Shoes</option>
+          <option>Men / Senator</option>
+        </select>
+      </div>
+      <div id="privateCatalogGrid" class="catalog-grid"></div>
+    </section>
 
-    <main>
+    <section id="catalogManager" class="tab">
+      <h2>Catalog Manager</h2>
+      <div class="glass-card">
+        <form>
+          <input id="catProductName" placeholder="Product Name" />
+          <input id="catCategory" placeholder="Category" />
+          <input id="catColor" placeholder="Color" />
+          <input id="catPrice" type="number" placeholder="Price" />
+          <input id="catQuantity" type="number" placeholder="Quantity" />
+          <input id="catSizes" placeholder="Sizes" />
+          <input id="catImage1" placeholder="Image URL / Drive Link 1" />
+          <input id="catImage2" placeholder="Image URL / Drive Link 2" />
+          <input id="catImage3" placeholder="Image URL / Drive Link 3" />
+          <textarea id="catDescription" placeholder="Description"></textarea>
+          <button type="button" onclick="saveCatalogProduct()">Publish Product</button>
+        </form>
+      </div>
+    </section>
 
-      <!-- DASHBOARD -->
-      <section id="dashboard" class="tab active">
-        <div class="dashboard-head">
-          <div>
-            <h2>Executive Intelligence Dashboard</h2>
-            <p class="note">
-              Live overview of sales, expenses, stock, order activity, payment activity, and operational health.
-            </p>
-          </div>
+    <section id="customerManager" class="tab">
+      <h2>Customer Manager</h2>
+      <div class="glass-card">
+        <p class="note">Next upgrade: admin-generated customer accounts and password workflow.</p>
+      </div>
+    </section>
 
-          <div class="system-badge">
-            <span>System Status</span>
-            <strong>ONLINE</strong>
-          </div>
+    <section id="sales" class="tab">
+      <h2>Sales</h2>
+      <div class="table-wrap"><table><thead><tr><th>Staff</th><th>Category</th><th>Product</th><th>Qty</th><th>Amount</th></tr></thead><tbody id="salesTable"></tbody></table></div>
+    </section>
+
+    <section id="expenses" class="tab">
+      <h2>Expenses</h2>
+      <div class="table-wrap"><table><thead><tr><th>Staff</th><th>Category</th><th>Item</th><th>Supplier</th><th>Qty</th><th>Unit Cost</th><th>Total</th></tr></thead><tbody id="expensesTable"></tbody></table></div>
+    </section>
+
+    <section id="inventory" class="tab">
+      <h2>Inventory</h2>
+      <div class="table-wrap"><table><thead><tr><th>Category</th><th>Product</th><th>SKU</th><th>Supplier</th><th>Qty</th><th>Cost</th><th>Selling</th></tr></thead><tbody id="inventoryTable"></tbody></table></div>
+    </section>
+
+    <section id="orders" class="tab">
+      <h2>Orders</h2>
+      <p class="note">Customer pays first. Admin verifies payment, then manages fulfillment.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th><th>Phone</th><th>Style</th><th>Order Status</th>
+              <th>Payment Status</th><th>Delivery</th><th>Amount</th><th>Method</th>
+              <th>Proof</th><th>Admin Note</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTable"></tbody>
+        </table>
+      </div>
+      <div id="chatBox" class="glass-card chat-box" style="display:none;">
+        <h3>Order Chat</h3>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-row">
+          <input id="chatInput" placeholder="Type message..." />
+          <button onclick="sendChatMessage()">Send</button>
         </div>
+      </div>
+    </section>
 
-        <div class="kpi-grid">
-          <div class="tech-card">
-            <span>Total Sales</span>
-            <strong id="totalSales">₦0</strong>
-            <small>Revenue captured from sales records</small>
-          </div>
-
-          <div class="tech-card">
-            <span>Total Expenses</span>
-            <strong id="totalExpenses">₦0</strong>
-            <small>Operational cost movement</small>
-          </div>
-
-          <div class="tech-card">
-            <span>Net Profit</span>
-            <strong id="netProfit">₦0</strong>
-            <small>Sales minus expenses</small>
-          </div>
-
-          <div class="tech-card">
-            <span>Inventory Value</span>
-            <strong id="inventoryValue">₦0</strong>
-            <small>Current stock valuation</small>
-          </div>
-
-          <div class="tech-card warning">
-            <span>Low Stock Alerts</span>
-            <strong id="lowStock">0</strong>
-            <small>Items requiring attention</small>
-          </div>
-        </div>
-
-        <div class="analytics-grid">
-          <div class="analytics-card">
-            <div class="chart-header">
-              <h3>Sales vs Expenses</h3>
-              <span>Financial Signal</span>
-            </div>
-            <div id="financeChart" class="chart-box"></div>
-            <p id="financeInsight" class="insight-text"></p>
-          </div>
-
-          <div class="analytics-card">
-            <div class="chart-header">
-              <h3>Order Status</h3>
-              <span>Pipeline Health</span>
-            </div>
-            <div id="orderStatusChart" class="chart-box"></div>
-            <p id="orderInsight" class="insight-text"></p>
-          </div>
-
-          <div class="analytics-card">
-            <div class="chart-header">
-              <h3>Inventory Health</h3>
-              <span>Stock Intelligence</span>
-            </div>
-            <div id="inventoryHealthChart" class="chart-box"></div>
-            <p id="inventoryInsight" class="insight-text"></p>
-          </div>
-
-          <div class="analytics-card">
-            <div class="chart-header">
-              <h3>Staff Performance</h3>
-              <span>XP Signal</span>
-            </div>
-            <div id="staffPerformanceChart" class="chart-box"></div>
-            <p id="staffInsight" class="insight-text"></p>
-          </div>
-        </div>
-
-        <div class="operations-grid">
-          <div class="analytics-card">
-            <h3>Recent Operational Activity</h3>
-            <div id="recentActivity" class="activity-list"></div>
-          </div>
-
-          <div class="analytics-card">
-            <h3>Critical Alerts</h3>
-            <div id="criticalAlerts" class="activity-list"></div>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- PRIVATE CATALOG -->
-      <section id="catalog" class="tab">
-        <h2>Product Catalog</h2>
-        <p class="note">Search products, view images, and request orders.</p>
-
-        <div class="filter-bar">
-          <input
-            id="privateCatalogSearch"
-            placeholder="Search products..."
-            oninput="render()"
-          />
-
-          <select id="privateCatalogCategoryFilter" onchange="render()">
-            <option value="">All Categories</option>
-            <option value="Senator">Senator</option>
-            <option value="Agbada">Agbada</option>
-            <option value="Kaftan">Kaftan</option>
-            <option value="Female Wear">Female Wear</option>
-            <option value="Ready-to-Wear">Ready-to-Wear</option>
-            <option value="Adire">Adire</option>
-            <option value="Aso Oke">Aso Oke</option>
-            <option value="Children">Children</option>
-            <option value="Fabrics">Fabrics</option>
-            <option value="Accessories">Accessories</option>
-            <option value="Bags">Bags</option>
-            <option value="Shoes">Shoes</option>
-            <option value="Men / Senator">Men / Senator</option>
-          </select>
-        </div>
-
-        <div id="privateCatalogGrid" class="catalog-grid"></div>
-      </section>
-
-
-      <!-- CATALOG MANAGER -->
-      <section id="catalogManager" class="tab">
-        <h2>Catalog Manager</h2>
-        <p class="note">Admin can publish catalog products manually using image URLs.</p>
-
-        <div class="card">
-          <h3>Add / Publish Product</h3>
-
+    <section id="customers" class="tab">
+      <h2>Customer Portal</h2>
+      <div class="cards">
+        <div class="glass-card">
+          <h3>Measurement</h3>
           <form>
-            <input id="catProductName" placeholder="Product Name" />
-            <input id="catCategory" placeholder="Category" />
-            <input id="catColor" placeholder="Color / Material Color" />
-            <input id="catPrice" type="number" placeholder="Price" />
-            <input id="catQuantity" type="number" placeholder="Available Quantity" />
-            <input id="catSizes" placeholder="Sizes e.g. S, M, L, XL" />
-            <input id="catImage1" placeholder="Image URL or Google Drive Link 1" />
-            <input id="catImage2" placeholder="Image URL or Google Drive Link 2" />
-            <input id="catImage3" placeholder="Image URL or Google Drive Link 3" />
-            <textarea id="catDescription" placeholder="Product Description"></textarea>
-
-            <button type="button" onclick="saveCatalogProduct()">Publish Product</button>
+            <input id="targetCustomerEmail" class="staff-admin-only" type="email" placeholder="Customer Email" />
+            <input id="cmName" placeholder="Name" /><input id="cmPhone" placeholder="Phone" />
+            <input id="cmShoulder" placeholder="Shoulder" /><input id="cmChest" placeholder="Chest/Bust" />
+            <input id="cmWaist" placeholder="Waist" /><input id="cmHip" placeholder="Hip" />
+            <input id="cmSleeve" placeholder="Sleeve" /><input id="cmLength" placeholder="Length" />
+            <textarea id="cmNotes" placeholder="Style Notes"></textarea>
+            <button type="button" onclick="submitMeasurement()">Save Measurement</button>
           </form>
         </div>
-      </section>
 
-
-      <!-- CUSTOMER MANAGER -->
-      <section id="customerManager" class="tab">
-        <h2>Customer Manager</h2>
-        <p class="note">
-          Admin area for creating and managing customer accounts. Full Firebase account creation will be added here.
-        </p>
-
-        <div class="card">
-          <h3>Customer Account Placeholder</h3>
-          <p class="note">
-            Next upgrade: admin creates customer login details and assigns customer role.
-          </p>
+        <div class="glass-card">
+          <h3>Order Request</h3>
+          <form>
+            <input id="targetCustomerEmailOrder" class="staff-admin-only" type="email" placeholder="Customer Email" />
+            <input id="coName" placeholder="Name" /><input id="coPhone" placeholder="Phone" />
+            <input id="coStyle" placeholder="Product / Style" />
+            <input id="coDelivery" type="date" />
+            <input id="coAmount" type="number" placeholder="Final Amount" />
+            <select id="coPaymentMethod">
+              <option value="">Payment Method</option>
+              <option>Online Payment</option>
+              <option>Cash on Delivery</option>
+              <option>Bank Transfer</option>
+            </select>
+            <button type="button" onclick="submitOrder()">Submit Order</button>
+          </form>
         </div>
-      </section>
+      </div>
 
+      <h3>Measurements</h3>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Measurements</th><th>Notes</th></tr></thead><tbody id="customersTable"></tbody></table></div>
 
-      <!-- SALES -->
-      <section id="sales" class="tab">
-        <h2>Sales Records</h2>
+      <h3>Orders</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Customer</th><th>Phone</th><th>Style</th><th>Order Status</th><th>Payment Status</th><th>Delivery</th><th>Amount</th><th>Method</th><th>Proof</th><th>Admin Note</th><th>Action</th></tr></thead>
+          <tbody id="customerOrdersTable"></tbody>
+        </table>
+      </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Staff</th>
-                <th>Category</th>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-
-            <tbody id="salesTable"></tbody>
-          </table>
+      <div id="customerChatBox" class="glass-card chat-box" style="display:none;">
+        <h3>Order Chat</h3>
+        <div id="customerChatMessages" class="chat-messages"></div>
+        <div class="chat-input-row">
+          <input id="customerChatInput" placeholder="Type message..." />
+          <button onclick="sendChatMessage()">Send</button>
         </div>
-      </section>
+      </div>
+    </section>
 
+    <section id="staff" class="tab">
+      <h2>Staff XP</h2>
+      <div id="leaderboard" class="leaderboard"></div>
+    </section>
 
-      <!-- EXPENSES -->
-      <section id="expenses" class="tab">
-        <h2>Expenses</h2>
-        <p class="note">Staff can record and view expenses. Admin can view all expenses.</p>
+    <section id="forms" class="tab">
+      <h2>Forms</h2>
+      <div id="formLinks" class="form-grid"></div>
+    </section>
 
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Staff</th>
-                <th>Category</th>
-                <th>Expense Item</th>
-                <th>Supplier</th>
-                <th>Qty</th>
-                <th>Unit Cost</th>
-                <th>Total</th>
-              </tr>
-            </thead>
+  </main>
+</div>
 
-            <tbody id="expensesTable"></tbody>
-          </table>
-        </div>
-      </section>
+<footer>Timzy Fashion OS Cloud Edition</footer>
 
-
-      <!-- INVENTORY -->
-      <section id="inventory" class="tab">
-        <h2>Inventory Control</h2>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Product</th>
-                <th>SKU</th>
-                <th>Supplier</th>
-                <th>Qty Added</th>
-                <th>Cost Price</th>
-                <th>Selling Price</th>
-              </tr>
-            </thead>
-
-            <tbody id="inventoryTable"></tbody>
-          </table>
-        </div>
-      </section>
-
-
-      <!-- ORDERS -->
-      <section id="orders" class="tab">
-        <h2>Orders</h2>
-        <p class="note">
-          Customers pay first. Admin approval is for fulfillment, production, pickup, delivery, or cancellation.
-        </p>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Phone</th>
-                <th>Style</th>
-                <th>Order Status</th>
-                <th>Payment Status</th>
-                <th>Delivery</th>
-                <th>Final Amount</th>
-                <th>Payment Method</th>
-                <th>Admin Note</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            <tbody id="ordersTable"></tbody>
-          </table>
-        </div>
-
-        <div id="chatBox" class="card chat-box" style="display:none;">
-          <h3>Order Communication Center</h3>
-
-          <div id="chatMessages" class="chat-messages"></div>
-
-          <div class="chat-input-row">
-            <input id="chatInput" type="text" placeholder="Type your message..." />
-            <button type="button" onclick="sendChatMessage()">Send</button>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- CUSTOMERS -->
-      <section id="customers" class="tab">
-        <h2>Customer Portal</h2>
-        <p class="note">
-          Customers can save measurements and request orders. Staff/Admin can submit records for customers using email.
-        </p>
-
-        <div class="cards">
-          <div class="card">
-            <h3>Submit Measurement</h3>
-
-            <form>
-              <input id="targetCustomerEmail" class="staff-admin-only" type="email" placeholder="Customer Email — Staff/Admin only" />
-              <input id="cmName" placeholder="Customer Name" />
-              <input id="cmPhone" placeholder="Phone Number" />
-              <input id="cmShoulder" placeholder="Shoulder" />
-              <input id="cmChest" placeholder="Chest/Bust" />
-              <input id="cmWaist" placeholder="Waist" />
-              <input id="cmHip" placeholder="Hip" />
-              <input id="cmSleeve" placeholder="Sleeve" />
-              <input id="cmLength" placeholder="Length" />
-              <textarea id="cmNotes" placeholder="Style Notes"></textarea>
-
-              <button type="button" onclick="submitMeasurement()">Save Measurement</button>
-            </form>
-          </div>
-
-          <div class="card">
-            <h3>Submit Order Request</h3>
-
-            <form>
-              <input id="targetCustomerEmailOrder" class="staff-admin-only" type="email" placeholder="Customer Email — Staff/Admin only" />
-              <input id="coName" placeholder="Customer Name" />
-              <input id="coPhone" placeholder="Phone Number" />
-              <input id="coStyle" placeholder="Product / Style" />
-              <input id="coDelivery" type="date" />
-              <input id="coAmount" type="number" placeholder="Final Amount" />
-
-              <select id="coPaymentMethod">
-                <option value="">Select Payment Method</option>
-                <option value="Online Payment">Online Payment</option>
-                <option value="Cash on Delivery">Cash on Delivery</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-              </select>
-
-              <button type="button" onclick="submitOrder()">Submit Order Request</button>
-            </form>
-          </div>
-        </div>
-
-        <h3>Measurements</h3>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Measurements</th>
-                <th>Style Notes</th>
-              </tr>
-            </thead>
-
-            <tbody id="customersTable"></tbody>
-          </table>
-        </div>
-
-        <h3>Orders</h3>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Phone</th>
-                <th>Style</th>
-                <th>Order Status</th>
-                <th>Payment Status</th>
-                <th>Delivery</th>
-                <th>Final Amount</th>
-                <th>Payment Method</th>
-                <th>Admin Note</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-
-            <tbody id="customerOrdersTable"></tbody>
-          </table>
-        </div>
-
-        <div id="customerChatBox" class="card chat-box" style="display:none;">
-          <h3>Order Chat</h3>
-
-          <div id="customerChatMessages" class="chat-messages"></div>
-
-          <div class="chat-input-row">
-            <input id="customerChatInput" type="text" placeholder="Type your message..." />
-            <button type="button" onclick="sendChatMessage()">Send</button>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- STAFF -->
-      <section id="staff" class="tab">
-        <h2>Staff XP Leaderboard</h2>
-        <div id="leaderboard" class="leaderboard"></div>
-      </section>
-
-
-      <!-- FORMS -->
-      <section id="forms" class="tab">
-        <h2>Google Forms Hub</h2>
-        <p class="note">Internal Google Forms remain available for admin/staff operations.</p>
-        <div class="form-grid" id="formLinks"></div>
-      </section>
-
-    </main>
-  </div>
-
-
-  <!-- PRODUCT MODAL -->
-  <div id="productModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <button class="modal-close" type="button" onclick="closeProductModal()">×</button>
-      <div id="modalProductContent"></div>
-    </div>
-  </div>
-
-
-  <footer>
-    <p>Timzy Fashion OS Cloud Edition</p>
-  </footer>
-
-
-  <script src="forms-config.js?v=20260605c"></script>
-
-  <script>
-    window.showPublicCatalog = window.showPublicCatalog || function(){
-      const section = document.getElementById("publicCatalog");
-      if(section) section.scrollIntoView({ behavior: "smooth" });
-    };
-
-    window.openLoginModal = window.openLoginModal || function(){
-      const accessModal = document.getElementById("accessModal");
-      const loginModal = document.getElementById("loginModal");
-
-      if(accessModal) accessModal.style.display = "none";
-      if(loginModal) loginModal.style.display = "flex";
-    };
-  </script>
-
-  <script type="module" src="script.js?v=20260605c"></script>
+<script src="forms-config.js?v=20260606"></script>
+<script type="module" src="script.js?v=20260606"></script>
 
 </body>
 </html>
