@@ -24,88 +24,7 @@ let activeProduct = null;
 let activeImages = [];
 let activeSlideIndex = 0;
 
-const sampleProducts = [
-  {
-    id: "sample-senator",
-    name: "Classic Senator Wear",
-    category: "Senator",
-    productType: "Ready-Made",
-    status: "Published",
-    price: 65000,
-    salePrice: 0,
-    quantity: "Available",
-    color: "Charcoal",
-    sizes: "Custom",
-    badge: "BESTSELLER",
-    featured: true,
-    image1: "assets/sample-senator.jpg",
-    description: "Premium senator wear sample. Replace this with your real product when ready."
-  },
-  {
-    id: "sample-agbada-white",
-    name: "Royal White Agbada",
-    category: "Agbada",
-    productType: "Custom Sewing",
-    status: "Published",
-    price: 95000,
-    salePrice: 0,
-    quantity: "Available",
-    color: "White",
-    sizes: "Custom",
-    badge: "NEW",
-    featured: true,
-    image1: "assets/sample-agbada-white.jpg",
-    description: "Luxury agbada sample. Replace this with your real product when ready."
-  },
-  {
-    id: "sample-agbada-gold",
-    name: "Luxury Gold Agbada",
-    category: "Agbada",
-    productType: "Custom Sewing",
-    status: "Published",
-    price: 120000,
-    salePrice: 0,
-    quantity: "Available",
-    color: "Gold",
-    sizes: "Custom",
-    badge: "LIMITED",
-    featured: true,
-    image1: "assets/sample-agbada-gold.jpg",
-    description: "Statement agbada sample. Replace this with your real product when ready."
-  },
-  {
-    id: "sample-senator-blue",
-    name: "Premium Senator Wear",
-    category: "Senator",
-    productType: "Ready-Made",
-    status: "Published",
-    price: 70000,
-    salePrice: 0,
-    quantity: "Available",
-    color: "Navy",
-    sizes: "Custom",
-    badge: "NEW",
-    featured: true,
-    image1: "assets/sample-senator-blue.jpg",
-    description: "Premium senator sample. Replace this with your real product when ready."
-  },
-  {
-    id: "sample-agbada-navy",
-    name: "Executive Agbada",
-    category: "Agbada",
-    productType: "Custom Sewing",
-    status: "Published",
-    price: 110000,
-    salePrice: 0,
-    quantity: "Available",
-    color: "Navy",
-    sizes: "Custom",
-    badge: "BESTSELLER",
-    featured: true,
-    image1: "assets/sample-agbada-navy.jpg",
-    description: "Executive agbada sample. Replace this with your real product when ready."
-  }
-];
+const sampleProducts = [];
 
 const money = value => "₦" + Number(value || 0).toLocaleString();
 
@@ -204,7 +123,7 @@ async function loadCatalog() {
       .filter(product => String(product.status || "Published") === "Published");
 
     if (!products.length) {
-      products = [...sampleProducts];
+      products = [];
     }
 
     filteredProducts = [...products];
@@ -215,7 +134,7 @@ async function loadCatalog() {
     updateWishlistHeader();
   } catch (error) {
     console.error("Catalog load failed:", error);
-    products = [...sampleProducts];
+    products = [];
     filteredProducts = [...products];
     renderFeatured();
     renderProducts();
