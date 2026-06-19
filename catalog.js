@@ -25,7 +25,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* =========================
-   PAYMENT PROXY
+   CONFIG
 ========================= */
 
 const PAYMENT_PROXY_URL =
@@ -43,6 +43,7 @@ let activeProduct = null;
 
 /* =========================
    DEMO PRODUCTS
+   Remove later from code if you want only admin-created products.
 ========================= */
 
 const demoProducts = [
@@ -50,12 +51,13 @@ const demoProducts = [
     id: "demo-senator-blue",
     name: "Royal Blue Senator",
     category: "Senator",
+    productType: "Ready-Made",
     price: 45000,
     color: "Royal Blue",
     sizes: "M, L, XL",
     badge: "New Arrival",
     featured: true,
-    image1: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=1200&auto=format&fit=crop",
+    image1: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=1200&auto=format&fit=crop",
     image2: "",
     image3: "",
     description: "Premium senator wear with clean finishing, suitable for events, church, and formal outings."
@@ -64,6 +66,7 @@ const demoProducts = [
     id: "demo-agbada-gold",
     name: "Luxury Gold Agbada",
     category: "Agbada",
+    productType: "Custom Sewing",
     price: 95000,
     color: "Gold",
     sizes: "Custom",
@@ -72,21 +75,22 @@ const demoProducts = [
     image1: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop",
     image2: "",
     image3: "",
-    description: "Luxury agbada-inspired premium occasion wear for weddings, celebrations, and traditional events."
+    description: "Premium occasion wear for weddings, celebrations, and traditional events."
   },
   {
-    id: "demo-black-kaftan",
-    name: "Black Premium Kaftan",
-    category: "Kaftan",
-    price: 38000,
-    color: "Black",
-    sizes: "M, L, XL",
+    id: "demo-fabric-adire",
+    name: "Premium Adire Fabric",
+    category: "Fabrics",
+    productType: "Fabric / Material",
+    price: 15000,
+    color: "Blue Pattern",
+    sizes: "Per yard",
     badge: "Popular",
     featured: true,
-    image1: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=1200&auto=format&fit=crop",
+    image1: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop",
     image2: "",
     image3: "",
-    description: "Simple, elegant black kaftan style with modern tailoring and premium comfort."
+    description: "Premium fabric option. Select quantity/yards and chat with Timzy for styling guidance."
   }
 ];
 
@@ -110,7 +114,7 @@ function driveToImage(url) {
     str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
 
   if (idMatch && idMatch[1]) {
-    return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+    return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1200`;
   }
 
   return str;
@@ -127,6 +131,7 @@ function normalizeProduct(docId, data) {
     id: docId,
     name: data.name || data.product || data.productName || "Untitled Product",
     category: data.category || "Fashion",
+    productType: data.productType || data.type || "Ready-Made",
     price: Number(data.price || data.selling || data.sellingPrice || 0),
     quantity: data.quantity || data.stock || "",
     color: data.color || data.materialColor || "",
@@ -140,15 +145,16 @@ function normalizeProduct(docId, data) {
   };
 }
 
-function buildWhatsAppLink(productName, customerName = "", phone = "") {
+function buildWhatsAppLink(productName, customerName = "", phone = "", orderRef = "") {
   const message = `
 Hello Timzy Fashion,
 
-I want to ask about this product:
+I want to chat about this product/order.
 
 Product: ${productName}
 Customer Name: ${customerName || "Not provided"}
 Phone: ${phone || "Not provided"}
+Order Reference: ${orderRef || "Not generated yet"}
 
 Please assist me.
   `.trim();
@@ -212,62 +218,52 @@ window.filterProducts = function () {
     const searchable = `
       ${item.name || ""}
       ${item.category || ""}
+      ${item.productType || ""}
       ${item.color || ""}
       ${item.description || ""}
     `.toLowerCase();
 
-    const matchesSearch = searchable.includes(search);
-    const matchesCategory = !category || item.category === category;
-
-    return matchesSearch && matchesCategory;
+    return searchable.includes(search) && (!category || item.category === category);
   });
 
   renderProducts();
 };
 
 /* =========================
-   FEATURED
+   RENDER FEATURED
 ========================= */
 
 function renderFeatured() {
   const featuredGrid = document.getElementById("featuredGrid");
-
   if (!featuredGrid) return;
 
   const featured = products.filter(item => item.featured).slice(0, 3);
 
-  featuredGrid.innerHTML = featured
-    .map(item => {
-      const image = productImages(item)[0];
+  featuredGrid.innerHTML = featured.map(item => {
+    const image = productImages(item)[0];
 
-      return `
-        <article class="featured-card" onclick="openProduct('${item.id}')">
-          <div class="featured-image">
-            ${
-              image
-                ? `<img src="${image}" alt="${item.name}" loading="lazy">`
-                : `<span>👗</span>`
-            }
-          </div>
+    return `
+      <article class="featured-card" onclick="openProduct('${item.id}')">
+        <div class="featured-image">
+          ${image ? `<img src="${image}" alt="${item.name}" loading="lazy">` : `<span>👗</span>`}
+        </div>
 
-          <div class="featured-info">
-            <p>${item.category}</p>
-            <h3>${item.name}</h3>
-            <strong>${money(item.price)}</strong>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+        <div class="featured-info">
+          <p>${item.category} • ${item.productType || "Ready-Made"}</p>
+          <h3>${item.name}</h3>
+          <strong>${money(item.price)}</strong>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 /* =========================
-   PRODUCT GRID
+   RENDER PRODUCT GRID
 ========================= */
 
 function renderProducts() {
   const grid = document.getElementById("catalogGrid");
-
   if (!grid) return;
 
   if (!filteredProducts.length) {
@@ -275,36 +271,25 @@ function renderProducts() {
     return;
   }
 
-  grid.innerHTML = filteredProducts
-    .map(item => {
-      const image = productImages(item)[0];
+  grid.innerHTML = filteredProducts.map(item => {
+    const image = productImages(item)[0];
 
-      return `
-        <article class="product-card" onclick="openProduct('${item.id}')">
-          <div class="product-image">
-            ${
-              image
-                ? `<img src="${image}" alt="${item.name}" loading="lazy">`
-                : `<span>👗</span>`
-            }
+    return `
+      <article class="product-card" onclick="openProduct('${item.id}')">
+        <div class="product-image">
+          ${image ? `<img src="${image}" alt="${item.name}" loading="lazy">` : `<span>👗</span>`}
+          ${item.badge ? `<span class="product-badge">${item.badge}</span>` : ""}
+        </div>
 
-            ${
-              item.badge
-                ? `<span class="product-badge">${item.badge}</span>`
-                : ""
-            }
-          </div>
-
-          <div class="product-info">
-            <p class="product-category">${item.category || "Timzy Fashion"}</p>
-            <h3>${item.name || "Untitled Product"}</h3>
-            <strong>${money(item.price)}</strong>
-            <small>${item.color ? "Color: " + item.color : "Available Style"}</small>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+        <div class="product-info">
+          <p class="product-category">${item.category || "Timzy Fashion"}</p>
+          <h3>${item.name || "Untitled Product"}</h3>
+          <strong>${money(item.price)}</strong>
+          <small>${item.productType || "Ready-Made"} ${item.color ? "• " + item.color : ""}</small>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 /* =========================
@@ -313,7 +298,6 @@ function renderProducts() {
 
 window.openProduct = function (id) {
   const item = products.find(product => product.id === id);
-
   if (!item) return;
 
   activeProduct = item;
@@ -330,18 +314,13 @@ window.openProduct = function (id) {
     <div class="modal-gallery">
       ${
         images.length
-          ? images
-              .map(
-                image =>
-                  `<img src="${image}" alt="${item.name}" loading="lazy">`
-              )
-              .join("")
+          ? images.map(image => `<img src="${image}" alt="${item.name}" loading="lazy">`).join("")
           : `<div class="modal-placeholder">👗</div>`
       }
     </div>
 
     <div class="modal-details">
-      <p class="product-category">${item.category || "Timzy Fashion"}</p>
+      <p class="product-category">${item.category || "Timzy Fashion"} • ${item.productType || "Ready-Made"}</p>
       <h2>${item.name}</h2>
       <strong class="modal-price">${money(item.price)}</strong>
 
@@ -367,12 +346,48 @@ window.openProduct = function (id) {
       </p>
 
       <div class="quick-checkout">
-        <h3>Buy This Product</h3>
-        <p>Enter your details to generate CheckoutPay payment details.</p>
+        <h3>Quick Order</h3>
+        <p>No login required. Fill only what applies to this product.</p>
 
         <input id="buyerName" placeholder="Your Name" />
         <input id="buyerPhone" placeholder="Phone Number / WhatsApp" />
         <input id="buyerQuantity" type="number" min="1" value="1" placeholder="Quantity" />
+
+        <select id="orderType" onchange="toggleOrderFields()">
+          <option value="Ready-Made">Ready-Made / Size Order</option>
+          <option value="Fabric / Material">Fabric / Material Order</option>
+          <option value="Custom Sewing">Custom Sewing / Measurement Order</option>
+          <option value="Accessory">Accessory Order</option>
+        </select>
+
+        <div id="sizeFields" class="conditional-fields">
+          <select id="buyerSize">
+            <option value="">Select Size</option>
+            <option>XS</option>
+            <option>S</option>
+            <option>M</option>
+            <option>L</option>
+            <option>XL</option>
+            <option>XXL</option>
+            <option>Custom / Not sure</option>
+          </select>
+        </div>
+
+        <div id="fabricFields" class="conditional-fields" style="display:none;">
+          <input id="fabricLength" placeholder="Yards / meters needed e.g. 5 yards" />
+          <input id="preferredColor" placeholder="Preferred color / pattern" />
+        </div>
+
+        <div id="measurementFields" class="conditional-fields" style="display:none;">
+          <input id="mShoulder" placeholder="Shoulder" />
+          <input id="mChest" placeholder="Chest / Bust" />
+          <input id="mWaist" placeholder="Waist" />
+          <input id="mHip" placeholder="Hip" />
+          <input id="mSleeve" placeholder="Sleeve" />
+          <input id="mLength" placeholder="Length" />
+        </div>
+
+        <textarea id="styleNotes" placeholder="Style notes, delivery notes, or special request"></textarea>
       </div>
 
       <div id="paymentResult" class="payment-result" style="display:none;"></div>
@@ -380,12 +395,31 @@ window.openProduct = function (id) {
       <div class="modal-actions">
         <button onclick="buyNow()">Buy Now</button>
         <a href="${whatsappLink}" target="_blank">WhatsApp Chat</a>
-        <button class="secondary-btn" onclick="loginForMeasurements()">Login for Measurements</button>
       </div>
     </div>
   `;
 
+  const orderType = document.getElementById("orderType");
+  if (orderType) orderType.value = item.productType || "Ready-Made";
+  toggleOrderFields();
+
   modal.style.display = "flex";
+};
+
+/* =========================
+   CONDITIONAL ORDER FIELDS
+========================= */
+
+window.toggleOrderFields = function () {
+  const orderType = document.getElementById("orderType")?.value || "Ready-Made";
+
+  const sizeFields = document.getElementById("sizeFields");
+  const fabricFields = document.getElementById("fabricFields");
+  const measurementFields = document.getElementById("measurementFields");
+
+  if (sizeFields) sizeFields.style.display = orderType === "Ready-Made" || orderType === "Accessory" ? "block" : "none";
+  if (fabricFields) fabricFields.style.display = orderType === "Fabric / Material" ? "block" : "none";
+  if (measurementFields) measurementFields.style.display = orderType === "Custom Sewing" ? "grid" : "none";
 };
 
 /* =========================
@@ -393,14 +427,12 @@ window.openProduct = function (id) {
 ========================= */
 
 window.buyNow = async function () {
-  if (!activeProduct) {
-    alert("No product selected.");
-    return;
-  }
+  if (!activeProduct) return alert("No product selected.");
 
   const buyerName = document.getElementById("buyerName")?.value.trim() || "";
   const buyerPhone = document.getElementById("buyerPhone")?.value.trim() || "";
   const quantity = cleanNumber(document.getElementById("buyerQuantity")?.value || 1);
+  const orderType = document.getElementById("orderType")?.value || activeProduct.productType || "Ready-Made";
 
   if (!buyerName || !buyerPhone) {
     alert("Please enter your name and phone number.");
@@ -420,6 +452,35 @@ window.buyNow = async function () {
   }
 
   const orderReference = customerOrderRef();
+
+  const orderDetails = {
+    orderReference,
+    customerName: buyerName,
+    phone: buyerPhone,
+    productId: activeProduct.id,
+    productName: activeProduct.name,
+    category: activeProduct.category,
+    productType: orderType,
+    quantity,
+    unitPrice: Number(activeProduct.price || 0),
+    totalAmount: amount,
+    selectedSize: document.getElementById("buyerSize")?.value || "",
+    fabricLength: document.getElementById("fabricLength")?.value || "",
+    preferredColor: document.getElementById("preferredColor")?.value || "",
+    measurements: {
+      shoulder: document.getElementById("mShoulder")?.value || "",
+      chest: document.getElementById("mChest")?.value || "",
+      waist: document.getElementById("mWaist")?.value || "",
+      hip: document.getElementById("mHip")?.value || "",
+      sleeve: document.getElementById("mSleeve")?.value || "",
+      length: document.getElementById("mLength")?.value || ""
+    },
+    styleNotes: document.getElementById("styleNotes")?.value || "",
+    paymentStatus: "Payment Requested",
+    orderStatus: "Pending Payment",
+    source: "catalog.html",
+    createdAt: serverTimestamp()
+  };
 
   try {
     const response = await fetch(PAYMENT_PROXY_URL, {
@@ -442,44 +503,32 @@ window.buyNow = async function () {
     }
 
     await addDoc(collection(db, "publicCatalogOrders"), {
-      orderReference,
-      customerName: buyerName,
-      phone: buyerPhone,
-      productId: activeProduct.id,
-      productName: activeProduct.name,
-      category: activeProduct.category,
-      quantity,
-      unitPrice: Number(activeProduct.price || 0),
-      totalAmount: amount,
-      paymentStatus: "Payment Requested",
-      orderStatus: "Pending Payment",
+      ...orderDetails,
       transactionId: data.transaction_id || "",
       paymentBankName: data.bank_name || "",
       paymentAccountName: data.account_name || "",
       paymentAccountNumber: data.account_number || "",
-      checkoutStatus: data.status || "",
-      source: "catalog.html",
-      createdAt: serverTimestamp()
+      checkoutStatus: data.status || ""
     });
 
-    showPaymentResult(data, amount, buyerName, buyerPhone, activeProduct.name);
+    showPaymentResult(data, amount, buyerName, buyerPhone, activeProduct.name, orderReference);
   } catch (error) {
     console.error(error);
     alert("Payment request error. Please try again or contact Timzy Fashion on WhatsApp.");
   }
 };
 
-function showPaymentResult(data, amount, buyerName, buyerPhone, productName) {
+function showPaymentResult(data, amount, buyerName, buyerPhone, productName, orderReference) {
   const resultBox = document.getElementById("paymentResult");
-
   if (!resultBox) return;
 
-  const whatsappLink = buildWhatsAppLink(productName, buyerName, buyerPhone);
+  const whatsappLink = buildWhatsAppLink(productName, buyerName, buyerPhone, orderReference);
 
   resultBox.innerHTML = `
     <h3>Payment Details Generated</h3>
 
     <div class="payment-card">
+      <p><span>Order Ref</span><b>${orderReference}</b></p>
       <p><span>Bank</span><b>${data.bank_name || "-"}</b></p>
       <p><span>Account Name</span><b>${data.account_name || "-"}</b></p>
       <p><span>Account Number</span><b>${data.account_number || "-"}</b></p>
@@ -488,7 +537,7 @@ function showPaymentResult(data, amount, buyerName, buyerPhone, productName) {
     </div>
 
     <p class="payment-note">
-      After payment, chat with Timzy Fashion on WhatsApp with your payment reference.
+      After payment, chat with Timzy Fashion on WhatsApp using your order reference.
     </p>
 
     <a class="payment-whatsapp" href="${whatsappLink}" target="_blank">
@@ -498,14 +547,6 @@ function showPaymentResult(data, amount, buyerName, buyerPhone, productName) {
 
   resultBox.style.display = "block";
 }
-
-/* =========================
-   LOGIN FOR MEASUREMENTS
-========================= */
-
-window.loginForMeasurements = function () {
-  window.location.href = "index.html";
-};
 
 /* =========================
    MODAL CONTROL
