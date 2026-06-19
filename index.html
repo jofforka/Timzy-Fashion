@@ -147,8 +147,16 @@
               <option value="Accessory">Accessory</option>
             </select>
 
+            <select id="catStatus">
+              <option value="Published">Published</option>
+              <option value="Draft">Draft</option>
+              <option value="Hidden">Hidden</option>
+              <option value="Sold Out">Sold Out</option>
+            </select>
+
             <input id="catColor" placeholder="Color / Pattern" />
             <input id="catPrice" type="number" placeholder="Price" />
+            <input id="catSalePrice" type="number" placeholder="Sale Price / Discount Price (optional)" />
             <input id="catQuantity" type="number" placeholder="Quantity / Stock" />
             <input id="catSizes" placeholder="Sizes e.g. S, M, L, XL / Custom" />
             <input id="catBadge" placeholder="Badge e.g. New Arrival, Featured, Popular" />
@@ -168,9 +176,29 @@
               <input id="catFile3" type="file" accept="image/*" />
             </label>
 
+            <label class="upload-box">
+              Image 4
+              <input id="catFile4" type="file" accept="image/*" />
+            </label>
+
+            <label class="upload-box">
+              Image 5
+              <input id="catFile5" type="file" accept="image/*" />
+            </label>
+
+            <label class="upload-box">
+              Image 6
+              <input id="catFile6" type="file" accept="image/*" />
+            </label>
+
             <input id="catImage1" placeholder="Image URL 1 auto-fills after upload" />
             <input id="catImage2" placeholder="Image URL 2 auto-fills after upload" />
             <input id="catImage3" placeholder="Image URL 3 auto-fills after upload" />
+            <input id="catImage4" placeholder="Image URL 4 auto-fills after upload" />
+            <input id="catImage5" placeholder="Image URL 5 auto-fills after upload" />
+            <input id="catImage6" placeholder="Image URL 6 auto-fills after upload" />
+            <input id="catVideoUrl" placeholder="Product Video URL / Google Drive video link (optional)" />
+            <input id="catTags" placeholder="Tags e.g. wedding, luxury, senator, asoebi" />
 
             <textarea id="catDescription" placeholder="Product Description"></textarea>
 
@@ -347,8 +375,7 @@
     window.openAccessModal = window.openAccessModal || function(){};
   </script>
 
-  <script src="forms-config.js?v=20260619a"></script>
-  <script type="module" src="script.js?v=20260619a"></script>
+  <script src="forms-config.js?v=20260619_phase8"></script>
+  <script type="module" src="script.js?v=20260619_phase8"></script>
 </body>
 </html>
-
