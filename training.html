@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Timzy Fashion Training Academy</title>
+  <link rel="stylesheet" href="training.css?v=academy_20260619" />
+</head>
+
+<body>
+  <header class="academy-header">
+    <a href="catalog.html" class="brand">
+      <span class="brand-symbol">TF</span>
+      <span><b>TIMZY</b><small>ACADEMY</small></span>
+    </a>
+    <a href="catalog.html">Back to Showroom</a>
+  </header>
+
+  <main>
+    <section class="academy-hero">
+      <div>
+        <p class="eyebrow">Professional Fashion Training</p>
+        <h1>Learn the craft. Build the skill. Start the business.</h1>
+        <p>Timzy Fashion Academy trains beginners, intermediate learners, and advanced designers in practical sewing, finishing, styling, and production skills.</p>
+
+        <div class="academy-actions">
+          <a href="#signup">Apply Now</a>
+          <a href="https://wa.me/2348118103510" target="_blank">Ask on WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="programs">
+      <article>
+        <h3>Beginner</h3>
+        <p>Foundation sewing, machine handling, basic measurements, and finishing.</p>
+      </article>
+
+      <article>
+        <h3>Intermediate</h3>
+        <p>Senator wear, kaftan, agbada basics, fabric handling, and neat finishing.</p>
+      </article>
+
+      <article>
+        <h3>Advanced</h3>
+        <p>Bulk sewing, production management, premium finishing, and business readiness.</p>
+      </article>
+    </section>
+
+    <section id="signup" class="signup">
+      <div>
+        <p class="eyebrow">Training Signup</p>
+        <h2>Register Interest</h2>
+        <p>Fill this form and send your training request directly to Timzy Fashion on WhatsApp.</p>
+      </div>
+
+      <form onsubmit="submitTraining(event)">
+        <input id="name" placeholder="Full Name" required />
+        <input id="phone" placeholder="Phone / WhatsApp Number" required />
+
+        <select id="level" required>
+          <option value="">Select Training Level</option>
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+
+        <select id="interest" required>
+          <option value="">Area of Interest</option>
+          <option>Senator Wear</option>
+          <option>Agbada</option>
+          <option>Women's Clothing</option>
+          <option>Bulk Sewing</option>
+          <option>Fashion Business</option>
+        </select>
+
+        <textarea id="message" placeholder="Tell us what you want to learn"></textarea>
+
+        <button type="submit">Send Training Request</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="training.js?v=academy_20260619"></script>
+</body>
+</html>
