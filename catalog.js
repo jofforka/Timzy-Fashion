@@ -24,6 +24,89 @@ let activeProduct = null;
 let activeImages = [];
 let activeSlideIndex = 0;
 
+const sampleProducts = [
+  {
+    id: "sample-senator",
+    name: "Classic Senator Wear",
+    category: "Senator",
+    productType: "Ready-Made",
+    status: "Published",
+    price: 65000,
+    salePrice: 0,
+    quantity: "Available",
+    color: "Charcoal",
+    sizes: "Custom",
+    badge: "BESTSELLER",
+    featured: true,
+    image1: "assets/sample-senator.jpg",
+    description: "Premium senator wear sample. Replace this with your real product when ready."
+  },
+  {
+    id: "sample-agbada-white",
+    name: "Royal White Agbada",
+    category: "Agbada",
+    productType: "Custom Sewing",
+    status: "Published",
+    price: 95000,
+    salePrice: 0,
+    quantity: "Available",
+    color: "White",
+    sizes: "Custom",
+    badge: "NEW",
+    featured: true,
+    image1: "assets/sample-agbada-white.jpg",
+    description: "Luxury agbada sample. Replace this with your real product when ready."
+  },
+  {
+    id: "sample-agbada-gold",
+    name: "Luxury Gold Agbada",
+    category: "Agbada",
+    productType: "Custom Sewing",
+    status: "Published",
+    price: 120000,
+    salePrice: 0,
+    quantity: "Available",
+    color: "Gold",
+    sizes: "Custom",
+    badge: "LIMITED",
+    featured: true,
+    image1: "assets/sample-agbada-gold.jpg",
+    description: "Statement agbada sample. Replace this with your real product when ready."
+  },
+  {
+    id: "sample-senator-blue",
+    name: "Premium Senator Wear",
+    category: "Senator",
+    productType: "Ready-Made",
+    status: "Published",
+    price: 70000,
+    salePrice: 0,
+    quantity: "Available",
+    color: "Navy",
+    sizes: "Custom",
+    badge: "NEW",
+    featured: true,
+    image1: "assets/sample-senator-blue.jpg",
+    description: "Premium senator sample. Replace this with your real product when ready."
+  },
+  {
+    id: "sample-agbada-navy",
+    name: "Executive Agbada",
+    category: "Agbada",
+    productType: "Custom Sewing",
+    status: "Published",
+    price: 110000,
+    salePrice: 0,
+    quantity: "Available",
+    color: "Navy",
+    sizes: "Custom",
+    badge: "BESTSELLER",
+    featured: true,
+    image1: "assets/sample-agbada-navy.jpg",
+    description: "Executive agbada sample. Replace this with your real product when ready."
+  }
+];
+
 const money = value => "₦" + Number(value || 0).toLocaleString();
 
 function cleanNumber(value) {
@@ -120,6 +203,10 @@ async function loadCatalog() {
       .map(docSnap => normalizeProduct(docSnap.id, docSnap.data()))
       .filter(product => String(product.status || "Published") === "Published");
 
+    if (!products.length) {
+      products = [...sampleProducts];
+    }
+
     filteredProducts = [...products];
 
     renderFeatured();
@@ -128,10 +215,12 @@ async function loadCatalog() {
     updateWishlistHeader();
   } catch (error) {
     console.error("Catalog load failed:", error);
-    products = [];
-    filteredProducts = [];
+    products = [...sampleProducts];
+    filteredProducts = [...products];
     renderFeatured();
     renderProducts();
+    renderRecentlyViewed();
+    updateWishlistHeader();
   }
 }
 
@@ -139,9 +228,7 @@ window.toggleSearchBar = function () {
   const bar = document.getElementById("searchBar");
   if (!bar) return;
   bar.style.display = bar.style.display === "none" ? "block" : "none";
-  if (bar.style.display === "block") {
-    setTimeout(() => document.getElementById("searchInput")?.focus(), 100);
-  }
+  if (bar.style.display === "block") setTimeout(() => document.getElementById("searchInput")?.focus(), 100);
 };
 
 window.quickCategory = function(category) {
@@ -187,14 +274,14 @@ function productCard(item, compact = false) {
 
   return `
     <article class="${compact ? "mini-product-card" : "product-card"}" onclick="openProduct('${item.id}')">
-      <div class="${compact ? "mini-product-image" : "product-image"}">
+      <div class="${compact ? "mini-product-image product-image" : "product-image"}">
         ${image ? `<img src="${image}" alt="${item.name}" loading="lazy">` : `<span>TF</span>`}
         ${badge ? `<span class="product-badge">${badge}</span>` : ""}
         ${images.length > 1 ? `<span class="image-count">+${images.length - 1}</span>` : ""}
         ${wished ? `<span class="wish-pill">♡</span>` : ""}
       </div>
 
-      <div class="${compact ? "mini-product-info" : "product-info"}">
+      <div class="${compact ? "mini-product-info product-info" : "product-info"}">
         <p class="product-category">${item.category || "Timzy Fashion"}</p>
         <h3>${item.name || "Untitled Product"}</h3>
         <div class="price-line">
@@ -265,11 +352,8 @@ function addRecentlyViewed(productId) {
 window.toggleWishlist = function(productId) {
   let wishlist = getLocalList(WISHLIST_KEY);
 
-  if (wishlist.includes(productId)) {
-    wishlist = wishlist.filter(id => id !== productId);
-  } else {
-    wishlist.unshift(productId);
-  }
+  if (wishlist.includes(productId)) wishlist = wishlist.filter(id => id !== productId);
+  else wishlist.unshift(productId);
 
   setLocalList(WISHLIST_KEY, wishlist);
   updateWishlistHeader();
