@@ -300,3 +300,4 @@ window.addEventListener("click", e => { const modal = document.getElementById("p
 window.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); if(e.key === "ArrowRight") nextSlide(); if(e.key === "ArrowLeft") prevSlide(); });
 
 loadCatalog();
+
