@@ -46,53 +46,12 @@ let activeProduct = null;
    Remove later from code if you want only admin-created products.
 ========================= */
 
-const demoProducts = [
-  {
-    id: "demo-senator-blue",
-    name: "Royal Blue Senator",
-    category: "Senator",
-    productType: "Ready-Made",
-    price: 45000,
-    color: "Royal Blue",
-    sizes: "M, L, XL",
-    badge: "New Arrival",
-    featured: true,
-    image1: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=1200&auto=format&fit=crop",
-    image2: "",
-    image3: "",
-    description: "Premium senator wear with clean finishing, suitable for events, church, and formal outings."
-  },
-  {
-    id: "demo-agbada-gold",
-    name: "Luxury Gold Agbada",
-    category: "Agbada",
-    productType: "Custom Sewing",
-    price: 95000,
-    color: "Gold",
-    sizes: "Custom",
-    badge: "Featured",
-    featured: true,
-    image1: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop",
-    image2: "",
-    image3: "",
-    description: "Premium occasion wear for weddings, celebrations, and traditional events."
-  },
-  {
-    id: "demo-fabric-adire",
-    name: "Premium Adire Fabric",
-    category: "Fabrics",
-    productType: "Fabric / Material",
-    price: 15000,
-    color: "Blue Pattern",
-    sizes: "Per yard",
-    badge: "Popular",
-    featured: true,
-    image1: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1200&auto=format&fit=crop",
-    image2: "",
-    image3: "",
-    description: "Premium fabric option. Select quantity/yards and chat with Timzy for styling guidance."
-  }
-];
+const demoProducts = [];
+
+/* IMPORTANT:
+   Demo placeholder products have been removed.
+   The catalog now shows only products created from Admin Catalog Manager / Firebase.
+*/
 
 /* =========================
    HELPERS
@@ -195,8 +154,8 @@ async function loadCatalog() {
   } catch (error) {
     console.error("Catalog load failed:", error);
 
-    products = [...demoProducts];
-    filteredProducts = [...demoProducts];
+    products = [];
+    filteredProducts = [];
 
     renderFeatured();
     renderProducts();
@@ -267,7 +226,7 @@ function renderProducts() {
   if (!grid) return;
 
   if (!filteredProducts.length) {
-    grid.innerHTML = `<p class="empty-state">No products found.</p>`;
+    grid.innerHTML = `<div class="empty-state"><h3>No catalog products yet.</h3><p>Admin should log in, open Catalog Manager, upload real traditional wear images, and publish products.</p></div>`;
     return;
   }
 
