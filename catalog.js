@@ -39,7 +39,10 @@ function driveToImage(url) {
 }
 
 function productImages(product) {
-  return [product.image1, product.image2, product.image3, product.image4, product.image5, product.image6, product.image7, product.image8, product.image9, product.image10, product.image11, product.image12].map(driveToImage).filter(Boolean);
+  return [
+    product.image1, product.image2, product.image3, product.image4, product.image5, product.image6,
+    product.image7, product.image8, product.image9, product.image10, product.image11, product.image12
+  ].map(driveToImage).filter(Boolean);
 }
 
 function normalizeProduct(docId, data) {
@@ -112,21 +115,22 @@ function setLocalList(key, value) {
 async function loadCatalog() {
   try {
     const snap = await getDocs(collection(db, "catalog"));
+
     products = snap.docs
       .map(docSnap => normalizeProduct(docSnap.id, docSnap.data()))
       .filter(product => String(product.status || "Published") === "Published");
 
     filteredProducts = [...products];
+
     renderFeatured();
-    renderRecentlyViewed();
     renderProducts();
+    renderRecentlyViewed();
     updateWishlistHeader();
   } catch (error) {
     console.error("Catalog load failed:", error);
     products = [];
     filteredProducts = [];
     renderFeatured();
-    renderRecentlyViewed();
     renderProducts();
   }
 }
@@ -164,19 +168,32 @@ window.filterProducts = function () {
   renderProducts();
 };
 
+function isWishlisted(productId) {
+  return getLocalList(WISHLIST_KEY).includes(productId);
+}
+
+function productBadge(item) {
+  if (item.badge) return item.badge;
+  if (item.featured) return "BESTSELLER";
+  if (item.salePrice) return "LIMITED";
+  return "NEW";
+}
+
 function productCard(item, compact = false) {
   const images = productImages(item);
   const image = images[0];
   const wished = isWishlisted(item.id);
+  const badge = productBadge(item);
 
   return `
     <article class="${compact ? "mini-product-card" : "product-card"}" onclick="openProduct('${item.id}')">
       <div class="${compact ? "mini-product-image" : "product-image"}">
-        ${image ? `<img src="${image}" alt="${item.name}" loading="lazy">` : `<span>👗</span>`}
-        ${item.badge ? `<span class="product-badge">${item.badge}</span>` : ""}
+        ${image ? `<img src="${image}" alt="${item.name}" loading="lazy">` : `<span>TF</span>`}
+        ${badge ? `<span class="product-badge">${badge}</span>` : ""}
         ${images.length > 1 ? `<span class="image-count">+${images.length - 1}</span>` : ""}
-        ${wished ? `<span class="wish-pill">♥</span>` : ""}
+        ${wished ? `<span class="wish-pill">♡</span>` : ""}
       </div>
+
       <div class="${compact ? "mini-product-info" : "product-info"}">
         <p class="product-category">${item.category || "Timzy Fashion"}</p>
         <h3>${item.name || "Untitled Product"}</h3>
@@ -194,11 +211,13 @@ function renderFeatured() {
   const featuredGrid = document.getElementById("featuredGrid");
   if (!featuredGrid) return;
 
-  const featured = products.filter(item => item.featured).slice(0, 4);
+  const featured = products.filter(item => item.featured).slice(0, 8);
+  const fallback = products.slice(0, 8);
+  const items = featured.length ? featured : fallback;
 
-  featuredGrid.innerHTML = featured.length
-    ? featured.map(item => productCard(item)).join("")
-    : `<div class="empty-featured"><h3>No featured products yet.</h3><p>Log in as admin and mark your best pieces as featured.</p></div>`;
+  featuredGrid.innerHTML = items.length
+    ? items.map(item => productCard(item)).join("")
+    : `<div class="empty-state"><h3>No featured products yet.</h3><p>Log in as admin and add your best menswear pieces.</p></div>`;
 }
 
 function renderProducts() {
@@ -213,7 +232,13 @@ function renderProducts() {
 function renderRecentlyViewed() {
   const section = document.getElementById("recentlyViewedSection");
   const grid = document.getElementById("recentlyViewedGrid");
+
   if (!section || !grid) return;
+
+  if (products.length < 12) {
+    section.style.display = "none";
+    return;
+  }
 
   const recentProducts = getLocalList(RECENT_KEY)
     .map(id => products.find(product => product.id === id))
@@ -237,14 +262,14 @@ function addRecentlyViewed(productId) {
   renderRecentlyViewed();
 }
 
-function isWishlisted(productId) {
-  return getLocalList(WISHLIST_KEY).includes(productId);
-}
-
 window.toggleWishlist = function(productId) {
   let wishlist = getLocalList(WISHLIST_KEY);
-  if (wishlist.includes(productId)) wishlist = wishlist.filter(id => id !== productId);
-  else wishlist.unshift(productId);
+
+  if (wishlist.includes(productId)) {
+    wishlist = wishlist.filter(id => id !== productId);
+  } else {
+    wishlist.unshift(productId);
+  }
 
   setLocalList(WISHLIST_KEY, wishlist);
   updateWishlistHeader();
@@ -253,7 +278,7 @@ window.toggleWishlist = function(productId) {
 
   if (activeProduct && activeProduct.id === productId) {
     const btn = document.getElementById("modalWishlistBtn");
-    if (btn) btn.textContent = isWishlisted(productId) ? "♥ Saved" : "♡ Save";
+    if (btn) btn.textContent = isWishlisted(productId) ? "Saved" : "Save";
   }
 };
 
@@ -261,7 +286,7 @@ function updateWishlistHeader() {
   const btn = document.getElementById("wishlistHeaderBtn");
   if (!btn) return;
   const count = getLocalList(WISHLIST_KEY).length;
-  btn.textContent = count ? `♥ ${count}` : "♡";
+  btn.textContent = count ? `♡ ${count}` : "♡";
 }
 
 window.toggleWishlistPanel = function() {
@@ -270,7 +295,9 @@ window.toggleWishlistPanel = function() {
   if (!panel || !container) return;
 
   if (panel.style.display === "none") {
-    const wishlist = getLocalList(WISHLIST_KEY).map(id => products.find(product => product.id === id)).filter(Boolean);
+    const wishlist = getLocalList(WISHLIST_KEY)
+      .map(id => products.find(product => product.id === id))
+      .filter(Boolean);
 
     container.innerHTML = wishlist.length
       ? wishlist.map(item => `
@@ -305,11 +332,11 @@ window.openProduct = function (id) {
   body.innerHTML = `
     <div class="product-modal-layout">
       <div class="carousel-shell">
-        ${item.videoUrl ? `<div class="video-box"><a href="${item.videoUrl}" target="_blank">▶ View Product Video</a></div>` : ""}
+        ${item.videoUrl ? `<div class="video-box"><a href="${item.videoUrl}" target="_blank">View Product Video</a></div>` : ""}
         <div class="carousel-main">
           <button class="carousel-arrow left" onclick="prevSlide()" ${activeImages.length <= 1 ? "disabled" : ""}>‹</button>
           <div class="carousel-image-wrap" id="carouselImageWrap">
-            ${activeImages.length ? `<img id="carouselMainImage" src="${activeImages[0]}" alt="${item.name}" loading="lazy">` : `<div class="modal-placeholder">👗</div>`}
+            ${activeImages.length ? `<img id="carouselMainImage" src="${activeImages[0]}" alt="${item.name}" loading="lazy">` : `<div class="modal-placeholder">TF</div>`}
           </div>
           <button class="carousel-arrow right" onclick="nextSlide()" ${activeImages.length <= 1 ? "disabled" : ""}>›</button>
         </div>
@@ -320,6 +347,7 @@ window.openProduct = function (id) {
       <div class="modal-details">
         <p class="product-category">${item.category || "Timzy Fashion"} • ${item.productType || "Ready-Made"}</p>
         <h2>${item.name}</h2>
+
         <div class="modal-price-line">
           <strong class="modal-price">${money(effectivePrice(item))}</strong>
           ${item.salePrice ? `<span class="old-price large">${money(item.price)}</span>` : ""}
@@ -331,11 +359,12 @@ window.openProduct = function (id) {
           <div><span>Stock</span><b>${item.quantity || "Confirm"}</b></div>
         </div>
 
-        <p class="modal-description">${item.description || "Premium Timzy Fashion product. Contact us for order details and sizing."}</p>
+        <p class="modal-description">${item.description || "Premium Timzy Fashion menswear product. Contact us for sizing, fabrics, custom sewing, or bulk orders."}</p>
 
         <div class="quick-checkout">
           <h3>Quick Order</h3>
           <p>No login required. Fill only what applies.</p>
+
           <input id="buyerName" placeholder="Your Name" />
           <input id="buyerPhone" placeholder="Phone Number / WhatsApp" />
           <input id="buyerQuantity" type="number" min="1" value="1" placeholder="Quantity" />
@@ -362,7 +391,7 @@ window.openProduct = function (id) {
 
           <div id="measurementFields" class="conditional-fields" style="display:none;">
             <input id="mShoulder" placeholder="Shoulder" />
-            <input id="mChest" placeholder="Chest / Bust" />
+            <input id="mChest" placeholder="Chest" />
             <input id="mWaist" placeholder="Waist" />
             <input id="mHip" placeholder="Hip" />
             <input id="mSleeve" placeholder="Sleeve" />
@@ -380,12 +409,10 @@ window.openProduct = function (id) {
         </div>
 
         <div class="future-row">
-          <button id="modalWishlistBtn" onclick="toggleWishlist('${item.id}')">${isWishlisted(item.id) ? "♥ Saved" : "♡ Save"}</button>
-          <button onclick="scrollToReviews()">Reviews</button>
-          <button disabled>360° Ready</button>
+          <button id="modalWishlistBtn" onclick="toggleWishlist('${item.id}')">${isWishlisted(item.id) ? "Saved" : "Save"}</button>
+          <button disabled>Full View Ready</button>
         </div>
 
-        <div id="reviewsBox" class="reviews-box">${renderReviewPlaceholder()}</div>
         <div class="similar-products">${renderSimilarProducts(item)}</div>
       </div>
     </div>
@@ -399,22 +426,28 @@ window.openProduct = function (id) {
   modal.style.display = "flex";
 };
 
-function renderReviewPlaceholder() {
-  return `<h3>Product Reviews</h3><p>Reviews are ready for the next data connection. For now, collect customer testimonials manually.</p><div class="review-sample"><b>Timzy Quality Check</b><span>Premium finishing • Accurate sizing • Fast response</span></div>`;
-}
-
-window.scrollToReviews = function() {
-  document.getElementById("reviewsBox")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-};
-
 function renderSimilarProducts(item) {
-  const similar = products.filter(product => product.id !== item.id && (product.category === item.category || product.productType === item.productType)).slice(0, 4);
+  const similar = products
+    .filter(product => product.id !== item.id && (product.category === item.category || product.productType === item.productType))
+    .slice(0, 4);
+
   if (!similar.length) return "";
 
-  return `<h3>You May Also Like</h3><div class="similar-grid">${similar.map(product => {
-    const image = productImages(product)[0];
-    return `<div class="similar-card" onclick="openProduct('${product.id}')">${image ? `<img src="${image}" alt="${product.name}">` : `<span>👗</span>`}<b>${product.name}</b><small>${money(effectivePrice(product))}</small></div>`;
-  }).join("")}</div>`;
+  return `
+    <h3>You May Also Like</h3>
+    <div class="similar-grid">
+      ${similar.map(product => {
+        const image = productImages(product)[0];
+        return `
+          <div class="similar-card" onclick="openProduct('${product.id}')">
+            ${image ? `<img src="${image}" alt="${product.name}">` : `<span>TF</span>`}
+            <b>${product.name}</b>
+            <small>${money(effectivePrice(product))}</small>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
 }
 
 function renderCarouselDots() {
@@ -424,14 +457,17 @@ function renderCarouselDots() {
 
 function renderCarouselThumbs() {
   if (!activeImages.length) return "";
-  return activeImages.map((image, index) => `<button class="carousel-thumb ${index === activeSlideIndex ? "active" : ""}" onclick="goToSlide(${index})"><img src="${image}" alt="Product image ${index + 1}" loading="lazy"></button>`).join("");
+  return activeImages.map((image, index) => `
+    <button class="carousel-thumb ${index === activeSlideIndex ? "active" : ""}" onclick="goToSlide(${index})">
+      <img src="${image}" alt="Product image ${index + 1}" loading="lazy">
+    </button>
+  `).join("");
 }
 
 function updateCarousel() {
   const mainImage = document.getElementById("carouselMainImage");
   const dots = document.getElementById("carouselDots");
   const thumbs = document.getElementById("carouselThumbs");
-
   if (mainImage && activeImages[activeSlideIndex]) mainImage.src = activeImages[activeSlideIndex];
   if (dots) dots.innerHTML = renderCarouselDots();
   if (thumbs) thumbs.innerHTML = renderCarouselThumbs();
@@ -464,7 +500,6 @@ function enableSwipeCarousel() {
 
   wrap.addEventListener("touchstart", event => { startX = event.touches[0].clientX; }, { passive: true });
   wrap.addEventListener("touchmove", event => { endX = event.touches[0].clientX; }, { passive: true });
-
   wrap.addEventListener("touchend", () => {
     const diff = startX - endX;
     if (Math.abs(diff) > 45) diff > 0 ? nextSlide() : prevSlide();
@@ -478,7 +513,6 @@ window.toggleOrderFields = function () {
   const sizeFields = document.getElementById("sizeFields");
   const fabricFields = document.getElementById("fabricFields");
   const measurementFields = document.getElementById("measurementFields");
-
   if (sizeFields) sizeFields.style.display = orderType === "Ready-Made" || orderType === "Accessory" ? "block" : "none";
   if (fabricFields) fabricFields.style.display = orderType === "Fabric / Material" ? "block" : "none";
   if (measurementFields) measurementFields.style.display = orderType === "Custom Sewing" ? "grid" : "none";
@@ -584,7 +618,6 @@ function showPaymentResult(data, amount, buyerName, buyerPhone, productName, ord
     </div>
     <a class="payment-whatsapp" href="${whatsappLink}" target="_blank">Chat on WhatsApp</a>
   `;
-
   resultBox.style.display = "block";
 }
 
@@ -609,4 +642,3 @@ window.addEventListener("keydown", event => {
 });
 
 loadCatalog();
-
