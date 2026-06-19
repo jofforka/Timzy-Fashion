@@ -1,204 +1,371 @@
-import { initializeApp } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
- getFirestore,
- collection,
- getDocs
-}
-from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  getFirestore,
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* =========================
+   FIREBASE CONFIG
+========================= */
 
 const firebaseConfig = {
- apiKey:"YOUR_API_KEY",
- authDomain:"YOUR_AUTH_DOMAIN",
- projectId:"YOUR_PROJECT_ID"
+  apiKey: "AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU",
+  authDomain: "timzy-fashion-os.firebaseapp.com",
+  projectId: "timzy-fashion-os",
+  storageBucket: "timzy-fashion-os.firebasestorage.app",
+  messagingSenderId: "515655826693",
+  appId: "1:515655826693:web:4085b86651f39ffa03cb6c"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* =========================
+   STATE
+========================= */
+
 let products = [];
 let filteredProducts = [];
 
-function driveToImage(url){
+/* =========================
+   DEMO PRODUCTS
+   These show with your real products.
+========================= */
 
- if(!url) return "";
+const demoProducts = [
+  {
+    id: "demo-senator-blue",
+    name: "Royal Blue Senator",
+    category: "Senator",
+    price: 45000,
+    color: "Royal Blue",
+    sizes: "M, L, XL",
+    badge: "New Arrival",
+    featured: true,
+    image1: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?q=80&w=1200&auto=format&fit=crop",
+    image2: "",
+    image3: "",
+    description: "Premium senator wear with clean finishing, suitable for events, church, and formal outings."
+  },
+  {
+    id: "demo-agbada-gold",
+    name: "Luxury Gold Agbada",
+    category: "Agbada",
+    price: 95000,
+    color: "Gold",
+    sizes: "Custom",
+    badge: "Featured",
+    featured: true,
+    image1: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=1200&auto=format&fit=crop",
+    image2: "",
+    image3: "",
+    description: "Luxury agbada-inspired premium occasion wear for weddings, celebrations, and traditional events."
+  },
+  {
+    id: "demo-black-kaftan",
+    name: "Black Premium Kaftan",
+    category: "Kaftan",
+    price: 38000,
+    color: "Black",
+    sizes: "M, L, XL",
+    badge: "Popular",
+    featured: true,
+    image1: "https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=1200&auto=format&fit=crop",
+    image2: "",
+    image3: "",
+    description: "Simple, elegant black kaftan style with modern tailoring and premium comfort."
+  }
+];
 
- const str = String(url).trim();
+/* =========================
+   HELPERS
+========================= */
 
- const idMatch =
-  str.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
-  str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+const money = value => "₦" + Number(value || 0).toLocaleString();
 
- if(idMatch){
-   return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
- }
+function driveToImage(url) {
+  if (!url) return "";
 
- return str;
+  const str = String(url).trim();
+
+  const idMatch =
+    str.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
+    str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+
+  if (idMatch && idMatch[1]) {
+    return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+  }
+
+  return str;
 }
 
-async function loadCatalog(){
-
- const snap =
- await getDocs(collection(db,"catalog"));
-
- products =
- snap.docs.map(doc=>({
-
-   id:doc.id,
-
-   ...doc.data(),
-
-   image1:
-   driveToImage(
-     doc.data().image1
-   )
-
- }));
-
- filteredProducts=[...products];
-
- renderProducts();
+function productImages(product) {
+  return [product.image1, product.image2, product.image3]
+    .map(driveToImage)
+    .filter(Boolean);
 }
 
-window.filterProducts=function(){
+function normalizeProduct(docId, data) {
+  return {
+    id: docId,
+    name: data.name || data.product || data.productName || "Untitled Product",
+    category: data.category || "Fashion",
+    price: Number(data.price || data.selling || data.sellingPrice || 0),
+    quantity: data.quantity || data.stock || "",
+    color: data.color || data.materialColor || "",
+    sizes: data.sizes || "",
+    badge: data.badge || "",
+    featured: Boolean(data.featured),
+    image1: driveToImage(data.image1 || data.image || data.productImage || ""),
+    image2: driveToImage(data.image2 || ""),
+    image3: driveToImage(data.image3 || ""),
+    description: data.description || data.productDescription || ""
+  };
+}
 
- const search =
- document
- .getElementById("searchInput")
- .value
- .toLowerCase();
+/* =========================
+   LOAD PRODUCTS
+========================= */
 
- const category =
- document
- .getElementById("categoryFilter")
- .value;
+async function loadCatalog() {
+  try {
+    const snap = await getDocs(collection(db, "catalog"));
 
- filteredProducts =
- products.filter(item=>{
+    const firebaseProducts = snap.docs.map(docSnap =>
+      normalizeProduct(docSnap.id, docSnap.data())
+    );
 
-   const matchesSearch =
-   `${item.name}
-    ${item.description}
-    ${item.category}`
-   .toLowerCase()
-   .includes(search);
+    const merged = [...demoProducts, ...firebaseProducts];
 
-   const matchesCategory =
-   !category ||
-   item.category===category;
+    const dedupe = new Map();
 
-   return (
-     matchesSearch &&
-     matchesCategory
-   );
- });
+    merged.forEach(item => {
+      const key = `${String(item.name || "").toLowerCase()}-${String(item.category || "").toLowerCase()}`;
+      dedupe.set(key, item);
+    });
 
- renderProducts();
-};
+    products = [...dedupe.values()];
+    filteredProducts = [...products];
 
-function renderProducts(){
+    renderFeatured();
+    renderProducts();
+  } catch (error) {
+    console.error("Catalog load failed:", error);
 
- const grid =
- document.getElementById("catalogGrid");
+    products = [...demoProducts];
+    filteredProducts = [...demoProducts];
 
- grid.innerHTML=
- filteredProducts.map(item=>`
+    renderFeatured();
+    renderProducts();
+  }
+}
 
- <div
-   class="product-card"
-   onclick="openProduct('${item.id}')"
- >
+/* =========================
+   FILTER
+========================= */
 
-   <img
-    src="${item.image1 || ''}"
-    alt="${item.name}"
-   >
+window.filterProducts = function () {
+  const searchInput = document.getElementById("searchInput");
+  const categoryFilter = document.getElementById("categoryFilter");
 
-   <div class="product-info">
+  const search = searchInput ? searchInput.value.toLowerCase() : "";
+  const category = categoryFilter ? categoryFilter.value : "";
 
-      <span class="category">
+  filteredProducts = products.filter(item => {
+    const searchable = `
+      ${item.name || ""}
       ${item.category || ""}
-      </span>
+      ${item.color || ""}
+      ${item.description || ""}
+    `.toLowerCase();
 
-      <h3>
-      ${item.name}
-      </h3>
+    const matchesSearch = searchable.includes(search);
+    const matchesCategory = !category || item.category === category;
 
-      <strong>
-      ₦${Number(item.price||0).toLocaleString()}
-      </strong>
+    return matchesSearch && matchesCategory;
+  });
 
-   </div>
+  renderProducts();
+};
 
- </div>
+/* =========================
+   RENDER FEATURED
+========================= */
 
- `).join("");
+function renderFeatured() {
+  const featuredGrid = document.getElementById("featuredGrid");
+
+  if (!featuredGrid) return;
+
+  const featured = products.filter(item => item.featured).slice(0, 3);
+
+  featuredGrid.innerHTML = featured
+    .map(item => {
+      const image = productImages(item)[0];
+
+      return `
+        <article class="featured-card" onclick="openProduct('${item.id}')">
+          <div class="featured-image">
+            ${
+              image
+                ? `<img src="${image}" alt="${item.name}" loading="lazy">`
+                : `<span>👗</span>`
+            }
+          </div>
+
+          <div class="featured-info">
+            <p>${item.category}</p>
+            <h3>${item.name}</h3>
+            <strong>${money(item.price)}</strong>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
-window.openProduct=function(id){
+/* =========================
+   RENDER PRODUCT GRID
+========================= */
 
- const item =
- products.find(
- p=>p.id===id
- );
+function renderProducts() {
+  const grid = document.getElementById("catalogGrid");
 
- if(!item) return;
+  if (!grid) return;
 
- document.getElementById(
- "modalBody"
- ).innerHTML=
+  if (!filteredProducts.length) {
+    grid.innerHTML = `<p class="empty-state">No products found.</p>`;
+    return;
+  }
 
- `
- <img
-  src="${item.image1}"
-  class="modal-image"
- >
+  grid.innerHTML = filteredProducts
+    .map(item => {
+      const image = productImages(item)[0];
 
- <h2>${item.name}</h2>
+      return `
+        <article class="product-card" onclick="openProduct('${item.id}')">
+          <div class="product-image">
+            ${
+              image
+                ? `<img src="${image}" alt="${item.name}" loading="lazy">`
+                : `<span>👗</span>`
+            }
 
- <p>${item.description||""}</p>
+            ${
+              item.badge
+                ? `<span class="product-badge">${item.badge}</span>`
+                : ""
+            }
+          </div>
 
- <h3>
- ₦${Number(item.price||0).toLocaleString()}
- </h3>
+          <div class="product-info">
+            <p class="product-category">${item.category || "Timzy Fashion"}</p>
+            <h3>${item.name || "Untitled Product"}</h3>
+            <strong>${money(item.price)}</strong>
+            <small>${item.color ? "Color: " + item.color : "Available Style"}</small>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
 
- <div class="modal-actions">
+/* =========================
+   PRODUCT MODAL
+========================= */
 
-   <button
-    onclick="requestOrder()"
-   >
-    Request Order
-   </button>
+window.openProduct = function (id) {
+  const item = products.find(product => product.id === id);
 
-   <a
-    href="https://wa.me/2348118103510?text=Hello I want to order ${encodeURIComponent(item.name)}"
-    target="_blank"
-   >
-    WhatsApp
-   </a>
+  if (!item) return;
 
- </div>
- `;
+  const modal = document.getElementById("productModal");
+  const body = document.getElementById("modalBody");
 
- document.getElementById(
- "productModal"
- ).style.display="flex";
+  if (!modal || !body) return;
+
+  const images = productImages(item);
+
+  const whatsappLink =
+    "https://wa.me/2348118103510?text=" +
+    encodeURIComponent(`Hello, I want to order ${item.name}`);
+
+  body.innerHTML = `
+    <div class="modal-gallery">
+      ${
+        images.length
+          ? images
+              .map(
+                image =>
+                  `<img src="${image}" alt="${item.name}" loading="lazy">`
+              )
+              .join("")
+          : `<div class="modal-placeholder">👗</div>`
+      }
+    </div>
+
+    <div class="modal-details">
+      <p class="product-category">${item.category || "Timzy Fashion"}</p>
+      <h2>${item.name}</h2>
+      <strong class="modal-price">${money(item.price)}</strong>
+
+      <div class="meta-grid">
+        <div>
+          <span>Color</span>
+          <b>${item.color || "Ask for availability"}</b>
+        </div>
+
+        <div>
+          <span>Sizes</span>
+          <b>${item.sizes || "Custom / Confirm"}</b>
+        </div>
+
+        <div>
+          <span>Stock</span>
+          <b>${item.quantity || "Confirm availability"}</b>
+        </div>
+      </div>
+
+      <p class="modal-description">
+        ${item.description || "Premium Timzy Fashion product. Contact us for order details and sizing."}
+      </p>
+
+      <div class="modal-actions">
+        <button onclick="requestOrder()">Request Order</button>
+        <a href="${whatsappLink}" target="_blank">WhatsApp</a>
+      </div>
+    </div>
+  `;
+
+  modal.style.display = "flex";
 };
 
-window.requestOrder=function(){
-
- alert(
- "Login required to place order."
- );
+window.requestOrder = function () {
+  alert("Login required to place order. Please request login details or sign in through Timzy Fashion OS.");
+  window.location.href = "index.html";
 };
 
-window.closeModal=function(){
-
- document.getElementById(
- "productModal"
- ).style.display="none";
+window.closeModal = function () {
+  const modal = document.getElementById("productModal");
+  if (modal) modal.style.display = "none";
 };
+
+/* =========================
+   MODAL OUTSIDE CLICK
+========================= */
+
+window.addEventListener("click", event => {
+  const modal = document.getElementById("productModal");
+
+  if (event.target === modal) {
+    closeModal();
+  }
+});
+
+/* =========================
+   INIT
+========================= */
 
 loadCatalog();
