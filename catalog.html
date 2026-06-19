@@ -1,105 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Timzy Fashion Catalog</title>
-
-<link rel="stylesheet" href="catalog.css">
+  <title>Timzy Fashion Catalog</title>
+  <link rel="stylesheet" href="catalog.css" />
 </head>
 
 <body>
 
-<header class="catalog-header">
+  <header class="store-header">
+    <div class="brand">
+      <p class="eyebrow">TIMZY FASHION</p>
+      <h1>Premium Catalog</h1>
+      <p>Browse styles, fabrics, native wear, bags, shoes, and accessories.</p>
+    </div>
 
-  <div class="logo-area">
-    <h1>Timzy Fashion</h1>
-    <p>Premium Fashion Marketplace</p>
+    <a href="index.html" class="login-link">Login</a>
+  </header>
+
+  <section class="store-hero">
+    <div>
+      <p class="eyebrow">FEATURED COLLECTION</p>
+      <h2>Fresh arrivals for premium styling</h2>
+      <p>
+        View available products. Login is required to place orders and save measurements.
+      </p>
+    </div>
+  </section>
+
+  <section class="featured-section">
+    <div class="section-title">
+      <h2>Featured Products</h2>
+      <a href="#allProducts">View All</a>
+    </div>
+
+    <div id="featuredGrid" class="featured-grid"></div>
+  </section>
+
+  <section id="allProducts" class="catalog-section">
+    <div class="catalog-toolbar">
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Search products..."
+        oninput="filterProducts()"
+      />
+
+      <select id="categoryFilter" onchange="filterProducts()">
+        <option value="">All Categories</option>
+        <option value="Senator">Senator</option>
+        <option value="Agbada">Agbada</option>
+        <option value="Kaftan">Kaftan</option>
+        <option value="Female Wear">Female Wear</option>
+        <option value="Ready-to-Wear">Ready-to-Wear</option>
+        <option value="Adire">Adire</option>
+        <option value="Aso Oke">Aso Oke</option>
+        <option value="Children">Children</option>
+        <option value="Fabrics">Fabrics</option>
+        <option value="Accessories">Accessories</option>
+        <option value="Bags">Bags</option>
+        <option value="Shoes">Shoes</option>
+        <option value="Men / Senator">Men / Senator</option>
+      </select>
+    </div>
+
+    <div id="catalogGrid" class="catalog-grid"></div>
+  </section>
+
+  <div id="productModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">×</button>
+      <div id="modalBody"></div>
+    </div>
   </div>
 
-  <div class="header-actions">
+  <footer>
+    <p>Timzy Fashion Catalog • Powered by Timzy Fashion OS</p>
+  </footer>
 
-    <input
-      id="searchInput"
-      placeholder="Search products..."
-      oninput="filterProducts()"
-    >
-
-    <select
-      id="categoryFilter"
-      onchange="filterProducts()"
-    >
-      <option value="">All Categories</option>
-      <option value="Senator">Senator</option>
-      <option value="Agbada">Agbada</option>
-      <option value="Kaftan">Kaftan</option>
-      <option value="Female Wear">Female Wear</option>
-      <option value="Ready-to-Wear">Ready-to-Wear</option>
-      <option value="Children">Children</option>
-      <option value="Shoes">Shoes</option>
-      <option value="Bags">Bags</option>
-      <option value="Accessories">Accessories</option>
-    </select>
-
-    <a
-      href="index.html"
-      class="login-btn"
-    >
-      Login
-    </a>
-
-  </div>
-
-</header>
-
-<section class="hero">
-
-  <div class="hero-content">
-
-    <h2>
-      Explore Timzy Fashion Collections
-    </h2>
-
-    <p>
-      Browse products freely. Login is required to save measurements and place orders.
-    </p>
-
-  </div>
-
-</section>
-
-<section>
-
-  <div
-    id="catalogGrid"
-    class="catalog-grid"
-  ></div>
-
-</section>
-
-<div
-  id="productModal"
-  class="modal"
->
-
-  <div class="modal-content">
-
-    <button
-      class="close-btn"
-      onclick="closeModal()"
-    >
-      ×
-    </button>
-
-    <div id="modalBody"></div>
-
-  </div>
-
-</div>
-
-<script type="module" src="catalog.js"></script>
-
+  <script type="module" src="catalog.js?v=20260606a"></script>
 </body>
 </html>
