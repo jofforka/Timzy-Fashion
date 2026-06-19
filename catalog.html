@@ -3,23 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Timzy Fashion | Luxury African Menswear</title>
-  <link rel="stylesheet" href="catalog.css?v=luxury_x_menswear_20260619" />
+  <link rel="stylesheet" href="catalog.css?v=reference_full_20260619" />
 </head>
+
 <body>
-  <div class="trust-strip">
-    <span>Premium Quality</span><span>Expert Craftsmanship</span><span>Worldwide Delivery</span>
+  <!-- TOP TRUST BAR -->
+  <div class="top-strip">
+    <span>Premium Quality</span>
+    <span>Expert Craftsmanship</span>
+    <span>Worldwide Delivery</span>
   </div>
 
+  <!-- HEADER -->
   <header class="lux-header">
-    <a class="brand-mark" href="catalog.html"><strong>TIMZY</strong><small>FASHION</small></a>
-    <nav class="desktop-nav">
-      <a href="#collections">Collections</a><a href="#bestSellers">Best Sellers</a><a href="#lookbook">Lookbook</a><a href="#whyTimzy">Why Timzy</a>
-    </nav>
-    <div class="header-icons">
+    <a class="brand" href="catalog.html" aria-label="Timzy Fashion Home">
+      <span class="brand-symbol">TF</span>
+      <span>
+        <b>TIMZY</b>
+        <small>FASHION</small>
+      </span>
+    </a>
+
+    <div class="header-actions">
       <button onclick="toggleSearchBar()" aria-label="Search">⌕</button>
       <button id="wishlistHeaderBtn" onclick="toggleWishlistPanel()" aria-label="Wishlist">♡</button>
-      <a class="admin-icon" href="index.html" aria-label="Admin">☰</a>
+      <a href="index.html" aria-label="Admin Menu">☰</a>
     </div>
   </header>
 
@@ -28,95 +38,212 @@
   </section>
 
   <main>
-    <section class="mens-hero">
-      <div class="hero-media"></div>
-      <div class="hero-content">
+    <!-- HERO -->
+    <section class="hero-section">
+      <div class="hero-bg"></div>
+
+      <div class="hero-copy">
         <p class="eyebrow">Luxury African Fashion</p>
         <h1>For Distinguished <span>Men</span></h1>
-        <p>Custom Sewing • Premium Fabrics • Ready-To-Wear</p>
-        <div class="hero-actions">
-          <a href="#bestSellers" class="gold-btn">Shop Collection</a>
-          <a href="https://wa.me/2348118103510" target="_blank" class="outline-btn">Custom Sewing</a>
+        <p class="hero-sub">Custom Sewing • Premium Fabrics<br class="mobile-break"> Ready-To-Wear</p>
+
+        <div class="hero-buttons">
+          <a href="#bestSellers" class="primary-btn">Shop Collection</a>
+          <a href="https://wa.me/2348118103510" target="_blank" class="secondary-btn">Custom Sewing</a>
+        </div>
+
+        <div class="hero-dots">
+          <i class="active"></i><i></i><i></i>
         </div>
       </div>
     </section>
 
-    <section id="collections" class="section-block">
-      <div class="section-title centered"><span></span><p>Shop by Category</p><span></span></div>
-      <div class="category-slider">
-        <button class="lux-category senator" onclick="quickCategory('Senator')"><b>Senator</b><small>Collection</small></button>
-        <button class="lux-category agbada" onclick="quickCategory('Agbada')"><b>Agbada</b><small>Collection</small></button>
-        <button class="lux-category fabrics" onclick="quickCategory('Fabrics')"><b>Luxury</b><small>Fabrics</small></button>
-        <button class="lux-category accessories" onclick="quickCategory('Accessories')"><b>Accessories</b><small>& More</small></button>
-        <button class="lux-category training" onclick="quickCategory('Training')"><b>Training</b><small>Academy</small></button>
+    <!-- CATEGORIES -->
+    <section id="collections" class="compact-section">
+      <div class="section-label">
+        <span></span>
+        <b>Shop By Category</b>
+        <span></span>
+      </div>
+
+      <div class="category-row">
+        <button class="cat-card" onclick="quickCategory('Senator')">
+          <img src="assets/category-senator.jpg" alt="Senator Collection" />
+          <div><b>Senator</b><small>Collection</small></div>
+        </button>
+
+        <button class="cat-card" onclick="quickCategory('Agbada')">
+          <img src="assets/category-agbada.jpg" alt="Agbada Collection" />
+          <div><b>Agbada</b><small>Collection</small></div>
+        </button>
+
+        <button class="cat-card" onclick="quickCategory('Fabrics')">
+          <img src="assets/category-fabrics.jpg" alt="Luxury Fabrics" />
+          <div><b>Luxury</b><small>Fabrics</small></div>
+        </button>
+
+        <button class="cat-card" onclick="quickCategory('Accessories')">
+          <img src="assets/category-accessories.jpg" alt="Accessories" />
+          <div><b>Accessories</b><small>& More</small></div>
+        </button>
+
+        <button class="cat-card" onclick="quickCategory('Training')">
+          <img src="assets/category-training.jpg" alt="Training Academy" />
+          <div><b>Training</b><small>Academy</small></div>
+        </button>
       </div>
     </section>
 
-    <section class="catalog-filters">
+    <!-- FILTERS -->
+    <section class="filters">
       <select id="categoryFilter" onchange="filterProducts()">
         <option value="">All Categories</option>
-        <option>Senator</option><option>Agbada</option><option>Kaftan</option><option>Ready-to-Wear</option><option>Fabrics</option><option>Accessories</option><option>Training</option><option>Female Wear</option>
+        <option>Senator</option>
+        <option>Agbada</option>
+        <option>Kaftan</option>
+        <option>Ready-to-Wear</option>
+        <option>Fabrics</option>
+        <option>Accessories</option>
+        <option>Training</option>
+        <option>Female Wear</option>
       </select>
+
       <select id="typeFilter" onchange="filterProducts()">
         <option value="">All Types</option>
-        <option>Ready-Made</option><option>Fabric / Material</option><option>Custom Sewing</option><option>Accessory</option>
+        <option>Ready-Made</option>
+        <option>Fabric / Material</option>
+        <option>Custom Sewing</option>
+        <option>Accessory</option>
       </select>
     </section>
 
-    <section id="bestSellers" class="section-block product-zone">
-      <div class="section-row"><div><p class="eyebrow">Best Sellers</p><h2>Featured Menswear</h2></div><a href="#allProducts">View All</a></div>
+    <!-- BEST SELLERS -->
+    <section id="bestSellers" class="compact-section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Best Sellers</p>
+          <h2>Featured Menswear</h2>
+        </div>
+        <a href="#allProducts">View All</a>
+      </div>
+
       <div id="featuredGrid" class="product-slider"></div>
     </section>
 
-    <section id="whyTimzy" class="why-row">
-      <article><span>◆</span><b>Premium Quality</b><p>Finest fabrics and top craftsmanship.</p></article>
-      <article><span>▣</span><b>Custom Sewing</b><p>Perfect fit. Made for you.</p></article>
-      <article><span>▰</span><b>Worldwide Delivery</b><p>Fast, safe, reliable shipping.</p></article>
-      <article><span>◇</span><b>Professional Training</b><p>Learn. Master. Succeed.</p></article>
+    <!-- WHY TIMZY -->
+    <section class="service-row">
+      <article>
+        <span>◆</span>
+        <b>Premium Quality</b>
+        <p>Finest fabrics and top craftsmanship</p>
+      </article>
+
+      <article>
+        <span>▣</span>
+        <b>Custom Sewing</b>
+        <p>Perfect fit. Made for you.</p>
+      </article>
+
+      <article>
+        <span>▰</span>
+        <b>Worldwide Delivery</b>
+        <p>Fast, safe and reliable shipping</p>
+      </article>
+
+      <article>
+        <span>◇</span>
+        <b>Professional Training</b>
+        <p>Learn. Master. Succeed.</p>
+      </article>
     </section>
 
-    <section id="allProducts" class="section-block product-zone">
-      <div class="section-row"><div><p class="eyebrow">Shop</p><h2>Latest Pieces</h2></div></div>
+    <!-- ALL PRODUCTS -->
+    <section id="allProducts" class="compact-section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Shop</p>
+          <h2>Latest Pieces</h2>
+        </div>
+      </div>
+
       <div id="catalogGrid" class="product-grid"></div>
     </section>
 
-    <section id="lookbook" class="section-block lookbook-zone">
-      <div class="section-row"><div><p class="eyebrow">Fashion Lookbook</p><h2>Styled for Presence</h2></div></div>
-      <div class="lookbook-grid">
-        <article><h3>Wedding Collection</h3></article>
-        <article><h3>Corporate Collection</h3></article>
-        <article><h3>Traditional Collection</h3></article>
-        <article><h3>Luxury Fabrics</h3></article>
+    <!-- LOOKBOOK -->
+    <section id="lookbook" class="compact-section">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Fashion Lookbook</p>
+          <h2>Styled Collections</h2>
+        </div>
+        <a href="#collections">View All</a>
+      </div>
+
+      <div class="lookbook-row">
+        <article>
+          <img src="assets/lookbook-wedding.jpg" alt="Wedding Collection" />
+          <h3>Wedding<br>Collection</h3>
+        </article>
+
+        <article>
+          <img src="assets/lookbook-corporate.jpg" alt="Corporate Collection" />
+          <h3>Corporate<br>Collection</h3>
+        </article>
+
+        <article>
+          <img src="assets/lookbook-traditional.jpg" alt="Traditional Collection" />
+          <h3>Traditional<br>Collection</h3>
+        </article>
+
+        <article>
+          <img src="assets/lookbook-fabrics.jpg" alt="Luxury Fabrics" />
+          <h3>Luxury<br>Fabrics</h3>
+        </article>
       </div>
     </section>
 
-    <section id="recentlyViewedSection" class="section-block product-zone" style="display:none;">
-      <div class="section-row"><div><p class="eyebrow">Recent</p><h2>Recently Viewed</h2></div></div>
+    <!-- RECENTLY VIEWED -->
+    <section id="recentlyViewedSection" class="compact-section" style="display:none;">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Recent</p>
+          <h2>Recently Viewed</h2>
+        </div>
+      </div>
       <div id="recentlyViewedGrid" class="mini-product-row"></div>
-    </section>
-
-    <section class="stylist-cta">
-      <h2>Need help choosing?</h2>
-      <p>Speak with Timzy Fashion for sizing, fabrics, custom sewing, and bulk orders.</p>
-      <a href="https://wa.me/2348118103510" target="_blank">Chat with a Stylist</a>
     </section>
   </main>
 
+  <!-- WISHLIST -->
   <aside id="wishlistPanel" class="side-panel" style="display:none;">
-    <div class="side-panel-card"><button class="close-panel" onclick="toggleWishlistPanel()">×</button><p class="eyebrow">Saved</p><h2>Your Wishlist</h2><div id="wishlistPanelItems"></div></div>
+    <div class="side-panel-card">
+      <button class="close-panel" onclick="toggleWishlistPanel()">×</button>
+      <p class="eyebrow">Saved</p>
+      <h2>Your Wishlist</h2>
+      <div id="wishlistPanelItems"></div>
+    </div>
   </aside>
 
+  <!-- PRODUCT MODAL -->
   <div id="productModal" class="modal" style="display:none;">
-    <div class="modal-content"><button class="close-btn" onclick="closeModal()">×</button><div id="modalBody"></div></div>
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">×</button>
+      <div id="modalBody"></div>
+    </div>
   </div>
 
-  <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank"><span>✆</span><b>Chat Stylist</b></a>
+  <!-- WHATSAPP -->
+  <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank">☏</a>
 
-  <nav class="mobile-bottom-nav">
-    <a href="#bestSellers" class="active">Home</a><a href="#collections">Collections</a><a href="#allProducts">Fabrics</a><a href="https://wa.me/2348118103510" target="_blank">Sewing</a><a href="index.html">Account</a>
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <a href="#bestSellers" class="active">Home</a>
+    <a href="#collections">Collections</a>
+    <a href="#allProducts">Fabrics</a>
+    <a href="https://wa.me/2348118103510" target="_blank">Sewing</a>
+    <a href="index.html">Account</a>
   </nav>
 
-  <footer class="lux-footer"><div><b>TIMZY FASHION</b><span>Luxury African Menswear</span></div><nav><a href="#collections">Collections</a><a href="#bestSellers">Best Sellers</a><a href="#lookbook">Lookbook</a><a href="index.html">Admin</a></nav></footer>
-  <script type="module" src="catalog.js?v=luxury_x_menswear_20260619"></script>
+  <script type="module" src="catalog.js?v=reference_full_20260619"></script>
 </body>
 </html>
