@@ -3,35 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Timzy Fashion Catalog</title>
-  <link rel="stylesheet" href="catalog.css" />
+  <link rel="stylesheet" href="catalog.css?v=nation_build_20260619" />
 </head>
-
 <body>
   <header class="store-header">
-    <div class="brand-block">
+    <div>
       <p class="eyebrow">TIMZY FASHION</p>
-      <h1>Premium Catalog</h1>
-      <p>Browse, swipe, measure, pay, and chat. No login required.</p>
+      <h1>Digital Luxury Showroom</h1>
+      <p>Native wear • Senator materials • Fabrics • Ready-made • Custom sewing</p>
     </div>
-
     <div class="header-actions">
-      <a href="index.html" class="login-link">Admin / Staff Login</a>
-      <button id="wishlistHeaderBtn" class="wishlist-header-btn" onclick="toggleWishlistPanel()">♡ Wishlist</button>
+      <button id="wishlistHeaderBtn" onclick="toggleWishlistPanel()">♡ Wishlist</button>
+      <a href="index.html">Admin Login</a>
     </div>
   </header>
 
   <section class="showroom-hero">
     <div class="showroom-copy">
-      <p class="eyebrow">DIGITAL SHOWROOM</p>
-      <h2>Luxury native wear, senator materials, fabrics, and custom fashion.</h2>
-      <p>Choose ready-made, fabric/material, or custom sewing. Add measurements only when needed.</p>
-      <a href="#allProducts" class="hero-btn">Shop Collection</a>
+      <p class="eyebrow">NATION BUILD</p>
+      <h2>Premium African fashion, built for local and international buyers.</h2>
+      <p>Swipe product images, save favorites, add measurements, pay securely, and chat directly on WhatsApp.</p>
+      <a href="#allProducts" class="hero-btn">Enter Showroom</a>
     </div>
   </section>
 
-  <section class="collection-strip">
+  <section class="luxury-strip">
     <button onclick="quickCategory('')">All</button>
     <button onclick="quickCategory('Senator')">Senator</button>
     <button onclick="quickCategory('Agbada')">Agbada</button>
@@ -42,85 +39,35 @@
 
   <section class="featured-section">
     <div class="section-title">
-      <div>
-        <p class="eyebrow">FEATURED</p>
-        <h2>Featured Products</h2>
-      </div>
-      <a href="#allProducts">View All</a>
+      <div><p class="eyebrow">CURATED</p><h2>Featured Pieces</h2></div>
+      <a href="#allProducts">View all</a>
     </div>
-
     <div id="featuredGrid" class="featured-grid"></div>
   </section>
 
   <section id="recentlyViewedSection" class="featured-section compact-section" style="display:none;">
-    <div class="section-title">
-      <div>
-        <p class="eyebrow">RECENT</p>
-        <h2>Recently Viewed</h2>
-      </div>
-    </div>
-
+    <div class="section-title"><div><p class="eyebrow">RECENT</p><h2>Recently Viewed</h2></div></div>
     <div id="recentlyViewedGrid" class="mini-product-row"></div>
   </section>
 
   <section id="allProducts" class="catalog-section">
     <div class="catalog-toolbar">
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Search products, color, style, category..."
-        oninput="filterProducts()"
-      />
-
+      <input id="searchInput" type="search" placeholder="Search product, fabric, color, occasion..." oninput="filterProducts()" />
       <select id="categoryFilter" onchange="filterProducts()">
-        <option value="">All Categories</option>
-        <option>Senator</option>
-        <option>Agbada</option>
-        <option>Kaftan</option>
-        <option>Female Wear</option>
-        <option>Ready-to-Wear</option>
-        <option>Adire</option>
-        <option>Aso Oke</option>
-        <option>Children</option>
-        <option>Fabrics</option>
-        <option>Accessories</option>
-        <option>Bags</option>
-        <option>Shoes</option>
-        <option>Men / Senator</option>
+        <option value="">All Categories</option><option>Senator</option><option>Agbada</option><option>Kaftan</option><option>Female Wear</option><option>Ready-to-Wear</option><option>Adire</option><option>Aso Oke</option><option>Children</option><option>Fabrics</option><option>Accessories</option><option>Bags</option><option>Shoes</option><option>Men / Senator</option>
       </select>
-
       <select id="typeFilter" onchange="filterProducts()">
-        <option value="">All Types</option>
-        <option>Ready-Made</option>
-        <option>Fabric / Material</option>
-        <option>Custom Sewing</option>
-        <option>Accessory</option>
+        <option value="">All Types</option><option>Ready-Made</option><option>Fabric / Material</option><option>Custom Sewing</option><option>Accessory</option>
       </select>
     </div>
-
     <div id="catalogGrid" class="catalog-grid"></div>
   </section>
 
-  <aside id="wishlistPanel" class="side-panel" style="display:none;">
-    <div class="side-panel-card">
-      <button class="close-panel" onclick="toggleWishlistPanel()">×</button>
-      <p class="eyebrow">SAVED</p>
-      <h2>Your Wishlist</h2>
-      <div id="wishlistPanelItems"></div>
-    </div>
-  </aside>
+  <aside id="wishlistPanel" class="side-panel" style="display:none;"><div class="side-panel-card"><button onclick="toggleWishlistPanel()" class="close-panel">×</button><p class="eyebrow">SAVED</p><h2>Wishlist</h2><div id="wishlistPanelItems"></div></div></aside>
 
-  <div id="productModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <button class="close-btn" onclick="closeModal()">×</button>
-      <div id="modalBody"></div>
-    </div>
-  </div>
+  <div id="productModal" class="modal" style="display:none;"><div class="modal-content"><button class="close-btn" onclick="closeModal()">×</button><div id="modalBody"></div></div></div>
 
-  <footer>
-    <p>Timzy Fashion Catalog • Powered by Timzy Fashion OS</p>
-  </footer>
-
-  <script type="module" src="catalog.js?v=20260619_phase8"></script>
+  <footer>Timzy Fashion OS • Luxury Commerce Platform</footer>
+  <script type="module" src="catalog.js?v=nation_build_20260619"></script>
 </body>
 </html>
