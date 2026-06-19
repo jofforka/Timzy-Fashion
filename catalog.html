@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Timzy Fashion Catalog</title>
+
+<link rel="stylesheet" href="catalog.css">
+</head>
+
+<body>
+
+<header class="catalog-header">
+
+  <div class="logo-area">
+    <h1>Timzy Fashion</h1>
+    <p>Premium Fashion Marketplace</p>
+  </div>
+
+  <div class="header-actions">
+
+    <input
+      id="searchInput"
+      placeholder="Search products..."
+      oninput="filterProducts()"
+    >
+
+    <select
+      id="categoryFilter"
+      onchange="filterProducts()"
+    >
+      <option value="">All Categories</option>
+      <option value="Senator">Senator</option>
+      <option value="Agbada">Agbada</option>
+      <option value="Kaftan">Kaftan</option>
+      <option value="Female Wear">Female Wear</option>
+      <option value="Ready-to-Wear">Ready-to-Wear</option>
+      <option value="Children">Children</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Bags">Bags</option>
+      <option value="Accessories">Accessories</option>
+    </select>
+
+    <a
+      href="index.html"
+      class="login-btn"
+    >
+      Login
+    </a>
+
+  </div>
+
+</header>
+
+<section class="hero">
+
+  <div class="hero-content">
+
+    <h2>
+      Explore Timzy Fashion Collections
+    </h2>
+
+    <p>
+      Browse products freely. Login is required to save measurements and place orders.
+    </p>
+
+  </div>
+
+</section>
+
+<section>
+
+  <div
+    id="catalogGrid"
+    class="catalog-grid"
+  ></div>
+
+</section>
+
+<div
+  id="productModal"
+  class="modal"
+>
+
+  <div class="modal-content">
+
+    <button
+      class="close-btn"
+      onclick="closeModal()"
+    >
+      ×
+    </button>
+
+    <div id="modalBody"></div>
+
+  </div>
+
+</div>
+
+<script type="module" src="catalog.js"></script>
+
+</body>
+</html>
