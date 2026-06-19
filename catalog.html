@@ -3,36 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Timzy Fashion Catalog</title>
   <link rel="stylesheet" href="catalog.css" />
 </head>
 
 <body>
-
   <header class="store-header">
     <div class="brand">
       <p class="eyebrow">TIMZY FASHION</p>
       <h1>Premium Catalog</h1>
-      <p>Browse styles, fabrics, native wear, bags, shoes, and accessories.</p>
+      <p>Browse, choose your size or measurement, buy instantly, and chat on WhatsApp.</p>
     </div>
 
-    <a href="index.html" class="login-link">Login</a>
+    <a href="index.html" class="login-link">Admin / Staff Login</a>
   </header>
 
-  <section class="store-hero">
-    <div>
-      <p class="eyebrow">FEATURED COLLECTION</p>
-      <h2>Fresh arrivals for premium styling</h2>
-      <p>
-        View available products. Login is required to place orders and save measurements.
-      </p>
+  <section class="showroom-hero">
+    <div class="showroom-copy">
+      <p class="eyebrow">DIGITAL SHOWROOM</p>
+      <h2>Curated fashion pieces for ready-made, fabric, and custom orders.</h2>
+      <p>No login required to buy. Measurements are optional and can be added during checkout.</p>
+      <a href="#allProducts" class="hero-btn">Shop Collection</a>
     </div>
   </section>
 
   <section class="featured-section">
     <div class="section-title">
-      <h2>Featured Products</h2>
+      <div>
+        <p class="eyebrow">FEATURED</p>
+        <h2>Featured Products</h2>
+      </div>
       <a href="#allProducts">View All</a>
     </div>
 
@@ -41,12 +41,7 @@
 
   <section id="allProducts" class="catalog-section">
     <div class="catalog-toolbar">
-      <input
-        id="searchInput"
-        type="search"
-        placeholder="Search products..."
-        oninput="filterProducts()"
-      />
+      <input id="searchInput" type="search" placeholder="Search products, color, category..." oninput="filterProducts()" />
 
       <select id="categoryFilter" onchange="filterProducts()">
         <option value="">All Categories</option>
@@ -80,6 +75,6 @@
     <p>Timzy Fashion Catalog • Powered by Timzy Fashion OS</p>
   </footer>
 
-  <script type="module" src="catalog.js?v=20260606a"></script>
+  <script type="module" src="catalog.js?v=20260619a"></script>
 </body>
 </html>
