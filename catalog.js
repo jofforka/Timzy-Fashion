@@ -3,7 +3,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getFirestore,
   collection,
-  getDocs
+  getDocs,
+  addDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* =========================
@@ -23,15 +25,24 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 /* =========================
+   PAYMENT PROXY
+========================= */
+
+const PAYMENT_PROXY_URL =
+  "https://script.google.com/macros/s/AKfycbwMpjON9SbRrtTTFWfR-yBZVPNwrZCnakWI797BBvvoXvlwPTEAwuCoBHnGW1krKhHn/exec";
+
+const WHATSAPP_NUMBER = "2348118103510";
+
+/* =========================
    STATE
 ========================= */
 
 let products = [];
 let filteredProducts = [];
+let activeProduct = null;
 
 /* =========================
    DEMO PRODUCTS
-   These show with your real products.
 ========================= */
 
 const demoProducts = [
@@ -85,6 +96,10 @@ const demoProducts = [
 
 const money = value => "₦" + Number(value || 0).toLocaleString();
 
+function cleanNumber(value) {
+  return Number(String(value || "0").replace(/[₦,\s]/g, "")) || 0;
+}
+
 function driveToImage(url) {
   if (!url) return "";
 
@@ -123,6 +138,26 @@ function normalizeProduct(docId, data) {
     image3: driveToImage(data.image3 || ""),
     description: data.description || data.productDescription || ""
   };
+}
+
+function buildWhatsAppLink(productName, customerName = "", phone = "") {
+  const message = `
+Hello Timzy Fashion,
+
+I want to ask about this product:
+
+Product: ${productName}
+Customer Name: ${customerName || "Not provided"}
+Phone: ${phone || "Not provided"}
+
+Please assist me.
+  `.trim();
+
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
+function customerOrderRef() {
+  return `TIMZY-CAT-${Date.now()}`;
 }
 
 /* =========================
@@ -191,7 +226,7 @@ window.filterProducts = function () {
 };
 
 /* =========================
-   RENDER FEATURED
+   FEATURED
 ========================= */
 
 function renderFeatured() {
@@ -227,7 +262,7 @@ function renderFeatured() {
 }
 
 /* =========================
-   RENDER PRODUCT GRID
+   PRODUCT GRID
 ========================= */
 
 function renderProducts() {
@@ -281,16 +316,15 @@ window.openProduct = function (id) {
 
   if (!item) return;
 
+  activeProduct = item;
+
   const modal = document.getElementById("productModal");
   const body = document.getElementById("modalBody");
 
   if (!modal || !body) return;
 
   const images = productImages(item);
-
-  const whatsappLink =
-    "https://wa.me/2348118103510?text=" +
-    encodeURIComponent(`Hello, I want to order ${item.name}`);
+  const whatsappLink = buildWhatsAppLink(item.name);
 
   body.innerHTML = `
     <div class="modal-gallery">
@@ -332,9 +366,21 @@ window.openProduct = function (id) {
         ${item.description || "Premium Timzy Fashion product. Contact us for order details and sizing."}
       </p>
 
+      <div class="quick-checkout">
+        <h3>Buy This Product</h3>
+        <p>Enter your details to generate CheckoutPay payment details.</p>
+
+        <input id="buyerName" placeholder="Your Name" />
+        <input id="buyerPhone" placeholder="Phone Number / WhatsApp" />
+        <input id="buyerQuantity" type="number" min="1" value="1" placeholder="Quantity" />
+      </div>
+
+      <div id="paymentResult" class="payment-result" style="display:none;"></div>
+
       <div class="modal-actions">
-        <button onclick="requestOrder()">Request Order</button>
-        <a href="${whatsappLink}" target="_blank">WhatsApp</a>
+        <button onclick="buyNow()">Buy Now</button>
+        <a href="${whatsappLink}" target="_blank">WhatsApp Chat</a>
+        <button class="secondary-btn" onclick="loginForMeasurements()">Login for Measurements</button>
       </div>
     </div>
   `;
@@ -342,19 +388,133 @@ window.openProduct = function (id) {
   modal.style.display = "flex";
 };
 
-window.requestOrder = function () {
-  alert("Login required to place order. Please request login details or sign in through Timzy Fashion OS.");
+/* =========================
+   BUY NOW
+========================= */
+
+window.buyNow = async function () {
+  if (!activeProduct) {
+    alert("No product selected.");
+    return;
+  }
+
+  const buyerName = document.getElementById("buyerName")?.value.trim() || "";
+  const buyerPhone = document.getElementById("buyerPhone")?.value.trim() || "";
+  const quantity = cleanNumber(document.getElementById("buyerQuantity")?.value || 1);
+
+  if (!buyerName || !buyerPhone) {
+    alert("Please enter your name and phone number.");
+    return;
+  }
+
+  if (!quantity || quantity < 1) {
+    alert("Enter a valid quantity.");
+    return;
+  }
+
+  const amount = Number(activeProduct.price || 0) * quantity;
+
+  if (!amount || amount <= 0) {
+    alert("This product does not have a valid price.");
+    return;
+  }
+
+  const orderReference = customerOrderRef();
+
+  try {
+    const response = await fetch(PAYMENT_PROXY_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        orderId: orderReference,
+        amount,
+        payer_name: buyerName,
+        phone: buyerPhone,
+        product: `${activeProduct.name} x${quantity}`
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      console.error(data);
+      alert(data.message || "Payment request failed.");
+      return;
+    }
+
+    await addDoc(collection(db, "publicCatalogOrders"), {
+      orderReference,
+      customerName: buyerName,
+      phone: buyerPhone,
+      productId: activeProduct.id,
+      productName: activeProduct.name,
+      category: activeProduct.category,
+      quantity,
+      unitPrice: Number(activeProduct.price || 0),
+      totalAmount: amount,
+      paymentStatus: "Payment Requested",
+      orderStatus: "Pending Payment",
+      transactionId: data.transaction_id || "",
+      paymentBankName: data.bank_name || "",
+      paymentAccountName: data.account_name || "",
+      paymentAccountNumber: data.account_number || "",
+      checkoutStatus: data.status || "",
+      source: "catalog.html",
+      createdAt: serverTimestamp()
+    });
+
+    showPaymentResult(data, amount, buyerName, buyerPhone, activeProduct.name);
+  } catch (error) {
+    console.error(error);
+    alert("Payment request error. Please try again or contact Timzy Fashion on WhatsApp.");
+  }
+};
+
+function showPaymentResult(data, amount, buyerName, buyerPhone, productName) {
+  const resultBox = document.getElementById("paymentResult");
+
+  if (!resultBox) return;
+
+  const whatsappLink = buildWhatsAppLink(productName, buyerName, buyerPhone);
+
+  resultBox.innerHTML = `
+    <h3>Payment Details Generated</h3>
+
+    <div class="payment-card">
+      <p><span>Bank</span><b>${data.bank_name || "-"}</b></p>
+      <p><span>Account Name</span><b>${data.account_name || "-"}</b></p>
+      <p><span>Account Number</span><b>${data.account_number || "-"}</b></p>
+      <p><span>Amount</span><b>${money(data.amount_to_pay || amount)}</b></p>
+      <p><span>Status</span><b>${data.status || "pending"}</b></p>
+    </div>
+
+    <p class="payment-note">
+      After payment, chat with Timzy Fashion on WhatsApp with your payment reference.
+    </p>
+
+    <a class="payment-whatsapp" href="${whatsappLink}" target="_blank">
+      Chat on WhatsApp
+    </a>
+  `;
+
+  resultBox.style.display = "block";
+}
+
+/* =========================
+   LOGIN FOR MEASUREMENTS
+========================= */
+
+window.loginForMeasurements = function () {
   window.location.href = "index.html";
 };
+
+/* =========================
+   MODAL CONTROL
+========================= */
 
 window.closeModal = function () {
   const modal = document.getElementById("productModal");
   if (modal) modal.style.display = "none";
 };
-
-/* =========================
-   MODAL OUTSIDE CLICK
-========================= */
 
 window.addEventListener("click", event => {
   const modal = document.getElementById("productModal");
