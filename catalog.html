@@ -5,18 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Timzy Fashion | Luxury African Menswear</title>
-  <link rel="stylesheet" href="catalog.css?v=reference_full_20260619" />
+  <link rel="stylesheet" href="catalog.css?v=global_no_text_assets_20260619" />
 </head>
 
 <body>
-  <!-- TOP TRUST BAR -->
   <div class="top-strip">
     <span>Premium Quality</span>
     <span>Expert Craftsmanship</span>
     <span>Worldwide Delivery</span>
   </div>
 
-  <!-- HEADER -->
   <header class="lux-header">
     <a class="brand" href="catalog.html" aria-label="Timzy Fashion Home">
       <span class="brand-symbol">TF</span>
@@ -25,6 +23,13 @@
         <small>FASHION</small>
       </span>
     </a>
+
+    <nav class="desktop-nav">
+      <a href="#collections">Collections</a>
+      <a href="#bestSellers">Best Sellers</a>
+      <a href="#lookbook">Lookbook</a>
+      <a href="training.html">Training</a>
+    </nav>
 
     <div class="header-actions">
       <button onclick="toggleSearchBar()" aria-label="Search">⌕</button>
@@ -38,14 +43,13 @@
   </section>
 
   <main>
-    <!-- HERO -->
     <section class="hero-section">
-      <div class="hero-bg"></div>
+      <div class="hero-visual" aria-hidden="true"></div>
 
       <div class="hero-copy">
         <p class="eyebrow">Luxury African Fashion</p>
         <h1>For Distinguished <span>Men</span></h1>
-        <p class="hero-sub">Custom Sewing • Premium Fabrics<br class="mobile-break"> Ready-To-Wear</p>
+        <p class="hero-sub">Custom Sewing • Premium Fabrics • Ready-To-Wear</p>
 
         <div class="hero-buttons">
           <a href="#bestSellers" class="primary-btn">Shop Collection</a>
@@ -58,7 +62,6 @@
       </div>
     </section>
 
-    <!-- CATEGORIES -->
     <section id="collections" class="compact-section">
       <div class="section-label">
         <span></span>
@@ -87,14 +90,13 @@
           <div><b>Accessories</b><small>& More</small></div>
         </button>
 
-        <button class="cat-card" onclick="quickCategory('Training')">
+        <a class="cat-card training-link" href="training.html">
           <img src="assets/category-training.jpg" alt="Training Academy" />
           <div><b>Training</b><small>Academy</small></div>
-        </button>
+        </a>
       </div>
     </section>
 
-    <!-- FILTERS -->
     <section class="filters">
       <select id="categoryFilter" onchange="filterProducts()">
         <option value="">All Categories</option>
@@ -104,7 +106,6 @@
         <option>Ready-to-Wear</option>
         <option>Fabrics</option>
         <option>Accessories</option>
-        <option>Training</option>
         <option>Female Wear</option>
       </select>
 
@@ -117,7 +118,6 @@
       </select>
     </section>
 
-    <!-- BEST SELLERS -->
     <section id="bestSellers" class="compact-section">
       <div class="section-head">
         <div>
@@ -130,7 +130,6 @@
       <div id="featuredGrid" class="product-slider"></div>
     </section>
 
-    <!-- WHY TIMZY -->
     <section class="service-row">
       <article>
         <span>◆</span>
@@ -157,7 +156,6 @@
       </article>
     </section>
 
-    <!-- ALL PRODUCTS -->
     <section id="allProducts" class="compact-section">
       <div class="section-head">
         <div>
@@ -169,7 +167,6 @@
       <div id="catalogGrid" class="product-grid"></div>
     </section>
 
-    <!-- LOOKBOOK -->
     <section id="lookbook" class="compact-section">
       <div class="section-head">
         <div>
@@ -181,28 +178,27 @@
 
       <div class="lookbook-row">
         <article>
-          <img src="assets/lookbook-wedding.jpg" alt="Wedding Collection" />
+          <img src="assets/lookbook-wedding.jpg" alt="Wedding styling" />
           <h3>Wedding<br>Collection</h3>
         </article>
 
         <article>
-          <img src="assets/lookbook-corporate.jpg" alt="Corporate Collection" />
+          <img src="assets/lookbook-corporate.jpg" alt="Corporate styling" />
           <h3>Corporate<br>Collection</h3>
         </article>
 
         <article>
-          <img src="assets/lookbook-traditional.jpg" alt="Traditional Collection" />
+          <img src="assets/lookbook-traditional.jpg" alt="Traditional styling" />
           <h3>Traditional<br>Collection</h3>
         </article>
 
         <article>
-          <img src="assets/lookbook-fabrics.jpg" alt="Luxury Fabrics" />
+          <img src="assets/lookbook-fabrics.jpg" alt="Luxury fabrics" />
           <h3>Luxury<br>Fabrics</h3>
         </article>
       </div>
     </section>
 
-    <!-- RECENTLY VIEWED -->
     <section id="recentlyViewedSection" class="compact-section" style="display:none;">
       <div class="section-head">
         <div>
@@ -214,7 +210,6 @@
     </section>
   </main>
 
-  <!-- WISHLIST -->
   <aside id="wishlistPanel" class="side-panel" style="display:none;">
     <div class="side-panel-card">
       <button class="close-panel" onclick="toggleWishlistPanel()">×</button>
@@ -224,7 +219,6 @@
     </div>
   </aside>
 
-  <!-- PRODUCT MODAL -->
   <div id="productModal" class="modal" style="display:none;">
     <div class="modal-content">
       <button class="close-btn" onclick="closeModal()">×</button>
@@ -232,18 +226,16 @@
     </div>
   </div>
 
-  <!-- WHATSAPP -->
   <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank">☏</a>
 
-  <!-- MOBILE NAV -->
   <nav class="mobile-nav">
     <a href="#bestSellers" class="active">Home</a>
     <a href="#collections">Collections</a>
     <a href="#allProducts">Fabrics</a>
     <a href="https://wa.me/2348118103510" target="_blank">Sewing</a>
-    <a href="index.html">Account</a>
+    <a href="training.html">Training</a>
   </nav>
 
-  <script type="module" src="catalog.js?v=reference_full_20260619"></script>
+  <script type="module" src="catalog.js?v=global_no_text_assets_20260619"></script>
 </body>
 </html>
