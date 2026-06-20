@@ -19,12 +19,12 @@
     "fabricType": "Premium Brocade",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hausa-agbada-portrait.jpg",
-    "image2": "assets/real/hausa-agbada-sitting.jpg",
-    "image3": "assets/real/hero-hausa-agbada.jpg",
+    "image1": "assets/real-senator-grey.jpg",
+    "image2": "assets/real-senator-grey.jpg",
+    "image3": "assets/real-senator-grey.jpg",
     "videoUrl": "",
     "description": "A refined Hausa-inspired senator set with clean embroidery, premium fabric structure, and a dignified formal finish.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "hausa-emirate-senator-set",
@@ -46,12 +46,12 @@
     "fabricType": "Luxury Jacquard",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hausa-agbada-sitting.jpg",
-    "image2": "assets/real/hero-hausa-agbada.jpg",
-    "image3": "assets/real/hausa-agbada-portrait.jpg",
+    "image1": "assets/real-senator-blue.jpg",
+    "image2": "assets/real-senator-blue.jpg",
+    "image3": "assets/real-senator-blue.jpg",
     "videoUrl": "",
     "description": "A premium emirate-inspired senator outfit for high-profile events, traditional ceremonies, and executive appearances.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "hausa-classic-kaftan-senator",
@@ -73,12 +73,12 @@
     "fabricType": "Soft Cashmere Blend",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hero-hausa-agbada.jpg",
-    "image2": "assets/real/hausa-agbada-portrait.jpg",
-    "image3": "assets/real/hausa-agbada-sitting.jpg",
+    "image1": "assets/real-senator-cream.jpg",
+    "image2": "assets/real-senator-cream.jpg",
+    "image3": "assets/real-senator-cream.jpg",
     "videoUrl": "",
     "description": "A polished Hausa-style senator look with elegant simplicity and comfortable movement.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "igbo-prestige-senator-wear",
@@ -100,12 +100,12 @@
     "fabricType": "Premium Wool Crepe",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/nigeria-fashion-outdoor.jpg",
-    "image2": "assets/real/agbada-yoruba-blue.jpg",
-    "image3": "assets/real/yoruba-agbada-close.jpg",
+    "image1": "assets/real-agbada-white-home.jpg",
+    "image2": "assets/real-agbada-white-home.jpg",
+    "image3": "assets/real-agbada-white-home.jpg",
     "videoUrl": "",
     "description": "An Igbo-inspired senator set with clean lines, strong presence, and elegant detailing for formal and traditional occasions.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "igbo-red-cap-senator-set",
@@ -127,12 +127,12 @@
     "fabricType": "Luxury Suiting Fabric",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/agbada-yoruba-blue.jpg",
-    "image2": "assets/real/yoruba-agbada-close.jpg",
-    "image3": "assets/real/nigeria-fashion-outdoor.jpg",
+    "image1": "assets/real-senator-grey.jpg",
+    "image2": "assets/real-senator-grey.jpg",
+    "image3": "assets/real-senator-grey.jpg",
     "videoUrl": "",
     "description": "A statement Igbo senator outfit designed for title ceremonies, weddings, and cultural celebrations.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "igbo-executive-senator-wear",
@@ -154,12 +154,12 @@
     "fabricType": "Premium Crepe",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/yoruba-agbada-close.jpg",
-    "image2": "assets/real/nigeria-fashion-outdoor.jpg",
-    "image3": "assets/real/agbada-yoruba-blue.jpg",
+    "image1": "assets/real-senator-blue.jpg",
+    "image2": "assets/real-senator-blue.jpg",
+    "image3": "assets/real-senator-blue.jpg",
     "videoUrl": "",
     "description": "A clean executive senator piece inspired by modern Igbo styling and premium masculine tailoring.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-noble-senator-wear",
@@ -181,12 +181,12 @@
     "fabricType": "Aso Oke Detail",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hero-nigerian-agbada.jpg",
-    "image2": "assets/real/agbada-yoruba-blue.jpg",
-    "image3": "assets/real/yoruba-agbada-group.jpg",
+    "image1": "assets/real-senator-cream.jpg",
+    "image2": "assets/real-senator-cream.jpg",
+    "image3": "assets/real-senator-cream.jpg",
     "videoUrl": "",
     "description": "A Yoruba-inspired senator outfit with elegant detail, ceremonial confidence, and a premium contemporary finish.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-classic-senator-set",
@@ -208,12 +208,12 @@
     "fabricType": "Premium Cotton Blend",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/agbada-yoruba-blue.jpg",
-    "image2": "assets/real/yoruba-agbada-group.jpg",
-    "image3": "assets/real/yoruba-agbada-close.jpg",
+    "image1": "assets/real-agbada-white-home.jpg",
+    "image2": "assets/real-agbada-white-home.jpg",
+    "image3": "assets/real-agbada-white-home.jpg",
     "videoUrl": "",
     "description": "A clean and versatile Yoruba-inspired senator set for everyday elegance and weekend events.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-wedding-senator-wear",
@@ -235,12 +235,12 @@
     "fabricType": "Luxury Brocade",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/yoruba-agbada-group.jpg",
-    "image2": "assets/real/yoruba-agbada-close.jpg",
-    "image3": "assets/real/hero-nigerian-agbada.jpg",
+    "image1": "assets/real-senator-grey.jpg",
+    "image2": "assets/real-senator-grey.jpg",
+    "image3": "assets/real-senator-grey.jpg",
     "videoUrl": "",
     "description": "A wedding-ready senator style with refined finishing for groom, groomsmen, and special guests.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-executive-native-wear",
@@ -262,12 +262,12 @@
     "fabricType": "Premium Senator Fabric",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/yoruba-agbada-close.jpg",
-    "image2": "assets/real/hero-nigerian-agbada.jpg",
-    "image3": "assets/real/agbada-yoruba-blue.jpg",
+    "image1": "assets/real-senator-blue.jpg",
+    "image2": "assets/real-senator-blue.jpg",
+    "image3": "assets/real-senator-blue.jpg",
     "videoUrl": "",
     "description": "A modern Yoruba executive native wear look for business events, church, ceremonies, and social occasions.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "hausa-royal-agbada",
@@ -289,12 +289,12 @@
     "fabricType": "Luxury Brocade",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hausa-agbada-sitting.jpg",
-    "image2": "assets/real/hero-hausa-agbada.jpg",
-    "image3": "assets/real/hausa-agbada-portrait.jpg",
+    "image1": "assets/real-agbada-maroon.jpg",
+    "image2": "assets/real-agbada-maroon.jpg",
+    "image3": "assets/real-agbada-maroon.jpg",
     "videoUrl": "",
     "description": "A grand Hausa-inspired agbada crafted for elegance, authority, and ceremonial distinction.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "hausa-emir-agbada-set",
@@ -316,12 +316,12 @@
     "fabricType": "Royal Jacquard",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hero-hausa-agbada.jpg",
-    "image2": "assets/real/hausa-agbada-portrait.jpg",
-    "image3": "assets/real/hausa-agbada-sitting.jpg",
+    "image1": "assets/real-agbada-white-front.jpg",
+    "image2": "assets/real-agbada-white-front.jpg",
+    "image3": "assets/real-agbada-white-front.jpg",
     "videoUrl": "",
     "description": "A premium agbada set with strong northern inspiration, ideal for weddings, title events, and formal gatherings.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "hausa-minimal-agbada",
@@ -343,12 +343,12 @@
     "fabricType": "Soft Damask",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hausa-agbada-portrait.jpg",
-    "image2": "assets/real/hausa-agbada-sitting.jpg",
-    "image3": "assets/real/hero-hausa-agbada.jpg",
+    "image1": "assets/real-agbada-cream.jpg",
+    "image2": "assets/real-agbada-cream.jpg",
+    "image3": "assets/real-agbada-cream.jpg",
     "videoUrl": "",
     "description": "A clean, minimalist agbada option with premium fabric and understated embroidery.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "igbo-high-chief-agbada",
@@ -370,12 +370,12 @@
     "fabricType": "Premium Brocade",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/nigeria-fashion-outdoor.jpg",
-    "image2": "assets/real/yoruba-agbada-close.jpg",
-    "image3": "assets/real/agbada-yoruba-blue.jpg",
+    "image1": "assets/real-agbada-white-gold.jpg",
+    "image2": "assets/real-agbada-white-gold.jpg",
+    "image3": "assets/real-agbada-white-gold.jpg",
     "videoUrl": "",
     "description": "A high-chief inspired agbada style for cultural celebrations, formal events, and luxury native fashion.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "igbo-prestige-agbada",
@@ -397,12 +397,12 @@
     "fabricType": "Luxury Crepe",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/yoruba-agbada-close.jpg",
-    "image2": "assets/real/agbada-yoruba-blue.jpg",
-    "image3": "assets/real/nigeria-fashion-outdoor.jpg",
+    "image1": "assets/real-agbada-purple.jpg",
+    "image2": "assets/real-agbada-purple.jpg",
+    "image3": "assets/real-agbada-purple.jpg",
     "videoUrl": "",
     "description": "A premium Igbo-inspired agbada look with bold color, quality finishing, and confident styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "igbo-traditional-agbada",
@@ -424,12 +424,12 @@
     "fabricType": "Jacquard Blend",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/agbada-yoruba-blue.jpg",
-    "image2": "assets/real/nigeria-fashion-outdoor.jpg",
-    "image3": "assets/real/yoruba-agbada-close.jpg",
+    "image1": "assets/real-agbada-blue-pink.jpg",
+    "image2": "assets/real-agbada-blue-pink.jpg",
+    "image3": "assets/real-agbada-blue-pink.jpg",
     "videoUrl": "",
     "description": "A traditional agbada option created for men who want culture, class, and modern tailoring.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-groom-agbada",
@@ -451,12 +451,12 @@
     "fabricType": "Luxury Aso Oke",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/yoruba-agbada-group.jpg",
-    "image2": "assets/real/yoruba-agbada-close.jpg",
-    "image3": "assets/real/hero-nigerian-agbada.jpg",
+    "image1": "assets/real-agbada-maroon.jpg",
+    "image2": "assets/real-agbada-maroon.jpg",
+    "image3": "assets/real-agbada-maroon.jpg",
     "videoUrl": "",
     "description": "A luxury Yoruba groom agbada for weddings, introductions, anniversaries, and high-end celebrations.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-owambe-agbada",
@@ -478,12 +478,12 @@
     "fabricType": "Damask",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/yoruba-agbada-close.jpg",
-    "image2": "assets/real/hero-nigerian-agbada.jpg",
-    "image3": "assets/real/agbada-yoruba-blue.jpg",
+    "image1": "assets/real-agbada-white-front.jpg",
+    "image2": "assets/real-agbada-white-front.jpg",
+    "image3": "assets/real-agbada-white-front.jpg",
     "videoUrl": "",
     "description": "An owambe-ready agbada with premium presence, comfortable fit, and elegant detailing.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-royal-agbada",
@@ -505,12 +505,12 @@
     "fabricType": "Handwoven Aso Oke",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/hero-nigerian-agbada.jpg",
-    "image2": "assets/real/agbada-yoruba-blue.jpg",
-    "image3": "assets/real/yoruba-agbada-group.jpg",
+    "image1": "assets/real-agbada-cream.jpg",
+    "image2": "assets/real-agbada-cream.jpg",
+    "image3": "assets/real-agbada-cream.jpg",
     "videoUrl": "",
     "description": "A premium royal agbada built for elite ceremonies, high-profile events, and luxury traditional fashion.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "yoruba-executive-agbada",
@@ -532,12 +532,12 @@
     "fabricType": "Luxury Suiting Fabric",
     "measurementRequired": true,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/agbada-yoruba-blue.jpg",
-    "image2": "assets/real/yoruba-agbada-group.jpg",
-    "image3": "assets/real/yoruba-agbada-close.jpg",
+    "image1": "assets/real-agbada-white-gold.jpg",
+    "image2": "assets/real-agbada-white-gold.jpg",
+    "image3": "assets/real-agbada-white-gold.jpg",
     "videoUrl": "",
     "description": "An executive Yoruba agbada with modern finishing, perfect for dignified occasions and premium styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "orlandis-luxury-lace",
@@ -559,12 +559,12 @@
     "fabricType": "Orlandis Lace",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/luxury-lace-fabrics.jpg",
-    "image2": "assets/category-fabrics.jpg",
-    "image3": "assets/category-fabrics.jpg",
+    "image1": "assets/real-fabrics-stack.jpg",
+    "image2": "assets/real-fabrics-stack.jpg",
+    "image3": "assets/real-fabrics-stack.jpg",
     "videoUrl": "",
     "description": "Premium Orlandis lace suitable for asoebi, luxury menswear detailing, women\u2019s wear, and event styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "swiss-voile-lace",
@@ -586,12 +586,12 @@
     "fabricType": "Swiss Voile Lace",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/category-fabrics.jpg",
-    "image2": "assets/real/luxury-lace-fabrics.jpg",
-    "image3": "assets/real/luxury-lace-fabrics.jpg",
+    "image1": "assets/real-fabric-market.jpg",
+    "image2": "assets/real-fabric-market.jpg",
+    "image3": "assets/real-fabric-market.jpg",
     "videoUrl": "",
     "description": "High-quality Swiss voile lace for premium outfits, ceremonial looks, and elegant event wear.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "french-lace-premium-bundle",
@@ -613,12 +613,12 @@
     "fabricType": "French Lace",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/luxury-lace-fabrics.jpg",
-    "image2": "assets/category-fabrics.jpg",
-    "image3": "assets/category-fabrics.jpg",
+    "image1": "assets/real-fabrics-stack.jpg",
+    "image2": "assets/real-fabrics-stack.jpg",
+    "image3": "assets/real-fabrics-stack.jpg",
     "videoUrl": "",
     "description": "Premium French lace bundle suitable for high-end asoebi and luxury occasion wear.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "aso-oke-prestige-fabric",
@@ -640,12 +640,12 @@
     "fabricType": "Aso Oke",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/category-fabrics.jpg",
-    "image2": "assets/real/luxury-lace-fabrics.jpg",
-    "image3": "assets/real/luxury-lace-fabrics.jpg",
+    "image1": "assets/real-fabric-market.jpg",
+    "image2": "assets/real-fabric-market.jpg",
+    "image3": "assets/real-fabric-market.jpg",
     "videoUrl": "",
     "description": "Prestige Aso Oke fabric for agbada, fila, wedding, and traditional event styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "brocade-senator-fabric",
@@ -667,12 +667,12 @@
     "fabricType": "Brocade",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/luxury-lace-fabrics.jpg",
-    "image2": "assets/category-fabrics.jpg",
-    "image3": "assets/category-fabrics.jpg",
+    "image1": "assets/real-fabrics-stack.jpg",
+    "image2": "assets/real-fabrics-stack.jpg",
+    "image3": "assets/real-fabrics-stack.jpg",
     "videoUrl": "",
     "description": "Quality brocade fabric for senator wear, agbada, kaftan, and elegant native menswear.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "executive-gold-wristwatch",
@@ -694,12 +694,12 @@
     "fabricType": "Stainless Steel",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/category-accessories.jpg",
-    "image2": "assets/real/accessories-watch-perfume.jpg",
-    "image3": "assets/real/accessories-watch-perfume.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "A premium men's wristwatch selected to complement senator wear, agbada, and executive styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "classic-leather-dress-shoes",
@@ -721,12 +721,12 @@
     "fabricType": "Leather",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/accessories-watch-perfume.jpg",
-    "image2": "assets/category-accessories.jpg",
-    "image3": "assets/category-accessories.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "Classic leather dress shoes for formal native wear, agbada, senator wear, and corporate styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "luxury-cufflinks-set",
@@ -748,12 +748,12 @@
     "fabricType": "Metal",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/category-accessories.jpg",
-    "image2": "assets/real/accessories-watch-perfume.jpg",
-    "image3": "assets/real/accessories-watch-perfume.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "Elegant cufflinks for men who want a polished and complete premium look.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "premium-agbada-cap",
@@ -775,12 +775,12 @@
     "fabricType": "Aso Oke",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/accessories-watch-perfume.jpg",
-    "image2": "assets/category-accessories.jpg",
-    "image3": "assets/category-accessories.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "Premium cap designed to match agbada and senator outfits.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "men-s-leather-belt",
@@ -802,12 +802,12 @@
     "fabricType": "Leather",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/category-accessories.jpg",
-    "image2": "assets/real/accessories-watch-perfume.jpg",
-    "image3": "assets/real/accessories-watch-perfume.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "Premium leather belt for smart and refined masculine styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "luxury-perfume-for-men",
@@ -829,12 +829,12 @@
     "fabricType": "Fragrance",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/accessories-watch-perfume.jpg",
-    "image2": "assets/category-accessories.jpg",
-    "image3": "assets/category-accessories.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "A luxury men's fragrance option for complete styling and presence.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "statement-men-s-ring",
@@ -856,12 +856,12 @@
     "fabricType": "Metal",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/category-accessories.jpg",
-    "image2": "assets/real/accessories-watch-perfume.jpg",
-    "image3": "assets/real/accessories-watch-perfume.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "A bold men's ring for occasion styling and fashion confidence.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "premium-pocket-square",
@@ -883,12 +883,12 @@
     "fabricType": "Silk Blend",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/accessories-watch-perfume.jpg",
-    "image2": "assets/category-accessories.jpg",
-    "image3": "assets/category-accessories.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "Pocket square for styling suits, senator outfits, and premium event looks.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "luxury-men-s-sandals",
@@ -910,12 +910,12 @@
     "fabricType": "Leather",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/category-accessories.jpg",
-    "image2": "assets/real/accessories-watch-perfume.jpg",
-    "image3": "assets/real/accessories-watch-perfume.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "Premium men's sandals for native wear, kaftans, and casual luxury styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   },
   {
     "id": "executive-sunglasses",
@@ -937,11 +937,11 @@
     "fabricType": "Premium Frame",
     "measurementRequired": false,
     "deliveryEstimate": "7\u201314 business days after confirmation",
-    "image1": "assets/real/accessories-watch-perfume.jpg",
-    "image2": "assets/category-accessories.jpg",
-    "image3": "assets/category-accessories.jpg",
+    "image1": "assets/real-accessories-watch-cufflinks.jpg",
+    "image2": "assets/real-accessories-watch-cufflinks.jpg",
+    "image3": "assets/real-accessories-watch-cufflinks.jpg",
     "videoUrl": "",
     "description": "Executive sunglasses for premium outdoor, event, and lifestyle styling.",
-    "photoSource": "Pexels free-to-use real stock photo; replace with Timzy original photos when available."
+    "imageSource": "Pexels free stock photo, bundled for Timzy demo use"
   }
 ]
