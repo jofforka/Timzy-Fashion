@@ -24,6 +24,70 @@ let activeProduct = null;
 let activeImages = [];
 let activeSlideIndex = 0;
 
+/* HERO SLIDER */
+let heroSlideIndex = 0;
+let heroSlideTimer = null;
+
+function updateHeroSlider() {
+  const slides = document.querySelectorAll(".hero-slide");
+  const dots = document.querySelectorAll("#heroDots button");
+
+  if (!slides.length) return;
+
+  slides.forEach((slide, index) => {
+    slide.classList.toggle("active", index === heroSlideIndex);
+  });
+
+  dots.forEach((dot, index) => {
+    dot.classList.toggle("active", index === heroSlideIndex);
+  });
+}
+
+function resetHeroTimer() {
+  if (heroSlideTimer) clearInterval(heroSlideTimer);
+
+  heroSlideTimer = setInterval(() => {
+    const slides = document.querySelectorAll(".hero-slide");
+    if (!slides.length) return;
+
+    heroSlideIndex = (heroSlideIndex + 1) % slides.length;
+    updateHeroSlider();
+  }, 4500);
+}
+
+window.nextHeroSlide = function () {
+  const slides = document.querySelectorAll(".hero-slide");
+  if (!slides.length) return;
+
+  heroSlideIndex = (heroSlideIndex + 1) % slides.length;
+  updateHeroSlider();
+  resetHeroTimer();
+};
+
+window.prevHeroSlide = function () {
+  const slides = document.querySelectorAll(".hero-slide");
+  if (!slides.length) return;
+
+  heroSlideIndex = (heroSlideIndex - 1 + slides.length) % slides.length;
+  updateHeroSlider();
+  resetHeroTimer();
+};
+
+window.goHeroSlide = function (index) {
+  const slides = document.querySelectorAll(".hero-slide");
+  if (!slides[index]) return;
+
+  heroSlideIndex = index;
+  updateHeroSlider();
+  resetHeroTimer();
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateHeroSlider();
+  resetHeroTimer();
+});
+
+
 const sampleProducts = [];
 
 const money = value => "₦" + Number(value || 0).toLocaleString();
