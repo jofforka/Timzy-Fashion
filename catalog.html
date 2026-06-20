@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Timzy Fashion | Luxury African Menswear</title>
-  <link rel="stylesheet" href="catalog.css?v=global_no_text_assets_20260619" />
+  <link rel="stylesheet" href="catalog.css?v=hero_slider_fixed_20260620" />
 </head>
 
 <body>
@@ -43,8 +43,13 @@
   </section>
 
   <main>
-    <section class="hero-section">
-      <div class="hero-visual" aria-hidden="true"></div>
+    <section class="hero-section" id="heroSlider">
+      <div class="hero-slide active" style="background-image:url('assets/hero-agbada-white.jpg')"></div>
+      <div class="hero-slide" style="background-image:url('assets/hero-senator-grey.jpg')"></div>
+      <div class="hero-slide" style="background-image:url('assets/real-fabrics-stack.jpg')"></div>
+
+      <button class="hero-arrow hero-prev" onclick="prevHeroSlide()" aria-label="Previous hero image">‹</button>
+      <button class="hero-arrow hero-next" onclick="nextHeroSlide()" aria-label="Next hero image">›</button>
 
       <div class="hero-copy">
         <p class="eyebrow">Luxury African Fashion</p>
@@ -56,8 +61,10 @@
           <a href="https://wa.me/2348118103510" target="_blank" class="secondary-btn">Custom Sewing</a>
         </div>
 
-        <div class="hero-dots">
-          <i class="active"></i><i></i><i></i>
+        <div class="hero-dots" id="heroDots">
+          <button class="active" onclick="goHeroSlide(0)" aria-label="Hero slide 1"></button>
+          <button onclick="goHeroSlide(1)" aria-label="Hero slide 2"></button>
+          <button onclick="goHeroSlide(2)" aria-label="Hero slide 3"></button>
         </div>
       </div>
     </section>
@@ -236,6 +243,6 @@
     <a href="training.html">Training</a>
   </nav>
 
-  <script type="module" src="catalog.js?v=global_no_text_assets_20260619"></script>
+  <script type="module" src="catalog.js?v=hero_slider_fixed_20260620"></script>
 </body>
 </html>
