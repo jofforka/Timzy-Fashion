@@ -1113,3 +1113,179 @@ footer{
 .home-gallery{position:relative;height:390px;margin-top:4px}.home-img{position:absolute;object-fit:cover;box-shadow:0 22px 55px rgba(0,0,0,.16);background:#ddd}.home-img.main{width:72%;height:360px;left:0;top:0;border-radius:28px}.home-img.small{width:42%;height:160px;right:0;border-radius:24px;border:8px solid #f8f2e7}.home-img.top{top:28px}.home-img.bottom{bottom:0}.home-cats{max-width:1180px;margin:26px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.home-cats a{background:#fff;border:1px solid rgba(25,22,17,.1);border-radius:18px;overflow:hidden;text-decoration:none;color:#191611;font-weight:900;min-width:0}.home-cats img{width:100%;height:96px;object-fit:cover;display:block}.home-cats span{display:block;padding:10px 8px;text-align:center;font-size:13px}
 @media(min-width:820px){.home-wrap{padding:24px 34px}.home-nav{margin-bottom:36px}.home-hero{grid-template-columns:.9fr 1fr;gap:48px}.home-actions{display:flex}.home-primary,.home-secondary{min-width:170px;padding:0 22px}.home-gallery{height:580px}.home-img.main{height:540px;border-radius:38px}.home-img.small{height:230px;border-radius:30px;border-width:10px}.home-cats{grid-template-columns:repeat(3,220px);justify-content:center;margin-top:32px}.home-cats img{height:130px}}
 @media(max-width:380px){.home-copy h1{font-size:37px}.home-actions{grid-template-columns:1fr}.home-gallery{height:340px}.home-img.main{height:315px}.home-img.small{height:135px}}
+
+/* =========================================================
+   TIMZY HOMEPAGE HOTFIX — MOBILE-FIRST CLEAN LAYOUT
+   Fixes scattered homepage caused by publicHeader inline flex.
+========================================================= */
+#publicHeader.home-wrap{
+  display:block !important;
+  width:100%;
+  min-height:100svh;
+  overflow-x:hidden;
+  padding:16px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(215,165,54,.18), transparent 34%),
+    linear-gradient(180deg,#fffaf0 0%,#f8f0df 48%,#fff 100%);
+  color:#17130e;
+}
+#publicHeader *{box-sizing:border-box;}
+#publicHeader .home-nav{
+  max-width:1120px;
+  margin:0 auto 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+#publicHeader .home-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  color:#17130e;
+  min-width:0;
+}
+#publicHeader .home-brand span{
+  width:42px;height:42px;border-radius:15px;
+  display:grid;place-items:center;
+  background:#15110c;color:#d9aa42;
+  font-weight:900;letter-spacing:-1px;
+  flex:0 0 auto;
+}
+#publicHeader .home-brand b{display:block;font-size:16px;line-height:1;text-transform:uppercase;letter-spacing:.8px;}
+#publicHeader .home-brand small{display:block;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#7a6b54;margin-top:4px;}
+#publicHeader .home-admin{
+  flex:0 0 auto;
+  border:1px solid rgba(23,19,14,.14);
+  background:rgba(255,255,255,.82);
+  color:#17130e;
+  border-radius:999px;
+  padding:10px 13px;
+  font-size:12px;
+  font-weight:900;
+  box-shadow:0 8px 22px rgba(0,0,0,.05);
+}
+#publicHeader .home-hero{
+  max-width:1120px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
+  align-items:center;
+}
+#publicHeader .home-copy{padding:8px 0 0;}
+#publicHeader .home-kicker{
+  margin:0 0 10px;
+  color:#936715;
+  font-size:11px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:2.4px;
+}
+#publicHeader .home-copy h1{
+  margin:0 0 12px;
+  max-width:720px;
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:clamp(38px,11vw,78px);
+  line-height:.94;
+  letter-spacing:-1.6px;
+  color:#17130e;
+}
+#publicHeader .home-text{
+  max-width:560px;
+  margin:0 0 18px;
+  color:#5d5244;
+  font-size:15.5px;
+  line-height:1.58;
+}
+#publicHeader .home-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  width:100%;
+}
+#publicHeader .home-primary,
+#publicHeader .home-secondary{
+  min-height:50px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-decoration:none;
+  font-weight:900;
+  font-size:14px;
+}
+#publicHeader .home-primary{background:#15110c;color:#fff;box-shadow:0 16px 28px rgba(0,0,0,.16);}
+#publicHeader .home-secondary{background:#fff;color:#15110c;border:1px solid rgba(23,19,14,.12);}
+#publicHeader .home-gallery{
+  position:relative;
+  width:100%;
+  height:350px;
+  margin:6px auto 0;
+  max-width:430px;
+}
+#publicHeader .home-img{
+  position:absolute;
+  display:block;
+  object-fit:cover;
+  background:#ddd;
+  box-shadow:0 18px 44px rgba(0,0,0,.16);
+}
+#publicHeader .home-img.main{
+  width:72%;
+  height:324px;
+  left:0;
+  top:0;
+  border-radius:28px;
+}
+#publicHeader .home-img.small{
+  width:42%;
+  height:142px;
+  right:0;
+  border-radius:22px;
+  border:7px solid #fbf3e6;
+}
+#publicHeader .home-img.top{top:24px;}
+#publicHeader .home-img.bottom{bottom:0;}
+#publicHeader .home-cats{
+  max-width:1120px;
+  margin:24px auto 0;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+}
+#publicHeader .home-cats a{
+  min-width:0;
+  overflow:hidden;
+  border-radius:17px;
+  background:#fff;
+  border:1px solid rgba(23,19,14,.10);
+  color:#17130e;
+  text-decoration:none;
+  font-weight:900;
+  box-shadow:0 10px 24px rgba(0,0,0,.05);
+}
+#publicHeader .home-cats img{display:block;width:100%;height:86px;object-fit:cover;}
+#publicHeader .home-cats span{display:block;padding:10px 5px;text-align:center;font-size:12px;}
+@media(max-width:360px){
+  #publicHeader.home-wrap{padding:13px;}
+  #publicHeader .home-actions{grid-template-columns:1fr;}
+  #publicHeader .home-gallery{height:318px;}
+  #publicHeader .home-img.main{height:296px;}
+  #publicHeader .home-img.small{height:126px;}
+  #publicHeader .home-copy h1{font-size:36px;}
+}
+@media(min-width:760px){
+  #publicHeader.home-wrap{padding:24px 32px 36px;}
+  #publicHeader .home-nav{margin-bottom:34px;}
+  #publicHeader .home-hero{grid-template-columns:.95fr 1.05fr;gap:44px;}
+  #publicHeader .home-actions{display:flex;width:auto;}
+  #publicHeader .home-primary,
+  #publicHeader .home-secondary{min-width:166px;padding:0 22px;}
+  #publicHeader .home-gallery{height:560px;max-width:560px;}
+  #publicHeader .home-img.main{height:520px;border-radius:38px;}
+  #publicHeader .home-img.small{height:220px;border-radius:30px;border-width:10px;}
+  #publicHeader .home-cats{grid-template-columns:repeat(3,220px);justify-content:center;gap:14px;margin-top:34px;}
+  #publicHeader .home-cats img{height:130px;}
+}
