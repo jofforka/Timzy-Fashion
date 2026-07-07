@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard · Timzy Fashion OS</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body class="tf-admin-page">
+  <div id="app" style="display:none;">
+
+    <header class="top-shell">
+      <div class="app-topbar">
+        <div>
+          <p class="eyebrow">TIMZY FASHION OS</p>
+          <h1>Command Center</h1>
+        </div>
+
+        <select id="appMenuSelect" class="premium-select" onchange="handleAppMenu(this.value)">
+          <option value="">Menu</option>
+          <option value="dashboard">Dashboard</option>
+          <option value="openCatalog">Open Public Catalog</option>
+          <option value="catalogManager">Catalog Manager</option>
+          <option value="customerManager">Customer Manager</option>
+          <option value="sales">Sales</option>
+          <option value="expenses">Expenses</option>
+          <option value="inventory">Inventory</option>
+          <option value="orders">Orders</option>
+          <option value="publicOrders">Public Catalog Orders</option>
+          <option value="customers">Customers</option>
+          <option value="staff">Staff XP</option>
+          <option value="forms">Forms</option>
+          <option value="logout">Logout</option>
+        </select>
+      </div>
+
+      <div id="appMenu" style="display:none;">
+        <button id="dashboardBtn" onclick="selectAppMenu('dashboard')">Dashboard</button>
+        <button id="catalogManagerBtn" onclick="selectAppMenu('catalogManager')">Catalog Manager</button>
+        <button id="customerManagerBtn" onclick="selectAppMenu('customerManager')">Customer Manager</button>
+        <button id="salesBtn" onclick="selectAppMenu('sales')">Sales</button>
+        <button id="expensesBtn" onclick="selectAppMenu('expenses')">Expenses</button>
+        <button id="inventoryBtn" onclick="selectAppMenu('inventory')">Inventory</button>
+        <button id="ordersBtn" onclick="selectAppMenu('orders')">Orders</button>
+        <button id="publicOrdersBtn" onclick="selectAppMenu('publicOrders')">Public Catalog Orders</button>
+        <button id="customersBtn" onclick="selectAppMenu('customers')">Customers</button>
+        <button id="staffBtn" onclick="selectAppMenu('staff')">Staff XP</button>
+        <button id="formsBtn" onclick="selectAppMenu('forms')">Forms</button>
+      </div>
+    </header>
+
+    <main class="screen">
+
+      <section id="dashboard" class="tab active tf-admin-dashboard">
+        <div class="tf-admin-hero">
+          <div>
+            <p class="tf-admin-kicker">TIMZY FASHION OS</p>
+            <h2>Executive Dashboard</h2>
+            <p class="tf-admin-note">A clean operating view for sales, orders, stock, customers and urgent actions.</p>
+          </div>
+          <button class="tf-admin-pill" type="button" onclick="window.open('../catalog.html','_blank')">Open Catalog</button>
+        </div>
+
+        <div class="tf-kpi-grid">
+          <div class="tf-kpi-card revenue"><span>Total Sales</span><strong id="totalSales">₦0</strong><small>Captured sales value</small></div>
+          <div class="tf-kpi-card expense"><span>Expenses</span><strong id="totalExpenses">₦0</strong><small>Operating spend</small></div>
+          <div class="tf-kpi-card profit"><span>Net Profit</span><strong id="netProfit">₦0</strong><small>Sales minus expenses</small></div>
+          <div class="tf-kpi-card stock"><span>Inventory Value</span><strong id="inventoryValue">₦0</strong><small>Stock value estimate</small></div>
+          <div class="tf-kpi-card alert"><span>Low Stock</span><strong id="lowStock">0</strong><small>Needs attention</small></div>
+        </div>
+
+        <div class="tf-quick-actions">
+          <button type="button" onclick="showTab('catalogManager')">＋ Add Product</button>
+          <button type="button" onclick="showTab('orders')">📦 Orders</button>
+          <button type="button" onclick="showTab('inventory')">🧵 Inventory</button>
+          <button type="button" onclick="showTab('customers')">👥 Customers</button>
+        </div>
+
+        <div class="tf-dashboard-grid">
+          <div class="tf-panel wide"><div class="tf-panel-head"><h3>Sales vs Expenses</h3><p id="financeInsight" class="tf-muted"></p></div><div id="financeChart" class="chart-box tf-chart"></div></div>
+          <div class="tf-panel"><div class="tf-panel-head"><h3>Order Activity</h3><p id="orderInsight" class="tf-muted"></p></div><div id="orderStatusChart" class="chart-box tf-chart"></div></div>
+          <div class="tf-panel"><div class="tf-panel-head"><h3>Inventory Health</h3><p id="inventoryInsight" class="tf-muted"></p></div><div id="inventoryHealthChart" class="chart-box tf-chart"></div></div>
+          <div class="tf-panel"><div class="tf-panel-head"><h3>Staff Performance</h3><p id="staffInsight" class="tf-muted"></p></div><div id="staffPerformanceChart" class="chart-box tf-chart"></div></div>
+          <div class="tf-panel"><div class="tf-panel-head"><h3>Recent Activity</h3><p class="tf-muted">Latest catalog and portal movement</p></div><div id="recentActivity" class="tf-list"></div></div>
+          <div class="tf-panel urgent"><div class="tf-panel-head"><h3>Critical Alerts</h3><p class="tf-muted">Low stock and urgent operations</p></div><div id="criticalAlerts" class="tf-list"></div></div>
+        </div>
+      </section>
+
+      <section id="catalogManager" class="tab">
+        <h2>Catalog Manager</h2>
+        <p class="note">Upload product images directly. Images save to Google Drive and products publish to the public catalog.</p>
+
+        <div class="glass-card">
+          <form id="catalogForm">
+            <input type="hidden" id="editingProductId" />
+
+            <input id="catProductName" placeholder="Product Name" />
+
+            <select id="catCategory">
+              <option value="">Category</option>
+              <option>Senator</option>
+              <option>Agbada</option>
+              <option>Kaftan</option>
+              <option>Female Wear</option>
+              <option>Ready-to-Wear</option>
+              <option>Adire</option>
+              <option>Aso Oke</option>
+              <option>Children</option>
+              <option>Fabrics</option>
+              <option>Accessories</option>
+              <option>Bags</option>
+              <option>Shoes</option>
+              <option>Men / Senator</option>
+            </select>
+
+            <select id="catProductType">
+              <option value="Ready-Made">Ready-Made</option>
+              <option value="Fabric / Material">Fabric / Material</option>
+              <option value="Custom Sewing">Custom Sewing</option>
+              <option value="Accessory">Accessory</option>
+            </select>
+
+            <select id="catStatus">
+              <option value="Published">Published</option>
+              <option value="Draft">Draft</option>
+              <option value="Hidden">Hidden</option>
+              <option value="Sold Out">Sold Out</option>
+            </select>
+
+            <input id="catColor" placeholder="Color / Pattern" />
+            <input id="catPrice" type="number" placeholder="Price" />
+            <input id="catSalePrice" type="number" placeholder="Sale Price / Discount Price (optional)" />
+            <input id="catQuantity" type="number" placeholder="Quantity / Stock" />
+            <input id="catSizes" placeholder="Sizes e.g. S, M, L, XL / Custom" />
+            <input id="catBadge" placeholder="Badge e.g. New Arrival, Featured, Popular" />
+
+            <label class="upload-box">
+              Image 1
+              <input id="catFile1" type="file" accept="image/*" />
+            </label>
+
+            <label class="upload-box">
+              Image 2
+              <input id="catFile2" type="file" accept="image/*" />
+            </label>
+
+            <label class="upload-box">
+              Image 3
+              <input id="catFile3" type="file" accept="image/*" />
+            </label>
+
+            <label class="upload-box">
+              Image 4
+              <input id="catFile4" type="file" accept="image/*" />
+            </label>
+
+            <label class="upload-box">
+              Image 5
+              <input id="catFile5" type="file" accept="image/*" />
+            </label>
+
+            <label class="upload-box">
+              Image 6
+              <input id="catFile6" type="file" accept="image/*" />
+            </label>
+
+            <input id="catImage1" placeholder="Image URL 1 auto-fills after upload" />
+            <input id="catImage2" placeholder="Image URL 2 auto-fills after upload" />
+            <input id="catImage3" placeholder="Image URL 3 auto-fills after upload" />
+            <input id="catImage4" placeholder="Image URL 4 auto-fills after upload" />
+            <input id="catImage5" placeholder="Image URL 5 auto-fills after upload" />
+            <input id="catImage6" placeholder="Image URL 6 auto-fills after upload" />
+            <input id="catVideoUrl" placeholder="Product Video URL / Google Drive video link (optional)" />
+            <input id="catTags" placeholder="Tags e.g. wedding, luxury, senator, asoebi" />
+
+            <textarea id="catDescription" placeholder="Product Description"></textarea>
+
+            <label class="checkbox-line">
+              <input id="catFeatured" type="checkbox" />
+              Mark as featured product
+            </label>
+
+            <button type="button" onclick="saveCatalogProduct()">Save Product</button>
+            <button type="button" class="ghost" onclick="resetCatalogForm()">Clear Form</button>
+          </form>
+
+          <div id="uploadStatus" class="note" style="margin-top:12px;"></div>
+        </div>
+
+        <div class="action-row" style="margin-top:16px;">
+          <a href="catalog.html" target="_blank" class="btn success">Preview Public Catalog</a>
+        </div>
+
+        <h3 style="margin-top:24px;">Existing Catalog Products</h3>
+        <div id="catalogManagerGrid" class="manager-grid"></div>
+      </section>
+
+      <section id="customerManager" class="tab">
+        <h2>Customer Manager</h2>
+        <div class="glass-card"><p class="note">Next upgrade: admin-generated customer accounts and order history.</p></div>
+      </section>
+
+      <section id="sales" class="tab">
+        <h2>Sales</h2>
+        <div class="table-wrap"><table><thead><tr><th>Staff</th><th>Category</th><th>Product</th><th>Qty</th><th>Amount</th></tr></thead><tbody id="salesTable"></tbody></table></div>
+      </section>
+
+      <section id="expenses" class="tab">
+        <h2>Expenses</h2>
+        <div class="table-wrap"><table><thead><tr><th>Staff</th><th>Category</th><th>Item</th><th>Supplier</th><th>Qty</th><th>Unit Cost</th><th>Total</th></tr></thead><tbody id="expensesTable"></tbody></table></div>
+      </section>
+
+      <section id="inventory" class="tab">
+        <h2>Inventory</h2>
+        <div class="table-wrap"><table><thead><tr><th>Category</th><th>Product</th><th>SKU</th><th>Supplier</th><th>Qty</th><th>Cost</th><th>Selling</th></tr></thead><tbody id="inventoryTable"></tbody></table></div>
+      </section>
+
+      <section id="orders" class="tab">
+        <h2>Portal Orders</h2>
+        <p class="note">Customer portal orders.</p>
+        <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Style</th><th>Order Status</th><th>Payment Status</th><th>Delivery</th><th>Amount</th><th>Method</th><th>Proof</th><th>Admin Note</th><th>Action</th></tr></thead><tbody id="ordersTable"></tbody></table></div>
+        <div id="chatBox" class="glass-card chat-box" style="display:none;"><h3>Order Chat</h3><div id="chatMessages" class="chat-messages"></div><div class="chat-input-row"><input id="chatInput" placeholder="Type message..." /><button onclick="sendChatMessage()">Send</button></div></div>
+      </section>
+
+      <section id="publicOrders" class="tab">
+        <h2>Public Catalog Orders</h2>
+        <p class="note">Orders placed from catalog.html without login.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ref</th>
+                <th>Customer</th>
+                <th>Phone</th>
+                <th>Product</th>
+                <th>Type</th>
+                <th>Qty</th>
+                <th>Total</th>
+                <th>Size/Fabric</th>
+                <th>Measurements</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Bank</th>
+              </tr>
+            </thead>
+            <tbody id="publicOrdersTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="customers" class="tab">
+        <h2>Customer Portal</h2>
+        <div class="cards">
+          <div class="glass-card">
+            <h3>Measurement</h3>
+            <form>
+              <input id="targetCustomerEmail" class="staff-admin-only" type="email" placeholder="Customer Email" />
+              <input id="cmName" placeholder="Name" />
+              <input id="cmPhone" placeholder="Phone" />
+              <input id="cmShoulder" placeholder="Shoulder" />
+              <input id="cmChest" placeholder="Chest/Bust" />
+              <input id="cmWaist" placeholder="Waist" />
+              <input id="cmHip" placeholder="Hip" />
+              <input id="cmSleeve" placeholder="Sleeve" />
+              <input id="cmLength" placeholder="Length" />
+              <textarea id="cmNotes" placeholder="Style Notes"></textarea>
+              <button type="button" onclick="submitMeasurement()">Save Measurement</button>
+            </form>
+          </div>
+
+          <div class="glass-card">
+            <h3>Order Request</h3>
+            <form>
+              <input id="targetCustomerEmailOrder" class="staff-admin-only" type="email" placeholder="Customer Email" />
+              <input id="coName" placeholder="Name" />
+              <input id="coPhone" placeholder="Phone" />
+              <input id="coStyle" placeholder="Product / Style" />
+              <input id="coDelivery" type="date" />
+              <input id="coAmount" type="number" placeholder="Final Amount" />
+              <select id="coPaymentMethod">
+                <option value="">Payment Method</option>
+                <option>Online Payment</option>
+                <option>Cash on Delivery</option>
+                <option>Bank Transfer</option>
+              </select>
+              <button type="button" onclick="submitOrder()">Submit Order</button>
+            </form>
+          </div>
+        </div>
+
+        <h3>Measurements</h3>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Phone</th><th>Measurements</th><th>Notes</th></tr></thead><tbody id="customersTable"></tbody></table></div>
+
+        <h3>Orders</h3>
+        <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Phone</th><th>Style</th><th>Order Status</th><th>Payment Status</th><th>Delivery</th><th>Amount</th><th>Method</th><th>Proof</th><th>Admin Note</th><th>Action</th></tr></thead><tbody id="customerOrdersTable"></tbody></table></div>
+
+        <div id="customerChatBox" class="glass-card chat-box" style="display:none;"><h3>Order Chat</h3><div id="customerChatMessages" class="chat-messages"></div><div class="chat-input-row"><input id="customerChatInput" placeholder="Type message..." /><button onclick="sendChatMessage()">Send</button></div></div>
+      </section>
+
+      <section id="staff" class="tab">
+        <h2>Staff XP</h2>
+        <div id="leaderboard" class="leaderboard"></div>
+      </section>
+
+      <section id="forms" class="tab">
+        <h2>Forms</h2>
+        <div id="formLinks" class="form-grid"></div>
+      </section>
+
+    </main>
+  </div>
+    <nav class="tf-mobile-admin-nav" aria-label="Admin quick navigation">
+      <button type="button" onclick="showTab('dashboard')">⌂<span>Home</span></button>
+      <button type="button" onclick="showTab('orders')">□<span>Orders</span></button>
+      <button type="button" onclick="showTab('catalogManager')">＋<span>Product</span></button>
+      <button type="button" onclick="showTab('customers')">♡<span>Clients</span></button>
+      <button type="button" onclick="showTab('inventory')">≡<span>Stock</span></button>
+    </nav>
+
+
+
+  <footer>Timzy Fashion OS Cloud Edition</footer>
+  <script>
+    window.__TIMZY_ADMIN_PAGE = true;
+    window.handleAppMenu = window.handleAppMenu || function(value){
+      if(!value) return;
+      if(value === "openCatalog"){ window.open("../catalog.html", "_blank"); document.getElementById("appMenuSelect").value = ""; return; }
+      if(value === "logout"){ if(typeof logoutUser === "function") logoutUser(); document.getElementById("appMenuSelect").value = ""; return; }
+      if(typeof showTab === "function") showTab(value);
+      const menu = document.getElementById("appMenuSelect"); if(menu) menu.value = "";
+    };
+    window.closeLoginModal = window.closeLoginModal || function(){};
+    window.openLoginModal = window.openLoginModal || function(){ window.location.href = "../login.html"; };
+    window.closeAccessModal = window.closeAccessModal || function(){};
+    window.openAccessModal = window.openAccessModal || function(){};
+  </script>
+  <script src="../forms-config.js?v=20260619_phase8"></script>
+  <script type="module" src="../script.js?v=20260619_phase8"></script>
+</body>
+</html>
