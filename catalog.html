@@ -3,216 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Timzy Fashion | Luxury African Menswear</title>
-  <link rel="stylesheet" href="catalog.css?v=premium_gallery_v2_20260707" />
+  <title>Timzy Fashion Catalog</title>
+  <link rel="stylesheet" href="catalog.css?v=mobile_clean_20260707" />
 </head>
-
 <body>
-  <div class="top-strip">
-    <span>Premium Quality</span>
-    <span>Expert Craftsmanship</span>
-    <span>Worldwide Delivery</span>
-  </div>
-
-  <header class="lux-header">
-    <a class="brand" href="catalog.html" aria-label="Timzy Fashion Home">
-      <span class="brand-symbol">TF</span>
-      <span>
-        <b>TIMZY</b>
-        <small>FASHION</small>
-      </span>
-    </a>
-
-    <nav class="desktop-nav">
-      <a href="#collections">Collections</a>
-      <a href="#bestSellers">Best Sellers</a>
-      <a href="#lookbook">Lookbook</a>
-      <a href="training.html">Training</a>
-    </nav>
-
-    <div class="header-actions">
-      <button onclick="toggleSearchBar()" aria-label="Search">⌕</button>
-      <button id="wishlistHeaderBtn" onclick="toggleWishlistPanel()" aria-label="Wishlist">♡</button>
-      <a href="index.html" aria-label="Admin Menu">☰</a>
-    </div>
+  <header class="shop-header">
+    <a class="shop-brand" href="index.html"><span>TF</span><b>Timzy Fashion</b></a>
+    <button id="wishlistHeaderBtn" class="icon-btn" onclick="toggleWishlistPanel()" aria-label="Wishlist">♡</button>
   </header>
 
-  <section id="searchBar" class="search-bar" style="display:none;">
-    <input id="searchInput" type="search" placeholder="Search senator, agbada, fabrics, accessories..." oninput="filterProducts()" />
-  </section>
-
   <main>
-    <section class="hero-section" id="heroSlider">
-      <div class="hero-slide active" style="background-image:url('assets/hero-agbada-white.jpg')"></div>
-      <div class="hero-slide" style="background-image:url('assets/hero-senator-grey.jpg')"></div>
-      <div class="hero-slide" style="background-image:url('assets/real-fabrics-stack.jpg')"></div>
+    <section class="shop-hero">
+      <p>Premium African Fashion</p>
+      <h1>Product Catalog</h1>
+      <span>Tap any product to view more photos, details and order options.</span>
+    </section>
 
-      <button class="hero-arrow hero-prev" onclick="prevHeroSlide()" aria-label="Previous hero image">‹</button>
-      <button class="hero-arrow hero-next" onclick="nextHeroSlide()" aria-label="Next hero image">›</button>
-
-      <div class="hero-copy">
-        <p class="eyebrow">Luxury African Fashion</p>
-        <h1>For Distinguished <span>Men</span></h1>
-        <p class="hero-sub">Custom Sewing • Premium Fabrics • Ready-To-Wear</p>
-
-        <div class="hero-buttons">
-          <a href="#bestSellers" class="primary-btn">Shop Collection</a>
-          <a href="https://wa.me/2348118103510" target="_blank" class="secondary-btn">Custom Sewing</a>
-        </div>
-
-        <div class="hero-dots" id="heroDots">
-          <button class="active" onclick="goHeroSlide(0)" aria-label="Hero slide 1"></button>
-          <button onclick="goHeroSlide(1)" aria-label="Hero slide 2"></button>
-          <button onclick="goHeroSlide(2)" aria-label="Hero slide 3"></button>
-        </div>
+    <section class="search-card">
+      <input id="searchInput" type="search" placeholder="Search agbada, senator, fabrics..." oninput="filterProducts()" />
+      <div class="filter-row">
+        <select id="categoryFilter" onchange="filterProducts()">
+          <option value="">All Categories</option>
+          <option>Senator</option><option>Agbada</option><option>Kaftan</option><option>Ready-to-Wear</option><option>Fabrics</option><option>Accessories</option><option>Female Wear</option>
+        </select>
+        <select id="typeFilter" onchange="filterProducts()">
+          <option value="">All Types</option>
+          <option>Ready-Made</option><option>Fabric / Material</option><option>Custom Sewing</option><option>Accessory</option>
+        </select>
       </div>
     </section>
 
-    <section id="collections" class="compact-section">
-      <div class="section-label">
-        <span></span>
-        <b>Shop By Category</b>
-        <span></span>
-      </div>
-
-      <div class="category-row">
-        <button class="cat-card" onclick="quickCategory('Senator')">
-          <img src="assets/category-senator.jpg" alt="Senator Collection" />
-          <div><b>Senator</b><small>Collection</small></div>
-        </button>
-
-        <button class="cat-card" onclick="quickCategory('Agbada')">
-          <img src="assets/category-agbada.jpg" alt="Agbada Collection" />
-          <div><b>Agbada</b><small>Collection</small></div>
-        </button>
-
-        <button class="cat-card" onclick="quickCategory('Fabrics')">
-          <img src="assets/category-fabrics.jpg" alt="Luxury Fabrics" />
-          <div><b>Luxury</b><small>Fabrics</small></div>
-        </button>
-
-        <button class="cat-card" onclick="quickCategory('Accessories')">
-          <img src="assets/category-accessories.jpg" alt="Accessories" />
-          <div><b>Accessories</b><small>& More</small></div>
-        </button>
-
-        <a class="cat-card training-link" href="training.html">
-          <img src="assets/category-training.jpg" alt="Training Academy" />
-          <div><b>Training</b><small>Academy</small></div>
-        </a>
-      </div>
+    <section class="quick-cats" id="collections">
+      <button onclick="quickCategory('Senator')"><img src="assets/category-senator.jpg" alt="Senator"><span>Senator</span></button>
+      <button onclick="quickCategory('Agbada')"><img src="assets/category-agbada.jpg" alt="Agbada"><span>Agbada</span></button>
+      <button onclick="quickCategory('Fabrics')"><img src="assets/category-fabrics.jpg" alt="Fabrics"><span>Fabrics</span></button>
+      <button onclick="quickCategory('Accessories')"><img src="assets/category-accessories.jpg" alt="Accessories"><span>Accessories</span></button>
     </section>
 
-    <section class="filters">
-      <select id="categoryFilter" onchange="filterProducts()">
-        <option value="">All Categories</option>
-        <option>Senator</option>
-        <option>Agbada</option>
-        <option>Kaftan</option>
-        <option>Ready-to-Wear</option>
-        <option>Fabrics</option>
-        <option>Accessories</option>
-        <option>Female Wear</option>
-      </select>
-
-      <select id="typeFilter" onchange="filterProducts()">
-        <option value="">All Types</option>
-        <option>Ready-Made</option>
-        <option>Fabric / Material</option>
-        <option>Custom Sewing</option>
-        <option>Accessory</option>
-      </select>
+    <section id="bestSellers" class="catalog-section">
+      <div class="section-title"><p>Featured</p><h2>Best Pieces</h2></div>
+      <div id="featuredGrid" class="product-grid featured"></div>
     </section>
 
-    <section id="bestSellers" class="compact-section">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Best Sellers</p>
-          <h2>Featured Menswear</h2>
-        </div>
-        <a href="#allProducts">View All</a>
-      </div>
-
-      <div id="featuredGrid" class="product-slider"></div>
-    </section>
-
-    <section class="service-row">
-      <article>
-        <span>◆</span>
-        <b>Premium Quality</b>
-        <p>Finest fabrics and top craftsmanship</p>
-      </article>
-
-      <article>
-        <span>▣</span>
-        <b>Custom Sewing</b>
-        <p>Perfect fit. Made for you.</p>
-      </article>
-
-      <article>
-        <span>▰</span>
-        <b>Worldwide Delivery</b>
-        <p>Fast, safe and reliable shipping</p>
-      </article>
-
-      <article>
-        <span>◇</span>
-        <b>Professional Training</b>
-        <p>Learn. Master. Succeed.</p>
-      </article>
-    </section>
-
-    <section id="allProducts" class="compact-section">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Shop</p>
-          <h2>Latest Pieces</h2>
-        </div>
-      </div>
-
+    <section id="allProducts" class="catalog-section">
+      <div class="section-title"><p>Shop</p><h2>All Products</h2></div>
       <div id="catalogGrid" class="product-grid"></div>
     </section>
 
-    <section id="lookbook" class="compact-section">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Fashion Lookbook</p>
-          <h2>Styled Collections</h2>
-        </div>
-        <a href="#collections">View All</a>
-      </div>
-
-      <div class="lookbook-row">
-        <article>
-          <img src="assets/lookbook-wedding.jpg" alt="Wedding styling" />
-          <h3>Wedding<br>Collection</h3>
-        </article>
-
-        <article>
-          <img src="assets/lookbook-corporate.jpg" alt="Corporate styling" />
-          <h3>Corporate<br>Collection</h3>
-        </article>
-
-        <article>
-          <img src="assets/lookbook-traditional.jpg" alt="Traditional styling" />
-          <h3>Traditional<br>Collection</h3>
-        </article>
-
-        <article>
-          <img src="assets/lookbook-fabrics.jpg" alt="Luxury fabrics" />
-          <h3>Luxury<br>Fabrics</h3>
-        </article>
-      </div>
-    </section>
-
-    <section id="recentlyViewedSection" class="compact-section" style="display:none;">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Recent</p>
-          <h2>Recently Viewed</h2>
-        </div>
-      </div>
+    <section id="recentlyViewedSection" class="catalog-section" style="display:none;">
+      <div class="section-title"><p>Recent</p><h2>Recently Viewed</h2></div>
       <div id="recentlyViewedGrid" class="mini-product-row"></div>
     </section>
   </main>
@@ -220,7 +59,7 @@
   <aside id="wishlistPanel" class="side-panel" style="display:none;">
     <div class="side-panel-card">
       <button class="close-panel" onclick="toggleWishlistPanel()">×</button>
-      <p class="eyebrow">Saved</p>
+      <p>Saved Items</p>
       <h2>Your Wishlist</h2>
       <div id="wishlistPanelItems"></div>
     </div>
@@ -233,16 +72,15 @@
     </div>
   </div>
 
-  <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank">☏</a>
+  <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank">WhatsApp</a>
 
   <nav class="mobile-nav">
-    <a href="#bestSellers" class="active">Home</a>
-    <a href="#collections">Collections</a>
-    <a href="#allProducts">Fabrics</a>
-    <a href="https://wa.me/2348118103510" target="_blank">Sewing</a>
-    <a href="training.html">Training</a>
+    <a href="index.html">Home</a>
+    <a href="#collections">Category</a>
+    <a href="#allProducts">Shop</a>
+    <a href="https://wa.me/2348118103510" target="_blank">Order</a>
   </nav>
 
-  <script type="module" src="catalog.js?v=premium_gallery_v2_20260707"></script>
+  <script type="module" src="catalog.js?v=mobile_clean_20260707"></script>
 </body>
 </html>
