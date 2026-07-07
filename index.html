@@ -1,63 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Timzy Fashion OS</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-
-<body>
-
-  <section id="publicHeader" class="home-wrap luxury-home">
-    <header class="home-nav luxury-nav">
-      <a class="home-brand luxury-brand" href="index.html" aria-label="Timzy Fashion Home">
-        <span class="brand-logo-slot luxury-logo"><img src="assets/timzy-logo.png" alt="Timzy Fashion Logo" /></span>
-      </a>
-      <button type="button" class="home-admin luxury-admin" onclick="window.location.href='login.html'">Staff Login</button>
-    </header>
-
-    <main class="luxury-hero">
-      <div class="luxury-copy">
-        <img class="hero-logo-mark" src="assets/timzy-logo.png" alt="Timzy Fashion" />
-        <p class="home-kicker">Classy and Confident</p>
-        <h1>Premium bespoke fashion, made simple.</h1>
-        <p class="home-text">Explore senator wear, agbada, kaftan, fabrics, accessories and custom pieces in a clean mobile catalog.</p>
-        <div class="home-actions luxury-actions">
-          <a href="catalog.html" class="home-primary">Explore Collection</a>
-          <a href="https://wa.me/2348118103510" target="_blank" class="home-secondary">Book Consultation</a>
-        </div>
-      </div>
-
-      <div class="luxury-showcase" aria-label="Featured Timzy Fashion styles">
-        <a href="catalog.html#allProducts" class="showcase-card tall">
-          <img src="assets/hero-agbada-white.jpg" alt="Premium agbada style" />
-          <span>Agbada</span>
-        </a>
-        <a href="catalog.html#allProducts" class="showcase-card">
-          <img src="assets/real-senator-grey.jpg" alt="Senator style" />
-          <span>Senator</span>
-        </a>
-        <a href="catalog.html#allProducts" class="showcase-card">
-          <img src="assets/real-fabrics-stack.jpg" alt="Luxury fabrics" />
-          <span>Fabrics</span>
-        </a>
-      </div>
-    </main>
-
-    <section class="luxury-cats" aria-label="Popular collections">
-      <a href="catalog.html#allProducts"><span>01</span><b>Senator</b></a>
-      <a href="catalog.html#allProducts"><span>02</span><b>Agbada</b></a>
-      <a href="catalog.html#allProducts"><span>03</span><b>Kaftan</b></a>
-      <a href="catalog.html#allProducts"><span>04</span><b>Fabrics</b></a>
-    </section>
-  </section>
-
-  <section id="publicCatalog" style="display:none;"></section>
-
-
-
-  <footer>Timzy Fashion · Luxury Bespoke Fashion</footer>
-</body>
-</html>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Timzy Fashion</title><link rel="stylesheet" href="lean.css"></head><body>
+<div class="wrap">
+<header class="nav"><a href="index.html"><img class="logo" src="assets/timzy-logo.png" alt="Timzy Fashion"></a><a class="btn-ghost" href="login.html">Staff Login</a></header>
+<main class="hero">
+<section><p class="kicker">Classy and Confident</p><h1>Luxury fashion, made simple.</h1><p>Explore premium senator wear, agbada, kaftan, fabrics and custom pieces from Timzy Fashion. Clean catalog. Fast WhatsApp ordering. No complicated shopping process.</p><div class="hero-actions"><a class="btn" href="catalog.html">Explore Collection</a><a class="btn-ghost" id="waBtn" href="#">Book Consultation</a></div></section>
+<section class="hero-grid"><a class="hero-card tall" href="catalog.html"><img src="assets/hero-agbada-white.jpg" alt="Agbada"><span>Premium Agbada</span></a><a class="hero-card small" href="catalog.html"><img src="assets/real-senator-grey.jpg" alt="Senator"><span>Senator</span></a><a class="hero-card small" href="catalog.html"><img src="assets/real-fabrics-stack.jpg" alt="Fabric"><span>Fabrics</span></a></section>
+</main>
+<section class="section-head"><div><p class="kicker">How it works</p><h2>Simple for customers. Simple for staff.</h2></div></section>
+<div class="catalog-grid"><div class="card"><strong>1</strong><p>Staff uploads products with Google Form.</p></div><div class="card"><strong>2</strong><p>Products enter Google Sheet automatically.</p></div><div class="card"><strong>3</strong><p>Catalog reads the sheet and updates.</p></div><div class="card"><strong>4</strong><p>Customers order through WhatsApp.</p></div></div>
+</div><script src="timzy-config.js"></script><script>waBtn.href=`https://wa.me/${TIMZY_CONFIG.whatsappNumber}`;</script></body></html>
