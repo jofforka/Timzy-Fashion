@@ -256,22 +256,23 @@ function productCard(item, compact = false) {
   const badge = productBadge(item);
 
   return `
-    <article class="${compact ? "mini-product-card" : "product-card"}" onclick="openProduct('${item.id}')">
-      <div class="${compact ? "mini-product-image product-image" : "product-image"}">
-        ${image ? `<img src="${image}" alt="${item.name}" loading="lazy">` : `<span>TF</span>`}
-        ${badge ? `<span class="product-badge">${badge}</span>` : ""}
-        ${images.length > 1 ? `<span class="image-count">+${images.length - 1}</span>` : ""}
-        ${wished ? `<span class="wish-pill">♡</span>` : ""}
+    <article class="${compact ? "mini-product-card premium-card" : "product-card premium-card"}" onclick="openProduct('${item.id}')">
+      <div class="${compact ? "mini-product-image product-image premium-product-image" : "product-image premium-product-image"}">
+        ${image ? `<img src="${image}" alt="${item.name}" loading="lazy">` : `<span class="tf-placeholder">TF</span>`}
+        <div class="premium-image-sheen"></div>
+        ${badge ? `<span class="product-badge premium-badge">${badge}</span>` : ""}
+        ${images.length > 1 ? `<span class="image-count premium-count">${images.length} views</span>` : ""}
+        <button class="card-wishlist ${wished ? "active" : ""}" onclick="event.stopPropagation(); toggleWishlist('${item.id}')" aria-label="Save product">♡</button>
       </div>
 
-      <div class="${compact ? "mini-product-info product-info" : "product-info"}">
+      <div class="${compact ? "mini-product-info product-info premium-info" : "product-info premium-info"}">
         <p class="product-category">${item.category || "Timzy Fashion"}</p>
         <h3>${item.name || "Untitled Product"}</h3>
-        <div class="price-line">
+        <div class="price-line premium-price-line">
           <strong>${money(effectivePrice(item))}</strong>
           ${item.salePrice ? `<small class="old-price">${money(item.price)}</small>` : ""}
         </div>
-        <small>${item.productType || "Ready-Made"} ${item.color ? "• " + item.color : ""}</small>
+        <button class="view-details-btn" onclick="event.stopPropagation(); openProduct('${item.id}')">View Details</button>
       </div>
     </article>
   `;
@@ -402,8 +403,9 @@ window.openProduct = function (id) {
         ${item.videoUrl ? `<div class="video-box"><a href="${item.videoUrl}" target="_blank">View Product Video</a></div>` : ""}
         <div class="carousel-main">
           <button class="carousel-arrow left" onclick="prevSlide()" ${activeImages.length <= 1 ? "disabled" : ""}>‹</button>
-          <div class="carousel-image-wrap" id="carouselImageWrap">
+          <div class="carousel-image-wrap" id="carouselImageWrap" onclick="openFullscreenGallery()">
             ${activeImages.length ? `<img id="carouselMainImage" src="${activeImages[0]}" alt="${item.name}" loading="lazy">` : `<div class="modal-placeholder">TF</div>`}
+            ${activeImages.length ? `<span class="tap-zoom-hint">Tap to zoom</span>` : ""}
           </div>
           <button class="carousel-arrow right" onclick="nextSlide()" ${activeImages.length <= 1 ? "disabled" : ""}>›</button>
         </div>
@@ -477,7 +479,13 @@ window.openProduct = function (id) {
 
         <div class="future-row">
           <button id="modalWishlistBtn" onclick="toggleWishlist('${item.id}')">${isWishlisted(item.id) ? "Saved" : "Save"}</button>
-          <button disabled>Full View Ready</button>
+          <button onclick="openFullscreenGallery()" ${activeImages.length ? "" : "disabled"}>Full View</button>
+        </div>
+
+        <div class="sticky-product-actions">
+          <button onclick="buyNow()">Buy Now</button>
+          <a href="${whatsappLink}" target="_blank">WhatsApp</a>
+          <button onclick="openFullscreenGallery()">Zoom</button>
         </div>
 
         <div class="similar-products">${renderSimilarProducts(item)}</div>
@@ -535,9 +543,14 @@ function updateCarousel() {
   const mainImage = document.getElementById("carouselMainImage");
   const dots = document.getElementById("carouselDots");
   const thumbs = document.getElementById("carouselThumbs");
-  if (mainImage && activeImages[activeSlideIndex]) mainImage.src = activeImages[activeSlideIndex];
+  if (mainImage && activeImages[activeSlideIndex]) {
+    mainImage.classList.remove("image-fade-in");
+    mainImage.src = activeImages[activeSlideIndex];
+    requestAnimationFrame(() => mainImage.classList.add("image-fade-in"));
+  }
   if (dots) dots.innerHTML = renderCarouselDots();
   if (thumbs) thumbs.innerHTML = renderCarouselThumbs();
+  updateFullscreenImage();
 }
 
 window.nextSlide = function () {
@@ -572,6 +585,100 @@ function enableSwipeCarousel() {
     if (Math.abs(diff) > 45) diff > 0 ? nextSlide() : prevSlide();
     startX = 0;
     endX = 0;
+  });
+}
+
+
+/* PREMIUM FULLSCREEN GALLERY */
+let fullscreenZoom = 1;
+let fullscreenStartDistance = 0;
+
+function fullscreenTemplate() {
+  if (!activeImages.length) return "";
+  return `
+    <div id="fullscreenGallery" class="fullscreen-gallery" role="dialog" aria-modal="true">
+      <button class="fullscreen-close" onclick="closeFullscreenGallery()" aria-label="Close gallery">×</button>
+      <button class="fullscreen-arrow fullscreen-left" onclick="prevSlide()" aria-label="Previous image">‹</button>
+      <figure class="fullscreen-stage" id="fullscreenStage">
+        <img id="fullscreenImage" src="${activeImages[activeSlideIndex]}" alt="${activeProduct?.name || "Timzy Fashion product"}">
+        <figcaption>${activeProduct?.name || "Timzy Fashion"} · ${activeSlideIndex + 1}/${activeImages.length}</figcaption>
+      </figure>
+      <button class="fullscreen-arrow fullscreen-right" onclick="nextSlide()" aria-label="Next image">›</button>
+      <div class="fullscreen-thumbs">${renderCarouselThumbs()}</div>
+    </div>
+  `;
+}
+
+function updateFullscreenImage() {
+  const img = document.getElementById("fullscreenImage");
+  const caption = document.querySelector("#fullscreenStage figcaption");
+  const thumbs = document.querySelector(".fullscreen-thumbs");
+  if (!img || !activeImages[activeSlideIndex]) return;
+  fullscreenZoom = 1;
+  img.style.transform = "scale(1)";
+  img.src = activeImages[activeSlideIndex];
+  if (caption) caption.textContent = `${activeProduct?.name || "Timzy Fashion"} · ${activeSlideIndex + 1}/${activeImages.length}`;
+  if (thumbs) thumbs.innerHTML = renderCarouselThumbs();
+}
+
+window.openFullscreenGallery = function () {
+  if (!activeImages.length) return;
+  if (!document.getElementById("fullscreenGallery")) {
+    document.body.insertAdjacentHTML("beforeend", fullscreenTemplate());
+    enableFullscreenGestures();
+  }
+  document.body.classList.add("gallery-open");
+};
+
+window.closeFullscreenGallery = function () {
+  document.getElementById("fullscreenGallery")?.remove();
+  document.body.classList.remove("gallery-open");
+};
+
+function enableFullscreenGestures() {
+  const stage = document.getElementById("fullscreenStage");
+  const img = document.getElementById("fullscreenImage");
+  if (!stage || !img) return;
+
+  let startX = 0;
+  let endX = 0;
+
+  stage.addEventListener("touchstart", event => {
+    if (event.touches.length === 2) {
+      fullscreenStartDistance = Math.hypot(
+        event.touches[0].clientX - event.touches[1].clientX,
+        event.touches[0].clientY - event.touches[1].clientY
+      );
+    } else {
+      startX = event.touches[0].clientX;
+      endX = startX;
+    }
+  }, { passive: true });
+
+  stage.addEventListener("touchmove", event => {
+    if (event.touches.length === 2 && fullscreenStartDistance) {
+      const distance = Math.hypot(
+        event.touches[0].clientX - event.touches[1].clientX,
+        event.touches[0].clientY - event.touches[1].clientY
+      );
+      fullscreenZoom = Math.min(2.6, Math.max(1, distance / fullscreenStartDistance));
+      img.style.transform = `scale(${fullscreenZoom})`;
+    } else if (event.touches.length === 1) {
+      endX = event.touches[0].clientX;
+    }
+  }, { passive: true });
+
+  stage.addEventListener("touchend", () => {
+    const diff = startX - endX;
+    if (fullscreenZoom === 1 && Math.abs(diff) > 55) diff > 0 ? nextSlide() : prevSlide();
+    startX = 0;
+    endX = 0;
+    fullscreenStartDistance = 0;
+  });
+
+  img.addEventListener("dblclick", () => {
+    fullscreenZoom = fullscreenZoom > 1 ? 1 : 1.8;
+    img.style.transform = `scale(${fullscreenZoom})`;
   });
 }
 
@@ -689,6 +796,7 @@ function showPaymentResult(data, amount, buyerName, buyerPhone, productName, ord
 }
 
 window.closeModal = function () {
+  closeFullscreenGallery();
   const modal = document.getElementById("productModal");
   if (modal) modal.style.display = "none";
   activeImages = [];
@@ -705,7 +813,10 @@ window.addEventListener("keydown", event => {
   if (!modal || modal.style.display === "none") return;
   if (event.key === "ArrowRight") nextSlide();
   if (event.key === "ArrowLeft") prevSlide();
-  if (event.key === "Escape") closeModal();
+  if (event.key === "Escape") {
+    if (document.getElementById("fullscreenGallery")) closeFullscreenGallery();
+    else closeModal();
+  }
 });
 
 loadCatalog();
