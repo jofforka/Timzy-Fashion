@@ -10,37 +10,47 @@
 
 <body>
 
-  <section id="publicHeader" class="home-wrap">
-    <header class="home-nav">
-      <a class="home-brand" href="index.html">
-        <span>TF</span>
-        <div><b>Timzy</b><small>Fashion</small></div>
+  <section id="publicHeader" class="home-wrap luxury-home">
+    <header class="home-nav luxury-nav">
+      <a class="home-brand luxury-brand" href="index.html" aria-label="Timzy Fashion Home">
+        <span class="brand-logo-slot luxury-logo"><img src="assets/timzy-logo.png" alt="Timzy Fashion Logo" /></span>
       </a>
-      <button type="button" class="home-admin" onclick="openLoginModal()">Staff Login</button>
+      <button type="button" class="home-admin luxury-admin" onclick="location.hash='admin-login'; openLoginModal();">Staff Login</button>
     </header>
 
-    <main class="home-hero">
-      <div class="home-copy">
-        <p class="home-kicker">Premium African tailoring</p>
-        <h1>Clean styles. Sharp fitting. Easy ordering.</h1>
-        <p class="home-text">Browse ready-to-wear pieces, fabrics, agbada, senator styles and custom sewing options from Timzy Fashion.</p>
-        <div class="home-actions">
-          <a href="catalog.html" class="home-primary">View Catalog</a>
-          <a href="https://wa.me/2348118103510" target="_blank" class="home-secondary">WhatsApp Us</a>
+    <main class="luxury-hero">
+      <div class="luxury-copy">
+        <img class="hero-logo-mark" src="assets/timzy-logo.png" alt="Timzy Fashion" />
+        <p class="home-kicker">Classy and Confident</p>
+        <h1>Premium bespoke fashion, made simple.</h1>
+        <p class="home-text">Explore senator wear, agbada, kaftan, fabrics, accessories and custom pieces in a clean mobile catalog.</p>
+        <div class="home-actions luxury-actions">
+          <a href="catalog.html" class="home-primary">Explore Collection</a>
+          <a href="https://wa.me/2348118103510" target="_blank" class="home-secondary">Book Consultation</a>
         </div>
       </div>
 
-      <div class="home-gallery" aria-label="Timzy Fashion preview">
-        <img class="home-img main" src="assets/hero-agbada-white.jpg" alt="Agbada style">
-        <img class="home-img small top" src="assets/real-senator-grey.jpg" alt="Senator style">
-        <img class="home-img small bottom" src="assets/real-fabrics-stack.jpg" alt="Luxury fabrics">
+      <div class="luxury-showcase" aria-label="Featured Timzy Fashion styles">
+        <a href="catalog.html#allProducts" class="showcase-card tall">
+          <img src="assets/hero-agbada-white.jpg" alt="Premium agbada style" />
+          <span>Agbada</span>
+        </a>
+        <a href="catalog.html#allProducts" class="showcase-card">
+          <img src="assets/real-senator-grey.jpg" alt="Senator style" />
+          <span>Senator</span>
+        </a>
+        <a href="catalog.html#allProducts" class="showcase-card">
+          <img src="assets/real-fabrics-stack.jpg" alt="Luxury fabrics" />
+          <span>Fabrics</span>
+        </a>
       </div>
     </main>
 
-    <section class="home-cats">
-      <a href="catalog.html#allProducts"><img src="assets/category-senator.jpg" alt="Senator"><span>Senator</span></a>
-      <a href="catalog.html#allProducts"><img src="assets/category-agbada.jpg" alt="Agbada"><span>Agbada</span></a>
-      <a href="catalog.html#allProducts"><img src="assets/category-fabrics.jpg" alt="Fabrics"><span>Fabrics</span></a>
+    <section class="luxury-cats" aria-label="Popular collections">
+      <a href="catalog.html#allProducts"><span>01</span><b>Senator</b></a>
+      <a href="catalog.html#allProducts"><span>02</span><b>Agbada</b></a>
+      <a href="catalog.html#allProducts"><span>03</span><b>Kaftan</b></a>
+      <a href="catalog.html#allProducts"><span>04</span><b>Fabrics</b></a>
     </section>
   </section>
 

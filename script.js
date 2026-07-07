@@ -204,7 +204,7 @@ window.logoutUser = async function () {
   currentUserEmail = "";
 
   if ($("app")) $("app").style.display = "none";
-  if ($("publicHeader")) $("publicHeader").style.display = "flex";
+  if ($("publicHeader")) $("publicHeader").style.display = "block";
   closeLoginModal();
 };
 
@@ -231,7 +231,7 @@ onAuthStateChanged(auth, async user => {
   currentRole = "public";
   currentUserEmail = "";
 
-  if ($("publicHeader")) $("publicHeader").style.display = "flex";
+  if ($("publicHeader")) $("publicHeader").style.display = "block";
   if ($("app")) $("app").style.display = "none";
 });
 
@@ -1046,3 +1046,11 @@ function renderForms() {
 
 loadAllData();
 
+
+
+// Timzy dark UI hash login handler
+window.addEventListener('DOMContentLoaded', function () {
+  if (window.location.hash === '#admin-login' || window.location.hash === '#admin') {
+    setTimeout(function(){ if (window.openLoginModal) window.openLoginModal(); }, 250);
+  }
+});

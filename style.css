@@ -1289,3 +1289,131 @@ footer{
   #publicHeader .home-cats{grid-template-columns:repeat(3,220px);justify-content:center;gap:14px;margin-top:34px;}
   #publicHeader .home-cats img{height:130px;}
 }
+
+/* =========================================================
+   TIMZY FASHION — DARK LUXURY HOMEPAGE OVERRIDE
+   Mobile-first. Dark background. Gold typography. Premium CTA.
+========================================================= */
+body:has(#publicHeader.home-wrap){background:#070503;color:#f7e6bd;}
+#publicHeader.home-wrap{
+  background:
+    radial-gradient(circle at 18% 3%, rgba(214,166,70,.24), transparent 28%),
+    radial-gradient(circle at 100% 26%, rgba(152,100,19,.18), transparent 30%),
+    linear-gradient(180deg,#080604 0%,#14100a 48%,#050403 100%) !important;
+  color:#f7e6bd !important;
+  border-bottom:1px solid rgba(214,166,70,.18);
+}
+#publicHeader .home-nav{
+  background:rgba(9,7,4,.58);
+  border:1px solid rgba(214,166,70,.20);
+  border-radius:22px;
+  padding:10px 12px;
+  backdrop-filter:blur(14px);
+  box-shadow:0 22px 55px rgba(0,0,0,.24);
+}
+#publicHeader .home-brand{color:#f4d68d !important;}
+#publicHeader .home-brand span,
+#publicHeader .brand-logo-slot{
+  width:48px !important;height:48px !important;border-radius:50% !important;
+  display:grid !important;place-items:center !important;
+  background:linear-gradient(145deg,#1a1308,#050403) !important;
+  border:1px solid rgba(231,184,84,.52) !important;
+  color:#e7b854 !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.05);
+  overflow:hidden;
+}
+#publicHeader .brand-logo-slot img{width:100%;height:100%;object-fit:contain;padding:5px;display:block;}
+#publicHeader .brand-logo-slot.logo-missing::after{content:'TIMZY';font-size:9px;letter-spacing:.8px;font-weight:950;}
+#publicHeader .home-brand b{color:#f4d68d !important;letter-spacing:1.2px;}
+#publicHeader .home-brand small{color:#c7973e !important;}
+#publicHeader .home-admin{
+  background:rgba(231,184,84,.10) !important;
+  color:#f4d68d !important;
+  border:1px solid rgba(231,184,84,.40) !important;
+  box-shadow:none !important;
+}
+#publicHeader .home-kicker{color:#d8aa4c !important;}
+#publicHeader .home-copy h1{color:#f4d68d !important;text-shadow:0 12px 40px rgba(0,0,0,.42);}
+#publicHeader .home-text{color:#dbc89a !important;}
+#publicHeader .home-primary{
+  background:linear-gradient(135deg,#f2cf78,#aa731c) !important;
+  color:#100b04 !important;
+  box-shadow:0 16px 38px rgba(199,151,62,.24) !important;
+}
+#publicHeader .home-secondary{
+  background:rgba(255,255,255,.04) !important;
+  color:#f4d68d !important;
+  border:1px solid rgba(231,184,84,.36) !important;
+}
+#publicHeader .home-img{box-shadow:0 26px 70px rgba(0,0,0,.56) !important;border:1px solid rgba(231,184,84,.22);}
+#publicHeader .home-img.small{border-color:#090603 !important;}
+#publicHeader .home-cats a{
+  background:rgba(255,255,255,.045) !important;
+  border:1px solid rgba(231,184,84,.22) !important;
+  color:#f4d68d !important;
+  box-shadow:0 14px 34px rgba(0,0,0,.24) !important;
+}
+#publicHeader .home-cats img{filter:saturate(.95) contrast(1.04);}
+#loginModal .modal-card.small{
+  background:#100c07 !important;
+  color:#f4d68d !important;
+  border:1px solid rgba(231,184,84,.25) !important;
+}
+#loginModal input{background:#070503 !important;color:#f7e6bd !important;border:1px solid rgba(231,184,84,.22) !important;}
+#loginModal button:not(.modal-close){background:linear-gradient(135deg,#f2cf78,#aa731c) !important;color:#0d0904 !important;}
+
+@media(max-width:480px){
+  #publicHeader.home-wrap{padding:12px !important;}
+  #publicHeader .home-nav{border-radius:19px;padding:9px 10px;margin-bottom:18px;}
+  #publicHeader .home-brand b{font-size:14px !important;}
+  #publicHeader .home-brand small{font-size:9px !important;letter-spacing:2px !important;}
+  #publicHeader .home-admin{font-size:11px !important;padding:9px 11px !important;}
+  #publicHeader .home-copy h1{font-size:clamp(42px,13vw,58px) !important;line-height:.92 !important;}
+  #publicHeader .home-actions{grid-template-columns:1fr !important;}
+  #publicHeader .home-gallery{height:330px !important;}
+  #publicHeader .home-img.main{height:306px !important;}
+  #publicHeader .home-cats{gap:8px !important;}
+  #publicHeader .home-cats img{height:78px !important;}
+}
+
+/* =========================================================
+   TIMZY FASHION V3 — LUXURY MOBILE-FIRST HOME
+========================================================= */
+:root{
+  --tf-black:#060504;
+  --tf-charcoal:#11100d;
+  --tf-card:#15120c;
+  --tf-gold:#d6ad52;
+  --tf-gold2:#f0cf78;
+  --tf-cream:#fff4cf;
+  --tf-muted:#b9a678;
+  --tf-line:rgba(214,173,82,.28);
+}
+body:has(.luxury-home){background:var(--tf-black);}
+.luxury-home{
+  min-height:100svh;
+  background:
+    radial-gradient(circle at 18% 0%,rgba(214,173,82,.24),transparent 28%),
+    radial-gradient(circle at 100% 20%,rgba(214,173,82,.10),transparent 24%),
+    linear-gradient(180deg,#050403 0%,#151008 58%,#060504 100%);
+  color:var(--tf-cream);
+  overflow:hidden;
+}
+.luxury-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px clamp(16px,4vw,54px);
+  background:linear-gradient(180deg,rgba(5,4,3,.86),rgba(5,4,3,.30));
+  border-bottom:1px solid rgba(214,173,82,.14);
+  position:relative;z-index:5;
+}
+.luxury-brand{display:flex;align-items:center;text-decoration:none;color:var(--tf-cream)}
+.luxury-logo{width:78px;height:78px;border-radius:50%;display:grid;place-items:center;background:transparent;box-shadow:none;overflow:visible}
+.luxury-logo img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 12px 24px rgba(0,0,0,.45))}
+.luxury-admin{
+  border:1px solid var(--tf-line);background:rgba(255,255,255,.035);color:var(--tf-gold2);
+  border-radius:999px;padding:11px 15px;font-weight:900;letter-spacing:.4px;cursor:pointer;
+}
+.luxury-hero{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:34px;align-items:center;padding:18px clamp(16px,5vw,70px) 34px;max-width:1240px;margin:0 auto;}
+.luxury-copy{max-width:560px;position:relative;z-index:2}.hero-logo-mark{display:none;width:160px;margin:0 0 12px;filter:drop-shadow(0 18px 32px rgba(0,0,0,.5))}.home-kicker{margin:0;color:var(--tf-gold2);text-transform:uppercase;letter-spacing:3px;font-size:12px;font-weight:950}.luxury-copy h1{font-family:Georgia,serif;font-size:clamp(42px,10vw,88px);line-height:.9;letter-spacing:-2.8px;margin:12px 0 16px;color:var(--tf-cream)}.home-text{color:var(--tf-muted);font-size:16px;line-height:1.65;margin:0;max-width:460px}.luxury-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px;max-width:440px}.luxury-actions a{text-decoration:none;text-align:center;border-radius:999px;padding:16px 14px;font-weight:950}.home-primary{background:linear-gradient(135deg,var(--tf-gold2),#a97621);color:#120d05!important;box-shadow:0 16px 42px rgba(214,173,82,.24)}.home-secondary{background:rgba(255,255,255,.045);border:1px solid var(--tf-line);color:var(--tf-gold2)!important}.luxury-showcase{display:grid;grid-template-columns:1.05fr .95fr;gap:12px;align-items:stretch}.showcase-card{position:relative;min-height:190px;border:1px solid var(--tf-line);border-radius:28px;overflow:hidden;background:#120d08;text-decoration:none;box-shadow:0 22px 65px rgba(0,0,0,.44)}.showcase-card.tall{grid-row:span 2;min-height:520px}.showcase-card img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92) contrast(1.03)}.showcase-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 46%,rgba(0,0,0,.72));}.showcase-card span{position:absolute;left:16px;bottom:15px;z-index:2;color:var(--tf-cream);font-weight:950;letter-spacing:1.5px;text-transform:uppercase;font-size:12px}.luxury-cats{max-width:1160px;margin:0 auto;padding:0 clamp(16px,5vw,70px) 42px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.luxury-cats a{text-decoration:none;color:var(--tf-cream);background:rgba(255,255,255,.035);border:1px solid rgba(214,173,82,.20);border-radius:20px;padding:16px;display:grid;gap:8px}.luxury-cats span{color:var(--tf-gold2);font-size:11px;font-weight:950}.luxury-cats b{font-size:14px;letter-spacing:.5px}#loginModal.modal{background:rgba(0,0,0,.74)!important;align-items:center;justify-content:center}.modal-card.small{background:#100c07!important;border:1px solid var(--tf-line)!important;color:var(--tf-cream)!important;border-radius:26px!important;box-shadow:0 24px 80px rgba(0,0,0,.54)!important}.modal-card.small input{background:#080604!important;color:var(--tf-cream)!important;border:1px solid var(--tf-line)!important}.modal-card.small button:not(.modal-close){background:linear-gradient(135deg,var(--tf-gold2),#a97621)!important;color:#130e05!important;border:0!important}.modal-card.small h2{color:var(--tf-cream)!important}.eyebrow{color:var(--tf-gold2)!important}
+@media(max-width:760px){.luxury-nav{padding:14px 14px}.luxury-logo{width:68px;height:68px}.luxury-admin{padding:10px 13px;font-size:13px}.luxury-hero{display:block;padding:6px 16px 24px}.hero-logo-mark{display:block;margin-inline:auto;width:min(46vw,185px)}.luxury-copy{text-align:center;margin:0 auto}.luxury-copy h1{font-size:clamp(42px,12.6vw,58px);letter-spacing:-1.8px}.home-text{font-size:15px;margin-inline:auto}.luxury-actions{grid-template-columns:1fr;margin:20px auto 26px;gap:10px}.luxury-actions a{padding:15px 12px}.luxury-showcase{grid-template-columns:1fr 1fr;gap:10px}.showcase-card{border-radius:22px;min-height:150px}.showcase-card.tall{grid-column:1/-1;grid-row:auto;min-height:330px}.luxury-cats{grid-template-columns:repeat(2,1fr);padding:0 16px 28px}.luxury-cats a{padding:14px;border-radius:17px}.luxury-cats b{font-size:13px}}
+@media(max-width:390px){.luxury-logo{width:58px;height:58px}.luxury-copy h1{font-size:39px}.showcase-card.tall{min-height:290px}.showcase-card{min-height:128px}.luxury-cats{gap:8px}.luxury-cats a{padding:12px}}
