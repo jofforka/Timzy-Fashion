@@ -215,6 +215,11 @@ onAuthStateChanged(auth, async user => {
 
     closeLoginModal();
 
+    if (window.__TIMZY_LOGIN_PAGE && !$("app")) {
+      window.location.href = "admin/index.html";
+      return;
+    }
+
     if ($("publicHeader")) $("publicHeader").style.display = "none";
     if ($("publicCatalog")) $("publicCatalog").style.display = "none";
     if ($("app")) $("app").style.display = "block";
@@ -231,6 +236,11 @@ onAuthStateChanged(auth, async user => {
   currentRole = "public";
   currentUserEmail = "";
 
+  if (window.__TIMZY_ADMIN_PAGE) {
+    window.location.href = "../login.html";
+    return;
+  }
+
   if ($("publicHeader")) $("publicHeader").style.display = "block";
   if ($("app")) $("app").style.display = "none";
 });
@@ -243,7 +253,7 @@ window.handleAppMenu = function (value) {
   if (!value) return;
 
   if (value === "openCatalog") {
-    window.open("catalog.html", "_blank");
+    window.open(window.__TIMZY_ADMIN_PAGE ? "../catalog.html" : "catalog.html", "_blank");
     $("appMenuSelect").value = "";
     return;
   }
@@ -1050,7 +1060,7 @@ loadAllData();
 
 // Timzy dark UI hash login handler
 window.addEventListener('DOMContentLoaded', function () {
-  if (window.location.hash === '#admin-login' || window.location.hash === '#admin') {
+  if (!window.__TIMZY_LOGIN_PAGE && !window.__TIMZY_ADMIN_PAGE && (window.location.hash === '#admin-login' || window.location.hash === '#admin')) {
     setTimeout(function(){ if (window.openLoginModal) window.openLoginModal(); }, 250);
   }
 });

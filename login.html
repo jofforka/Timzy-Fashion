@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Login · Timzy Fashion OS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="tf-login-page">
+  <main class="tf-login-page-shell">
+    <a class="tf-login-back" href="index.html">← Back to Home</a>
+    <section id="loginModal" class="tf-login-page-card">
+      <div class="tf-login-card tf-login-card-standalone">
+        <img class="tf-login-logo" src="assets/timzy-logo.png" alt="Timzy Fashion Logo" />
+        <p class="tf-login-kicker">SECURE STAFF ACCESS</p>
+        <h1>Timzy Fashion OS</h1>
+        <p class="tf-login-copy">Sign in to manage catalog, orders, customers, stock, sales and business activity.</p>
+        <label for="loginEmail">Email address</label>
+        <input id="loginEmail" type="email" placeholder="admin@timzyfashion.com" autocomplete="email" />
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" placeholder="Enter password" autocomplete="current-password" />
+        <button class="tf-login-submit" type="button" onclick="loginUser()">Access Dashboard</button>
+        <p class="tf-login-foot">Authorized staff only · Timzy Fashion Cloud Edition</p>
+      </div>
+    </section>
+  </main>
+  <script>
+    window.closeLoginModal = window.closeLoginModal || function(){};
+    window.openLoginModal = window.openLoginModal || function(){};
+    window.__TIMZY_LOGIN_PAGE = true;
+  </script>
+  <script src="forms-config.js?v=20260619_phase8"></script>
+  <script type="module" src="script.js?v=20260619_phase8"></script>
+</body>
+</html>
