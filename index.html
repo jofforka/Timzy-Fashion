@@ -1,1 +1,355 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Timzy Fashion | Luxury Bespoke Fashion</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/timzy.css"></head><body><header class="topbar"><nav class="container nav"><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion logo"><span><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Classy & Confident</span></span></a><button class="mobile-menu">Menu</button><div class="nav-links"><a class="active" href="index.html">Home</a><a href="catalog.html">Catalog</a><a href="#services">Services</a><a href="#contact">Contact</a><a href="login.html">Staff Login</a></div></nav></header><main><section class="hero"><div class="container hero-grid"><div><span class="eyebrow">Luxury Bespoke Fashion</span><h1 class="h1">Classy. Confident. Custom made.</h1><p class="lead">Premium tailoring, ready-to-wear pieces, traditional wear, and statement fashion designed for customers who want elegance without noise.</p><div class="hero-actions"><a class="btn primary" href="catalog.html">Explore Collection</a><a class="btn ghost" href="https://wa.me/2340000000000" target="_blank">Book Consultation</a><a class="btn" href="login.html">Staff Login</a></div><div class="stats"><div class="stat"><b>Custom</b><span>Measurements & fitting</span></div><div class="stat"><b>Premium</b><span>Fabric-forward designs</span></div><div class="stat"><b>Fast</b><span>WhatsApp ordering</span></div></div></div><div class="hero-card"><img src="assets/img/hero-agbada-white.jpg" alt="Premium agbada"><div class="hero-badge"><strong>Tailored presence.</strong><p>From senator wear to agbada and formal pieces, every outfit is presented with a premium gallery experience.</p></div></div></div></section><section class="section" id="services"><div class="container"><div class="section-head"><div><span class="eyebrow">Collections</span><h2>Shop by style</h2></div><p>Clean categories. Easy browsing. Mobile-first.</p></div><div class="category-grid"><a class="category-card" href="catalog.html"><img src="assets/img/category-senator.jpg" alt="Senator"><div><b>Senator Wear</b><p>Elegant everyday and formal pieces.</p></div></a><a class="category-card" href="catalog.html"><img src="assets/img/category-agbada.jpg" alt="Agbada"><div><b>Agbada</b><p>Statement traditional wear.</p></div></a><a class="category-card" href="catalog.html"><img src="assets/img/category-fabrics.jpg" alt="Fabrics"><div><b>Fabrics</b><p>Premium fabric selections.</p></div></a><a class="category-card" href="catalog.html"><img src="assets/img/category-accessories.jpg" alt="Accessories"><div><b>Accessories</b><p>Finishing touches.</p></div></a></div></div></section><section class="section"><div class="container"><div class="section-head"><div><span class="eyebrow">Featured</span><h2>Latest pieces</h2></div><a class="btn" href="catalog.html">View all</a></div><div class="product-grid" id="featuredProducts"></div></div></section><section class="section"><div class="container split"><div class="panel"><span class="eyebrow">For customers</span><h2>Browse. Tap. Order.</h2><p>Customers can view clean product cards, open full product pages, zoom images, and send a WhatsApp order with the product name already included.</p><a class="btn primary" href="catalog.html">Open Catalog</a></div><div class="panel"><span class="eyebrow">For staff</span><h2>Simple operations</h2><p>Staff can use Google Forms for product uploads and the lean admin area for sales, expenses, and daily activity.</p><a class="btn" href="login.html">Staff Login</a></div></div></section></main><footer class="footer" id="contact"><div class="container footer-grid"><div><div class="brand"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Logo"><span><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Fashion OS v5</span></span></div><p>Premium dark-and-gold mobile-first storefront and lean shop operations.</p></div><div><b class="gold">Contact</b><p>WhatsApp: update in <code>assets/js/config.js</code></p></div><div><b class="gold">Admin</b><p><a href="login.html">Staff Login</a></p></div></div></footer><script src="assets/js/config.js"></script><script src="assets/js/timzy.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>Timzy Fashion | Dress the Complete Gentleman</title>
+  <meta name="description" content="Timzy Fashion is a luxury bespoke fashion boutique for men who want complete, confident, custom-made looks." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body class="page-home">
+
+  <!-- Background Atmosphere -->
+  <div class="luxury-bg" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <nav class="container nav">
+      <a class="brand" href="index.html" aria-label="Timzy Fashion Home">
+        <img class="brand-logo" src="assets/images/logo/timzy-logo.png" alt="Timzy Fashion logo">
+        <span class="brand-copy">
+          <span class="brand-name">TIMZY FASHION</span>
+          <span class="brand-sub">Dress the Complete Gentleman</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Open menu">
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a class="active" href="index.html">Home</a>
+        <a href="catalog.html">Shop</a>
+        <a href="#collections">Collections</a>
+        <a href="#look">Build Your Look</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- Hero -->
+    <section class="hero section-xl">
+      <div class="container hero-grid">
+
+        <div class="hero-content">
+          <span class="eyebrow">Crafted for the Modern Gentleman</span>
+
+          <h1 class="hero-title">
+            Classy.<br>
+            Confident.<br>
+            Custom Made.
+          </h1>
+
+          <p class="hero-text">
+            Premium bespoke tailoring, traditional wear, luxury accessories, and complete outfit styling designed for men who want presence without noise.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="catalog.html">Explore Collection</a>
+            <a class="btn btn-outline" href="#look">Build My Look</a>
+            <a class="btn btn-soft" href="#measurement">Book Measurement</a>
+          </div>
+
+          <div class="trust-row">
+            <div>
+              <strong>Custom Fit</strong>
+              <span>Measurements & finishing</span>
+            </div>
+            <div>
+              <strong>Complete Looks</strong>
+              <span>Wear, shoes & accessories</span>
+            </div>
+            <div>
+              <strong>Premium Finish</strong>
+              <span>Fabric-led craftsmanship</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-image-card">
+            <img src="assets/images/banners/hero-agbada-white.jpg" alt="Premium Timzy Fashion agbada">
+          </div>
+
+          <div class="hero-floating-card">
+            <span>Signature Service</span>
+            <strong>Complete Gentleman Styling</strong>
+            <p>Choose the outfit, match the shoes, add the details, and finish the full look.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Collections -->
+    <section class="section" id="collections">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Explore Collections</span>
+            <h2>Choose your style direction.</h2>
+          </div>
+          <p>From traditional elegance to executive polish, every collection is designed around confidence.</p>
+        </div>
+
+        <div class="collection-grid">
+          <a class="collection-card large" href="catalog.html?category=traditional">
+            <img src="assets/images/collections/traditional.jpg" alt="Traditional collection">
+            <div>
+              <span>Traditional</span>
+              <strong>Agbada & Senator Wear</strong>
+            </div>
+          </a>
+
+          <a class="collection-card" href="catalog.html?category=business">
+            <img src="assets/images/collections/business.jpg" alt="Business collection">
+            <div>
+              <span>Business</span>
+              <strong>Sharp executive looks</strong>
+            </div>
+          </a>
+
+          <a class="collection-card" href="catalog.html?category=wedding">
+            <img src="assets/images/collections/wedding.jpg" alt="Wedding collection">
+            <div>
+              <span>Wedding</span>
+              <strong>Presence for big moments</strong>
+            </div>
+          </a>
+
+          <a class="collection-card" href="catalog.html?category=accessories">
+            <img src="assets/images/collections/accessories.jpg" alt="Accessories collection">
+            <div>
+              <span>Accessories</span>
+              <strong>Shoes, cufflinks & finishers</strong>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Build Your Look -->
+    <section class="section look-section" id="look">
+      <div class="container look-grid">
+        <div class="look-copy">
+          <span class="eyebrow">Signature Experience</span>
+          <h2>Build the full look, not just the outfit.</h2>
+          <p>
+            Start with a Timzy outfit, then complete it with matching shoes, cufflinks, sunglasses, caps, belts, and accessories.
+          </p>
+          <a class="btn btn-primary" href="catalog.html">Start Building</a>
+        </div>
+
+        <div class="look-steps">
+          <div class="look-item active">
+            <span>01</span>
+            <strong>Choose the Wear</strong>
+            <p>Senator, agbada, kaftan, suit, or ready-to-wear.</p>
+          </div>
+          <div class="look-item">
+            <span>02</span>
+            <strong>Add Accessories</strong>
+            <p>Shoes, watch, cufflinks, sunglasses, cap, and more.</p>
+          </div>
+          <div class="look-item">
+            <span>03</span>
+            <strong>Submit Measurements</strong>
+            <p>Enter, upload, or book a Timzy measurement visit.</p>
+          </div>
+          <div class="look-item">
+            <span>04</span>
+            <strong>Checkout</strong>
+            <p>Pay now, pay on delivery, or pay on pickup.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Editor’s Picks</span>
+            <h2>Selected pieces for the complete gentleman.</h2>
+          </div>
+          <a class="btn btn-outline" href="catalog.html">View All</a>
+        </div>
+
+        <div class="product-grid" id="featuredProducts">
+          <!-- JS loads featured products here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Measurement CTA -->
+    <section class="section" id="measurement">
+      <div class="container">
+        <div class="measurement-card">
+          <div>
+            <span class="eyebrow">Custom Fit</span>
+            <h2>Need measurements?</h2>
+            <p>
+              Upload your measurements, enter them manually, or request a Timzy measurement appointment if you are within Abuja.
+            </p>
+          </div>
+
+          <div class="measurement-actions">
+            <a class="btn btn-primary" href="checkout.html#measurements">Submit Measurements</a>
+            <a class="btn btn-outline" href="https://wa.me/2340000000000" target="_blank" rel="noopener">Book via WhatsApp</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why Timzy -->
+    <section class="section">
+      <div class="container">
+        <div class="why-grid">
+          <div class="why-card">
+            <span>01</span>
+            <strong>Premium Fabrics</strong>
+            <p>Carefully selected materials for durability, comfort, and presence.</p>
+          </div>
+          <div class="why-card">
+            <span>02</span>
+            <strong>Perfect Fit</strong>
+            <p>Every piece is guided by accurate measurements and refined finishing.</p>
+          </div>
+          <div class="why-card">
+            <span>03</span>
+            <strong>Complete Styling</strong>
+            <p>We help you pair the wear with shoes and accessories for a full look.</p>
+          </div>
+          <div class="why-card">
+            <span>04</span>
+            <strong>Flexible Payment</strong>
+            <p>Pay now, pay on delivery, or pay on pickup depending on your order.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews / Coming Soon Ready -->
+    <section class="section muted-section" id="reviews">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Client Notes</span>
+            <h2>Confidence, fit, and finish.</h2>
+          </div>
+        </div>
+
+        <div class="review-grid">
+          <article class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>“The fitting was clean, the fabric felt premium, and the finishing stood out.”</p>
+            <strong>Timzy Client</strong>
+          </article>
+          <article class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>“I liked that the full look was coordinated, not just the outfit alone.”</p>
+            <strong>Timzy Client</strong>
+          </article>
+          <article class="review-card">
+            <div class="stars">★★★★★</div>
+            <p>“Professional, classy, and worth it.”</p>
+            <strong>Timzy Client</strong>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Floating Shopping Bag -->
+  <button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">
+    <span class="bag-icon">👜</span>
+    <span class="bag-count" id="bagCount">0</span>
+  </button>
+
+  <!-- Floating WhatsApp -->
+  <a class="floating-whatsapp" href="https://wa.me/2340000000000" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+    WhatsApp
+  </a>
+
+  <!-- Future Hidden Hooks -->
+  <div class="future-hooks" hidden>
+    <div id="customerAccount"></div>
+    <div id="wishlistPanel"></div>
+    <div id="loyaltyRewards"></div>
+    <div id="promoCodeModule"></div>
+    <div id="aiStyleAssistant"></div>
+    <div id="giftCardModule"></div>
+    <div id="notificationsModule"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer" id="contact">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="index.html">
+          <img class="brand-logo" src="assets/images/logo/timzy-logo.png" alt="Timzy Fashion logo">
+          <span class="brand-copy">
+            <span class="brand-name">TIMZY FASHION</span>
+            <span class="brand-sub">Dress the Complete Gentleman</span>
+          </span>
+        </a>
+
+        <p>
+          Luxury bespoke fashion, complete outfit styling, and premium craftsmanship for the modern gentleman.
+        </p>
+      </div>
+
+      <div>
+        <h3>Shop</h3>
+        <a href="catalog.html">Catalog</a>
+        <a href="#collections">Collections</a>
+        <a href="#look">Build Your Look</a>
+        <a href="#measurement">Measurements</a>
+      </div>
+
+      <div>
+        <h3>Contact</h3>
+        <a href="https://wa.me/2348114599250" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="mailto:info@timzyfashion.com">Email</a>
+        <a href="#">Instagram</a>
+        <a href="#">Abuja Studio</a>
+      </div>
+
+      <div>
+        <h3>Staff</h3>
+        <a href="login.html">Staff Login</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> Timzy Fashion. All rights reserved.</p>
+      <p>Luxury boutique platform.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
