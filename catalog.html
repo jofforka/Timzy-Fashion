@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 
   <title>Shop Collection | Timzy Fashion</title>
-  <meta name="description" content="Shop Timzy Fashion collections: senator wear, agbada, fabrics, shoes, cufflinks, glasses, and complete gentleman styling." />
+  <meta name="description" content="Shop Timzy Fashion luxury bespoke clothing, senator wear, agbada, fabrics, shoes, accessories, and complete gentleman styling." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,17 +14,17 @@
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 
-<body class="page-catalog">
+<body class="page-catalog page-shop">
 
   <div class="luxury-bg" aria-hidden="true"></div>
 
   <header class="site-header">
-    <nav class="container nav">
+    <nav class="container nav" aria-label="Main navigation">
       <a class="brand" href="index.html" aria-label="Timzy Fashion Home">
         <img class="brand-logo" src="assets/images/logo/timzy-logo.png" alt="Timzy Fashion logo">
         <span class="brand-copy">
           <span class="brand-name">TIMZY FASHION</span>
-          <span class="brand-sub">Shop the complete look</span>
+          <span class="brand-sub">Shop the Complete Look</span>
         </span>
       </a>
 
@@ -35,9 +35,9 @@
 
       <div class="nav-links" id="navLinks">
         <a href="index.html">Home</a>
-        <a class="active" href="catalog.html">Shop</a>
+        <a class="active" href="shop.html">Shop</a>
         <a href="index.html#collections">Collections</a>
-        <a href="index.html#look">Build Your Look</a>
+        <a href="#build-look">Build Your Look</a>
         <a href="checkout.html">Checkout</a>
       </div>
     </nav>
@@ -45,39 +45,40 @@
 
   <main>
 
+    <!-- SHOP HERO -->
     <section class="catalog-hero section">
       <div class="container catalog-hero-grid">
         <div>
-          <span class="eyebrow">Product Catalog</span>
-          <h1 class="hero-title">Shop the collection.</h1>
+          <span class="eyebrow">Shop Collection</span>
+          <h1 class="hero-title">Curated for the complete gentleman.</h1>
           <p class="hero-text">
-            Pick the wear, match the shoes, add cufflinks, glasses, fabrics, caps, and accessories. Your floating shopping bag keeps the full look together before checkout.
+            Browse bespoke outfits, premium fabrics, shoes, cufflinks, watches, sunglasses, caps, and finishing accessories. Add each item to your bag and build a complete look before checkout.
           </p>
 
           <div class="catalog-actions">
-            <a class="btn btn-primary" href="#shop">Start Shopping</a>
-            <button class="btn btn-outline" type="button" data-open-bag>View Bag</button>
+            <a class="btn btn-primary" href="#shop-products">Browse Products</a>
+            <a class="btn btn-outline" href="#build-look">Build Your Look</a>
           </div>
         </div>
 
-        <div class="catalog-note">
-          <span>Signature Experience</span>
-          <strong>Build a full dress-down look.</strong>
-          <p>From outfit to finishing accessories, Timzy helps customers coordinate the complete gentleman.</p>
-        </div>
+        <aside class="catalog-note">
+          <span>Timzy Signature</span>
+          <strong>Not just an outfit — a full dress-down.</strong>
+          <p>Start with the wear, then complete the look with matching shoes, watch, cufflinks, caps, sunglasses, and fragrance.</p>
+        </aside>
       </div>
     </section>
 
-    <section class="section catalog-shop" id="shop">
+    <!-- PRODUCT SHOP -->
+    <section class="section catalog-shop" id="shop-products">
       <div class="container">
 
         <div class="section-head">
           <div>
-            <span class="eyebrow">Browse</span>
-            <h2>Find your next look.</h2>
+            <span class="eyebrow">Browse Products</span>
+            <h2>Find the pieces that complete your look.</h2>
           </div>
-
-          <p id="productCount">Loading collection...</p>
+          <p id="productCount">Loading products...</p>
         </div>
 
         <div class="catalog-controls">
@@ -86,7 +87,7 @@
               class="field"
               id="search"
               type="search"
-              placeholder="Search senator, agbada, shoes, cufflinks, fabrics..."
+              placeholder="Search senator, agbada, fabrics, shoes, accessories..."
               autocomplete="off"
             />
           </div>
@@ -100,7 +101,9 @@
           </select>
         </div>
 
-        <div class="toolbar" id="chips" aria-label="Product categories"></div>
+        <div class="toolbar" id="chips" aria-label="Product categories">
+          <button class="chip active" type="button">All</button>
+        </div>
 
         <div class="product-grid" id="productGrid">
           <div class="empty">Loading products...</div>
@@ -109,38 +112,77 @@
       </div>
     </section>
 
-    <section class="section look-section" id="completeLook">
-      <!-- app.js can render Complete the Look recommendations here -->
-    </section>
-
-    <section class="section muted-section">
-      <div class="container measurement-card">
-        <div>
-          <span class="eyebrow">Custom Fit</span>
-          <h2>Need measurements?</h2>
+    <!-- BUILD YOUR LOOK -->
+    <section class="section look-section" id="build-look">
+      <div class="container look-grid">
+        <div class="look-copy">
+          <span class="eyebrow">Build Your Look</span>
+          <h2>Start with the outfit. Finish with the details.</h2>
           <p>
-            You can enter your measurements, upload a measurement sheet, or request a Timzy measurement appointment within Abuja.
+            Timzy is designed for full styling. Pick your main outfit, then add accessories that complete the look before you checkout.
           </p>
+          <button class="btn btn-primary" type="button" data-open-bag>View Your Bag</button>
         </div>
 
-        <div class="measurement-actions">
-          <a class="btn btn-primary" href="checkout.html#measurements">Submit Measurements</a>
-          <a class="btn btn-outline" href="index.html#measurement">Learn More</a>
+        <div class="look-steps">
+          <article class="look-item active">
+            <span>01</span>
+            <strong>Main Wear</strong>
+            <p>Senator, agbada, kaftan, fabric, or custom sewing.</p>
+          </article>
+          <article class="look-item">
+            <span>02</span>
+            <strong>Footwear</strong>
+            <p>Leather shoes, sandals, or event-ready footwear.</p>
+          </article>
+          <article class="look-item">
+            <span>03</span>
+            <strong>Accessories</strong>
+            <p>Watch, cufflinks, sunglasses, cap, belt, ring, or perfume.</p>
+          </article>
+          <article class="look-item">
+            <span>04</span>
+            <strong>Checkout</strong>
+            <p>Confirm delivery, pickup, measurements, and payment option.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHECKOUT CTA -->
+    <section class="section">
+      <div class="container">
+        <div class="measurement-card">
+          <div>
+            <span class="eyebrow">Ready to Order?</span>
+            <h2>Your selected pieces stay inside your shopping bag.</h2>
+            <p>
+              Review your bag, enter your delivery or pickup details, submit measurements, and choose how you want to pay.
+            </p>
+          </div>
+
+          <div class="measurement-actions">
+            <button class="btn btn-outline" type="button" data-open-bag>Open Bag</button>
+            <a class="btn btn-primary" href="checkout.html">Checkout</a>
+          </div>
         </div>
       </div>
     </section>
 
   </main>
 
+  <!-- Floating Shopping Bag -->
   <button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">
     <span class="bag-icon">👜</span>
     <span class="bag-count" id="bagCount">0</span>
   </button>
 
+  <!-- Floating WhatsApp -->
   <a class="floating-whatsapp" href="https://wa.me/2340000000000" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
     WhatsApp
   </a>
 
+  <!-- Future Public Hooks -->
   <div class="future-hooks" hidden>
     <div id="quickViewModal"></div>
     <div id="wishlistPanel"></div>
@@ -150,7 +192,7 @@
     <div id="promoCodeModule"></div>
   </div>
 
-  <footer class="site-footer">
+  <footer class="site-footer" id="contact">
     <div class="container footer-grid">
       <div>
         <a class="brand footer-brand" href="index.html">
@@ -165,8 +207,9 @@
 
       <div>
         <h3>Shop</h3>
-        <a href="catalog.html">Catalog</a>
+        <a href="shop.html">Shop</a>
         <a href="index.html#collections">Collections</a>
+        <a href="#build-look">Build Your Look</a>
         <a href="checkout.html">Checkout</a>
       </div>
 
