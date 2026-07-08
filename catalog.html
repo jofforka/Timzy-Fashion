@@ -1,1 +1,195 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Catalog | Timzy Fashion</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/timzy.css"></head><body><header class="topbar"><nav class="container nav"><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy logo"><span class="brand-text"><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Catalog</span></span></a><button class="mobile-menu">Menu</button><div class="nav-links"><a href="index.html">Home</a><a class="active" href="catalog.html">Catalog</a><a href="login.html">Staff Login</a></div></nav></header><main class="container"><section class="catalog-header"><span class="eyebrow">Product Catalog</span><h1 class="h1">Shop the collection</h1><p class="lead">Pick clothes, shoes, cufflinks, glasses, fabrics, and accessories. Your floating bag keeps the full look together before checkout.</p><div class="searchbar"><input class="field" id="search" placeholder="Search senator, agbada, fabrics..."></div><div class="toolbar" id="chips"></div></section><section class="section"><div class="product-grid" id="productGrid"></div></section></main><script src="assets/js/config.js"></script><script src="assets/js/timzy.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>Shop Collection | Timzy Fashion</title>
+  <meta name="description" content="Shop Timzy Fashion collections: senator wear, agbada, fabrics, shoes, cufflinks, glasses, and complete gentleman styling." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+
+<body class="page-catalog">
+
+  <div class="luxury-bg" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <nav class="container nav">
+      <a class="brand" href="index.html" aria-label="Timzy Fashion Home">
+        <img class="brand-logo" src="assets/images/logo/timzy-logo.png" alt="Timzy Fashion logo">
+        <span class="brand-copy">
+          <span class="brand-name">TIMZY FASHION</span>
+          <span class="brand-sub">Shop the complete look</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Open menu">
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a class="active" href="catalog.html">Shop</a>
+        <a href="index.html#collections">Collections</a>
+        <a href="index.html#look">Build Your Look</a>
+        <a href="checkout.html">Checkout</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="catalog-hero section">
+      <div class="container catalog-hero-grid">
+        <div>
+          <span class="eyebrow">Product Catalog</span>
+          <h1 class="hero-title">Shop the collection.</h1>
+          <p class="hero-text">
+            Pick the wear, match the shoes, add cufflinks, glasses, fabrics, caps, and accessories. Your floating shopping bag keeps the full look together before checkout.
+          </p>
+
+          <div class="catalog-actions">
+            <a class="btn btn-primary" href="#shop">Start Shopping</a>
+            <button class="btn btn-outline" type="button" data-open-bag>View Bag</button>
+          </div>
+        </div>
+
+        <div class="catalog-note">
+          <span>Signature Experience</span>
+          <strong>Build a full dress-down look.</strong>
+          <p>From outfit to finishing accessories, Timzy helps customers coordinate the complete gentleman.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section catalog-shop" id="shop">
+      <div class="container">
+
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Browse</span>
+            <h2>Find your next look.</h2>
+          </div>
+
+          <p id="productCount">Loading collection...</p>
+        </div>
+
+        <div class="catalog-controls">
+          <div class="searchbar">
+            <input
+              class="field"
+              id="search"
+              type="search"
+              placeholder="Search senator, agbada, shoes, cufflinks, fabrics..."
+              autocomplete="off"
+            />
+          </div>
+
+          <select class="field sort-field" id="sortProducts" aria-label="Sort products">
+            <option value="featured">Featured</option>
+            <option value="newest">Newest</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
+
+        <div class="toolbar" id="chips" aria-label="Product categories"></div>
+
+        <div class="product-grid" id="productGrid">
+          <div class="empty">Loading products...</div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section look-section" id="completeLook">
+      <!-- app.js can render Complete the Look recommendations here -->
+    </section>
+
+    <section class="section muted-section">
+      <div class="container measurement-card">
+        <div>
+          <span class="eyebrow">Custom Fit</span>
+          <h2>Need measurements?</h2>
+          <p>
+            You can enter your measurements, upload a measurement sheet, or request a Timzy measurement appointment within Abuja.
+          </p>
+        </div>
+
+        <div class="measurement-actions">
+          <a class="btn btn-primary" href="checkout.html#measurements">Submit Measurements</a>
+          <a class="btn btn-outline" href="index.html#measurement">Learn More</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">
+    <span class="bag-icon">👜</span>
+    <span class="bag-count" id="bagCount">0</span>
+  </button>
+
+  <a class="floating-whatsapp" href="https://wa.me/2340000000000" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+    WhatsApp
+  </a>
+
+  <div class="future-hooks" hidden>
+    <div id="quickViewModal"></div>
+    <div id="wishlistPanel"></div>
+    <div id="compareProducts"></div>
+    <div id="aiStyleAssistant"></div>
+    <div id="recentlyViewed"></div>
+    <div id="promoCodeModule"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand footer-brand" href="index.html">
+          <img class="brand-logo" src="assets/images/logo/timzy-logo.png" alt="Timzy Fashion logo">
+          <span class="brand-copy">
+            <span class="brand-name">TIMZY FASHION</span>
+            <span class="brand-sub">Dress the Complete Gentleman</span>
+          </span>
+        </a>
+        <p>Luxury bespoke fashion, complete outfit styling, and premium craftsmanship.</p>
+      </div>
+
+      <div>
+        <h3>Shop</h3>
+        <a href="catalog.html">Catalog</a>
+        <a href="index.html#collections">Collections</a>
+        <a href="checkout.html">Checkout</a>
+      </div>
+
+      <div>
+        <h3>Support</h3>
+        <a href="index.html#measurement">Measurements</a>
+        <a href="https://wa.me/2340000000000" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="mailto:info@timzyfashion.com">Email</a>
+      </div>
+
+      <div>
+        <h3>Staff</h3>
+        <a href="login.html">Staff Login</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> Timzy Fashion. All rights reserved.</p>
+      <p>Luxury boutique platform.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
