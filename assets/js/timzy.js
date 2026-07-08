@@ -1,23 +1,128 @@
-const $=(s,r=document)=>r.querySelector(s); const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
-const money=n=>{const x=Number(String(n||0).replace(/[^0-9.]/g,''));return x?`₦${x.toLocaleString()}`:'Price on request'};
-const cfg=()=>window.TIMZY_CONFIG||{};
-const imgPath=p=>{if(!p)return 'assets/img/hero-man.jpg'; if(/^https?:|^data:/.test(p))return p; return p.replace(/^assets\//,'assets/img/');};
-function productImages(p){return [p.image1,p.image2,p.image3,p.image4,p.image5,p.image6,p.image7,p.image8,p.image9,p.image10].filter(Boolean).map(imgPath)}
-async function loadProducts(){
-  const csv=(cfg().sheetCsvUrl||'').trim();
-  if(csv){try{const text=await fetch(csv,{cache:'no-store'}).then(r=>r.text());return parseCsv(text).map(normalizeProduct).filter(p=>p.name)}catch(e){console.warn('Sheet failed, using fallback',e)}}
-  return fetch('data/products.json',{cache:'no-store'}).then(r=>r.json()).then(a=>a.map(normalizeProduct));
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const cfg = () => window.TIMZY_CONFIG || {};
+const moneyNum = v => Number(String(v || 0).replace(/[^0-9.-]/g, '')) || 0;
+const money = v => `₦${moneyNum(v).toLocaleString()}`;
+
+async function baseProducts() {
+  try {
+    const res = await fetch('data/products.json', { cache: 'no-store' });
+    return await res.json();
+  } catch (e) {
+    return [];
+  }
 }
-function normalizeProduct(p,i=0){return {id:p.id||p.ID||p.SKU||p.sku||String(i+1),sku:p.sku||p.SKU||'',name:p.name||p['Product Name']||p.product||'',category:p.category||p.Category||'Collection',price:p.salePrice||p.price||p.Price||'',description:p.description||p.Description||'',status:p.status||p.Status||'Published',color:p.color||p.Color||p.Colours||'',sizes:p.sizes||p.Sizes||'',fabricType:p.fabricType||p.Fabric||'',deliveryEstimate:p.deliveryEstimate||p.Delivery||'',featured:String(p.featured||p.Featured||'').toLowerCase()==='true'||p.featured===true,badge:p.badge||p.Badge||'',image1:p.image1||p.Image1||p.Images||p['Image URL']||'',image2:p.image2||p.Image2||'',image3:p.image3||p.Image3||'',tags:p.tags||p.Tags||''}}
-function parseCsv(str){const rows=[];let row=[],cell='',q=false;for(let i=0;i<str.length;i++){const c=str[i],n=str[i+1];if(c==='"'&&q&&n==='"'){cell+='"';i++}else if(c==='"'){q=!q}else if(c===','&&!q){row.push(cell);cell=''}else if((c==='\n'||c==='\r')&&!q){if(cell||row.length){row.push(cell);rows.push(row);row=[];cell=''} if(c==='\r'&&n==='\n')i++}else cell+=c} if(cell||row.length){row.push(cell);rows.push(row)} const h=rows.shift()||[];return rows.map(r=>Object.fromEntries(h.map((k,i)=>[k.trim(),(r[i]||'').trim()]))) }
-function mountNav(){const b=$('.mobile-menu'),n=$('.nav-links'); if(b&&n)b.onclick=()=>n.classList.toggle('open')}
-function renderFeatured(){const el=$('#featuredProducts'); if(!el)return; loadProducts().then(products=>{el.innerHTML=products.filter(p=>p.featured).slice(0,4).map(card).join('')||products.slice(0,4).map(card).join(''); bindCards();})}
-function card(p){const image=productImages(p)[0]; return `<article class="product-card" data-id="${p.id}"><div class="product-media"><img src="${image}" alt="${p.name}" loading="lazy"></div><div class="product-info"><h3>${p.name}</h3><div class="product-meta"><span>${p.category}</span><span class="price">${money(p.price)}</span></div></div></article>`}
-function bindCards(){ $$('.product-card').forEach(c=>c.onclick=()=>{location.href=`product.html?id=${encodeURIComponent(c.dataset.id)}`}) }
-function mountCatalog(){const grid=$('#productGrid'); if(!grid)return; const chips=$('#chips'), search=$('#search'); let all=[],cat='All'; const draw=()=>{const q=(search?.value||'').toLowerCase(); const list=all.filter(p=>(cat==='All'||p.category===cat)&&(`${p.name} ${p.category} ${p.tags}`.toLowerCase().includes(q))); grid.innerHTML=list.length?list.map(card).join(''):`<div class="empty">No product found. Update your search or category.</div>`; bindCards();}; loadProducts().then(products=>{all=products.filter(p=>String(p.status).toLowerCase()!=='draft'); const cats=['All',...new Set(all.map(p=>p.category).filter(Boolean))]; chips.innerHTML=cats.map((c,i)=>`<button class="chip ${i?'':'active'}" data-cat="${c}">${c}</button>`).join(''); $$('.chip',chips).forEach(x=>x.onclick=()=>{$$('.chip',chips).forEach(y=>y.classList.remove('active'));x.classList.add('active');cat=x.dataset.cat;draw()}); search&&search.addEventListener('input',draw); draw();})}
-function mountProduct(){const wrap=$('#productDetails'); if(!wrap)return; const id=new URLSearchParams(location.search).get('id'); loadProducts().then(products=>{const p=products.find(x=>String(x.id)===String(id))||products[0]; const imgs=productImages(p); wrap.innerHTML=`<div><div class="gallery-main"><img id="mainImage" src="${imgs[0]}" alt="${p.name}"></div><div class="thumbs">${imgs.map((im,i)=>`<img class="thumb ${i?'':'active'}" data-i="${i}" src="${im}" alt="view ${i+1}">`).join('')}</div></div><aside class="detail-card panel"><span class="eyebrow">${p.category}</span><h1>${p.name}</h1><p class="lead">${p.description||'Premium bespoke fashion piece crafted for clean presence, confidence, and elegance.'}</p><div class="detail-list"><div class="detail-row"><span>Price</span><b class="gold">${money(p.price)}</b></div><div class="detail-row"><span>Colour</span><b>${p.color||'Custom'}</b></div><div class="detail-row"><span>Sizes</span><b>${p.sizes||'Custom measurement'}</b></div><div class="detail-row"><span>Fabric</span><b>${p.fabricType||'Premium fabric'}</b></div><div class="detail-row"><span>Delivery</span><b>${p.deliveryEstimate||'Confirm on WhatsApp'}</b></div></div><div class="sticky-actions"><button class="btn ghost" id="zoomBtn">Zoom</button><a class="btn primary" href="${waLink(p)}" target="_blank">WhatsApp Order</a></div></aside>`; $$('.thumb').forEach(t=>t.onclick=()=>{const i=+t.dataset.i; $('#mainImage').src=imgs[i]; $$('.thumb').forEach(x=>x.classList.remove('active')); t.classList.add('active')}); $('#zoomBtn').onclick=()=>openZoom($('#mainImage').src); $('#mainImage').onclick=()=>openZoom($('#mainImage').src); renderRelated(products,p);})}
-function renderRelated(products,p){const el=$('#relatedProducts'); if(!el)return; const list=products.filter(x=>x.id!==p.id && x.category===p.category).slice(0,4); el.innerHTML=list.map(card).join(''); bindCards();}
-function waLink(p){const num=(cfg().whatsapp||'2340000000000').replace(/[^0-9]/g,''); const msg=`Hi Timzy Fashion, I am interested in ${p.name} (${p.sku||p.id}). Please send details.`; return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`}
-function openZoom(src){let m=$('#zoomModal'); if(!m){document.body.insertAdjacentHTML('beforeend',`<div class="modal" id="zoomModal"><button class="btn modal-close">Close</button><img alt="Product zoom"></div>`);m=$('#zoomModal'); $('.modal-close',m).onclick=()=>m.classList.remove('open');} $('img',m).src=src; m.classList.add('open')}
-function fillLinks(){ $$('[data-form-link]').forEach(a=>a.href=cfg().productFormUrl||'#'); $$('[data-sheet-link]').forEach(a=>a.href=cfg().productSheetUrl||'#');}
-window.addEventListener('DOMContentLoaded',()=>{mountNav();renderFeatured();mountCatalog();mountProduct();fillLinks();});
+function localProducts() {
+  try { return JSON.parse(localStorage.getItem('timzy_products') || 'null'); } catch { return null; }
+}
+async function getProducts() {
+  const lp = localProducts();
+  if (Array.isArray(lp)) return lp.filter(p => p.status !== 'Hidden' && p.status !== 'Deleted');
+  return await baseProducts();
+}
+function productImages(p) {
+  return [p.image1, p.image2, p.image3, p.image4, p.image5, p.image6, p.image7, p.image8, p.videoUrl]
+    .filter(Boolean)
+    .map(x => String(x).trim())
+    .filter(Boolean);
+}
+function productCard(p) {
+  const img = productImages(p)[0] || 'assets/img/hero-man.jpg';
+  return `<article class="product-card" onclick="location.href='product.html?id=${encodeURIComponent(p.id)}'">
+    <div class="product-media"><img loading="lazy" src="${img}" alt="${p.name}"></div>
+    <div class="product-info"><h3>${p.name}</h3><div class="product-meta"><span>${p.category || 'Collection'}</span><span class="price">${money(p.salePrice || p.price)}</span></div></div>
+  </article>`;
+}
+function mountNav() {
+  const btn = $('.mobile-menu'), links = $('.nav-links');
+  if (btn && links) btn.addEventListener('click', () => links.classList.toggle('open'));
+  const path = location.pathname.split('/').pop() || 'index.html';
+  $$('a[href]').forEach(a => {
+    const href = a.getAttribute('href') || '';
+    if (href.endsWith(path)) a.classList.add('active');
+  });
+  if (!location.pathname.includes('/admin/') && !location.pathname.endsWith('login.html')) {
+    document.body.insertAdjacentHTML('beforeend', `<nav class="bottom-nav"><a href="index.html">Home</a><a href="catalog.html">Shop</a><a href="checkout.html">Bag</a><a href="login.html">Staff</a></nav>`);
+  }
+}
+async function renderFeatured() {
+  const el = $('#featuredProducts');
+  if (!el) return;
+  const products = await getProducts();
+  const picked = products.filter(p => p.featured === true || String(p.badge || '').toLowerCase().includes('best')).slice(0, 4);
+  el.innerHTML = (picked.length ? picked : products.slice(0, 4)).map(productCard).join('') || '<div class="empty">No products yet.</div>';
+}
+async function mountCatalog() {
+  const grid = $('#productGrid');
+  if (!grid) return;
+  const products = await getProducts();
+  const chips = $('#chips');
+  const cats = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
+  let category = 'All';
+  if (chips) chips.innerHTML = cats.map(c => `<button class="chip ${c === 'All' ? 'active' : ''}" data-cat="${c}">${c}</button>`).join('');
+  const draw = () => {
+    const q = ($('#search')?.value || '').toLowerCase().trim();
+    const rows = products.filter(p => (category === 'All' || p.category === category) && JSON.stringify(p).toLowerCase().includes(q));
+    grid.innerHTML = rows.map(productCard).join('') || '<div class="empty">No matching products.</div>';
+  };
+  chips?.addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    category = b.dataset.cat; $$('.chip', chips).forEach(x => x.classList.remove('active')); b.classList.add('active'); draw();
+  });
+  $('#search')?.addEventListener('input', draw);
+  draw();
+}
+async function mountProduct() {
+  const el = $('#productDetails');
+  if (!el) return;
+  const id = new URLSearchParams(location.search).get('id');
+  const products = await getProducts();
+  const p = products.find(x => String(x.id) === String(id)) || products[0];
+  if (!p) { el.innerHTML = '<div class="empty">Product not found.</div>'; return; }
+  const imgs = productImages(p);
+  let active = 0;
+  const main = () => imgs[active] || 'assets/img/hero-man.jpg';
+  el.innerHTML = `<div><div class="gallery-main"><img id="mainImage" src="${main()}" alt="${p.name}"></div><div class="thumbs">${imgs.map((img,i)=>`<img class="thumb ${i===0?'active':''}" src="${img}" data-i="${i}" alt="${p.name} view ${i+1}">`).join('')}</div></div>
+  <aside class="detail-card"><span class="eyebrow">${p.badge || p.category || 'Timzy Collection'}</span><h1>${p.name}</h1><p class="lead">${p.description || 'Premium Timzy Fashion piece made for classy, confident dressing.'}</p><div class="detail-list">
+    <div class="detail-row"><span>Price</span><b class="gold">${money(p.salePrice || p.price)}</b></div>
+    <div class="detail-row"><span>Category</span><b>${p.category || 'Collection'}</b></div>
+    <div class="detail-row"><span>Fabric</span><b>${p.fabricType || 'Premium Fabric'}</b></div>
+    <div class="detail-row"><span>Size</span><b>${p.sizes || 'Custom'}</b></div>
+    <div class="detail-row"><span>Colour</span><b>${p.color || 'As shown'}</b></div>
+    <div class="detail-row"><span>Delivery</span><b>${p.deliveryEstimate || '7–14 working days'}</b></div>
+  </div><div class="sticky-actions"><button class="btn primary" id="addBag">Add to Bag</button><a class="btn ghost" href="checkout.html">Checkout</a></div></aside>`;
+  $$('.thumb').forEach(t => t.onclick = () => { active = Number(t.dataset.i); $('#mainImage').src = main(); $$('.thumb').forEach(x=>x.classList.remove('active')); t.classList.add('active'); });
+  $('#mainImage')?.addEventListener('click', () => openZoom(main()));
+  $('#addBag')?.addEventListener('click', () => addToCart(p));
+  const related = $('#relatedProducts');
+  if (related) related.innerHTML = products.filter(x => x.id !== p.id && x.category === p.category).slice(0,4).map(productCard).join('') || products.filter(x => x.id !== p.id).slice(0,4).map(productCard).join('');
+}
+function openZoom(src) {
+  let m = $('#zoomModal');
+  if (!m) {
+    document.body.insertAdjacentHTML('beforeend', `<div class="modal" id="zoomModal"><button class="btn modal-close">Close</button><img alt="Product zoom"></div>`);
+    m = $('#zoomModal'); $('.modal-close', m).onclick = () => m.classList.remove('open');
+  }
+  $('img', m).src = src; m.classList.add('open');
+}
+function getCart(){ try { return JSON.parse(localStorage.getItem('timzy_cart') || '[]'); } catch { return []; } }
+function setCart(c){ localStorage.setItem('timzy_cart', JSON.stringify(c)); updateCartUI(); renderCheckout(); }
+function addToCart(p){ const c=getCart(); const item=c.find(x=>String(x.id)===String(p.id)); if(item)item.qty+=1; else c.push({id:p.id,sku:p.sku,name:p.name,category:p.category,price:p.salePrice||p.price,image:productImages(p)[0],qty:1}); setCart(c); openCart(); }
+function updateQty(id,delta){ setCart(getCart().map(x=>String(x.id)===String(id)?{...x,qty:Math.max(1,x.qty+delta)}:x)); }
+function removeCart(id){ setCart(getCart().filter(x=>String(x.id)!==String(id))); }
+function cartTotal(){ return getCart().reduce((s,x)=>s+moneyNum(x.price)*x.qty,0); }
+function mountCart(){
+  if(location.pathname.includes('/admin/') || location.pathname.endsWith('login.html')) return;
+  if(!$('.cart-fab')) document.body.insertAdjacentHTML('beforeend', `<button class="cart-fab" id="cartFab">🛍<span class="cart-count" id="cartCount">0</span></button><aside class="cart-drawer" id="cartDrawer"><div class="cart-head"><h3>Your Look</h3><button class="btn small" id="cartClose">Close</button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer"><div class="order-line"><b>Total</b><b class="gold" id="cartTotal">₦0</b></div><a class="btn primary block" href="checkout.html">Proceed to Checkout</a><button class="btn ghost block" id="cartWhatsApp">Send to WhatsApp</button></div></aside>`);
+  $('#cartFab').onclick = openCart; $('#cartClose').onclick = () => $('#cartDrawer').classList.remove('open'); $('#cartWhatsApp').onclick = () => sendCartWhatsApp(); updateCartUI();
+}
+function openCart(){ updateCartUI(); $('#cartDrawer')?.classList.add('open'); }
+function updateCartUI(){ const c=getCart(); const count=c.reduce((s,x)=>s+x.qty,0); if($('#cartCount')) $('#cartCount').textContent=count; if($('#cartTotal')) $('#cartTotal').textContent=money(cartTotal()); const el=$('#cartItems'); if(!el)return; el.innerHTML=c.length?c.map(x=>`<div class="cart-item"><img src="${x.image}" alt="${x.name}"><div><b>${x.name}</b><small>${x.category} • ${money(x.price)}</small><div class="qty"><button onclick="updateQty('${x.id}',-1)">−</button><span>${x.qty}</span><button onclick="updateQty('${x.id}',1)">+</button></div></div><button class="btn small" onclick="removeCart('${x.id}')">×</button></div>`).join(''):`<div class="empty">Your bag is empty. Add clothes, shoes, cufflinks, glasses, fabrics, and accessories to build a complete dress down.</div>`; }
+function renderCheckout(){ const el=$('#checkoutItems'); if(!el)return; const c=getCart(); el.innerHTML=c.length?c.map(x=>`<div class="order-line"><span>${x.name} × ${x.qty}</span><b>${money(moneyNum(x.price)*x.qty)}</b></div>`).join(''):'<p class="notice">Your bag is empty. Go back to the catalog and add items.</p>'; $('#checkoutTotal').textContent=money(cartTotal()); }
+function orderSummary(data){ const lines=getCart().map(x=>`- ${x.name} x${x.qty} = ${money(moneyNum(x.price)*x.qty)}`).join('\n'); return `New Timzy Fashion Order\n\nCustomer: ${data.name}\nPhone: ${data.phone}\nEmail: ${data.email || 'N/A'}\n\nItems:\n${lines}\n\nTotal: ${money(cartTotal())}\n\nDelivery: ${data.delivery}\nAddress / Pickup note: ${data.address || 'N/A'}\n\nMeasurement option: ${data.measurement}\nMeasurements / appointment note: ${data.measurements || 'N/A'}\n\nPayment: ${data.payment}\nNotes: ${data.notes || 'N/A'}\n\nOrder Ref: TF-${Date.now().toString().slice(-7)}`; }
+function sendCartWhatsApp(extra){ const num=(cfg().whatsapp||'2340000000000').replace(/[^0-9]/g,''); const msg=extra||`Hi Timzy Fashion, I want to order these items:\n\n${getCart().map(x=>`- ${x.name} x${x.qty}`).join('\n')}\n\nTotal: ${money(cartTotal())}`; window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank'); }
+function mountCheckout(){ const f=$('#checkoutForm'); if(!f)return; renderCheckout(); $('#clearCartBtn')?.addEventListener('click',()=>setCart([])); f.onsubmit=e=>{ e.preventDefault(); if(!getCart().length){alert('Your bag is empty.'); return;} const data=Object.fromEntries(new FormData(f).entries()); const summary=orderSummary(data); const orders=JSON.parse(localStorage.getItem('timzy_orders')||'[]'); orders.push({date:new Date().toISOString(),customer:data.name,phone:data.phone,total:cartTotal(),payment:data.payment,delivery:data.delivery,summary,status:data.payment==='Pay Now'?'Payment Started':'Pending'}); localStorage.setItem('timzy_orders',JSON.stringify(orders)); if(data.payment==='Pay Now') startPayment(summary,data); else { sendCartWhatsApp(summary); alert('Order created. WhatsApp will open with full details.'); } }; }
+function startPayment(summary,data){ const amount=cartTotal(); const gateway=(cfg().paymentGatewayUrl||'').trim(); const key=(cfg().paystackPublicKey||'').trim(); if(gateway){ location.href=gateway+(gateway.includes('?')?'&':'?')+new URLSearchParams({amount,customer:data.name,phone:data.phone,ref:`TF-${Date.now()}`}).toString(); return; } if(key && window.PaystackPop){ PaystackPop.setup({key,email:data.email||'customer@timzyfashion.com',amount:amount*100,currency:'NGN',ref:`TF-${Date.now()}`,callback(){sendCartWhatsApp(summary+'\n\nPayment: PAID ONLINE');},onClose(){alert('Payment window closed.')}}).openIframe(); return; } alert('Payment gateway is not configured yet. Sending order to WhatsApp as pending payment.'); sendCartWhatsApp(summary+'\n\nPayment status: Pending online payment setup.'); }
+function fillLinks(){ $$('[data-form-link]').forEach(a=>a.href=cfg().productFormUrl||'#'); $$('[data-sheet-link]').forEach(a=>a.href=cfg().productSheetUrl||'#'); }
+window.updateQty=updateQty; window.removeCart=removeCart;
+window.addEventListener('DOMContentLoaded',()=>{ mountNav(); fillLinks(); renderFeatured(); mountCatalog(); mountProduct(); mountCart(); mountCheckout(); });
