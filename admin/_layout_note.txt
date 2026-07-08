@@ -1,0 +1,1 @@
+Admin pages are static HTML with shared CSS/JS. All links use relative paths that work on GitHub Pages.
