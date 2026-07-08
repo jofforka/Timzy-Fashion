@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Checkout | Timzy Fashion</title>
+
+<meta name="description"
+content="Complete your Timzy Fashion order with delivery, measurements and secure payment.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+
+<body class="page-checkout">
+
+<div class="luxury-bg"></div>
+
+<header class="site-header">
+
+<nav class="container nav">
+
+<a class="brand" href="index.html">
+
+<img
+src="assets/images/logo/timzy-logo.png"
+class="brand-logo"
+alt="Timzy Fashion">
+
+<span class="brand-copy">
+
+<span class="brand-name">
+TIMZY FASHION
+</span>
+
+<span class="brand-sub">
+Dress the Complete Gentleman
+</span>
+
+</span>
+
+</a>
+
+<button class="nav-toggle">
+
+<span></span>
+
+<span></span>
+
+</button>
+
+<div class="nav-links">
+
+<a href="index.html">Home</a>
+
+<a href="catalog.html">Shop</a>
+
+<a class="active" href="checkout.html">Checkout</a>
+
+</div>
+
+</nav>
+
+</header>
+
+<main>
+
+<section class="section">
+
+<div class="container">
+
+<div class="checkout-layout">
+
+<!-- ==========================
+LEFT
+========================== -->
+
+<section class="checkout-form">
+
+<span class="eyebrow">
+
+Checkout
+
+</span>
+
+<h1>
+
+Complete Your Order
+
+</h1>
+
+<p>
+
+You're just one step away from owning your complete Timzy look.
+
+</p>
+
+<form id="checkoutForm">
+
+<!-- CUSTOMER -->
+
+<div class="form-card">
+
+<h3>
+
+Customer Information
+
+</h3>
+
+<div class="grid-2">
+
+<input
+class="field"
+name="name"
+placeholder="Full Name"
+required>
+
+<input
+class="field"
+name="phone"
+placeholder="Phone Number"
+required>
+
+<input
+class="field"
+name="email"
+type="email"
+placeholder="Email Address">
+
+<input
+class="field"
+name="city"
+placeholder="City">
+
+</div>
+
+</div>
+
+<!-- DELIVERY -->
+
+<div class="form-card">
+
+<h3>
+
+Delivery Method
+
+</h3>
+
+<label>
+
+<input
+type="radio"
+name="delivery"
+value="Delivery"
+checked>
+
+Home Delivery
+
+</label>
+
+<label>
+
+<input
+type="radio"
+name="delivery"
+value="Pickup">
+
+Pickup
+
+</label>
+
+<div
+data-delivery-section="Delivery">
+
+<textarea
+class="field"
+name="address"
+placeholder="Delivery Address">
+
+</textarea>
+
+</div>
+
+<div
+hidden
+data-delivery-section="Pickup">
+
+<p>
+
+Pickup Location
+
+<strong>
+
+Timzy Fashion Studio
+
+Abuja
+
+</strong>
+
+</p>
+
+</div>
+
+</div>
+
+<!-- MEASUREMENTS -->
+
+<div class="form-card"
+id="measurements">
+
+<h3>
+
+Measurements
+
+</h3>
+
+<label>
+
+<input
+type="radio"
+name="measurement"
+value="Manual"
+checked>
+
+Enter Measurements
+
+</label>
+
+<label>
+
+<input
+type="radio"
+name="measurement"
+value="Upload">
+
+Upload Measurement Sheet
+
+</label>
+
+<label>
+
+<input
+type="radio"
+name="measurement"
+value="Appointment">
+
+Book Measurement Appointment
+
+</label>
+
+<div
+data-measurement-section="Manual">
+
+<textarea
+class="field"
+name="measurements"
+rows="6"
+placeholder="Chest, Waist, Shoulder, Sleeve, Trouser Length...">
+
+</textarea>
+
+</div>
+
+<div
+hidden
+data-measurement-section="Upload">
+
+<input
+class="field"
+type="file"
+accept=".pdf,.jpg,.jpeg,.png">
+
+</div>
+
+<div
+hidden
+data-measurement-section="Appointment">
+
+<p>
+
+Available only within Abuja.
+
+We'll contact you after your order.
+
+</p>
+
+</div>
+
+</div>
+
+<!-- PAYMENT -->
+
+<div class="form-card">
+
+<h3>
+
+Payment
+
+</h3>
+
+<label>
+
+<input
+type="radio"
+name="payment"
+value="Pay Now"
+checked>
+
+Pay Now
+
+</label>
+
+<label>
+
+<input
+type="radio"
+name="payment"
+value="Pay on Delivery">
+
+Pay on Delivery
+
+</label>
+
+<label>
+
+<input
+type="radio"
+name="payment"
+value="Pay on Pickup">
+
+Pay on Pickup
+
+</label>
+
+</div>
+
+<!-- NOTES -->
+
+<div class="form-card">
+
+<h3>
+
+Additional Notes
+
+</h3>
+
+<textarea
+class="field"
+name="notes"
+rows="5"
+placeholder="Special requests...">
+
+</textarea>
+
+</div>
+
+<button
+class="btn btn-primary btn-block"
+type="submit">
+
+Place Order
+
+</button>
+
+</form>
+
+</section>
+
+<!-- ==========================
+RIGHT
+========================== -->
+
+<aside class="checkout-summary">
+
+<div class="summary-card">
+
+<span class="eyebrow">
+
+Order Summary
+
+</span>
+
+<h2>
+
+Your Shopping Bag
+
+</h2>
+
+<div id="checkoutItems">
+
+Loading...
+
+</div>
+
+<hr>
+
+<div class="order-line">
+
+<strong>
+
+Total
+
+</strong>
+
+<strong
+id="checkoutTotal">
+
+₦0
+
+</strong>
+
+</div>
+
+<button
+id="clearCartBtn"
+class="btn btn-outline btn-block">
+
+Clear Bag
+
+</button>
+
+</div>
+
+<div class="summary-card">
+
+<h3>
+
+Why Shop Timzy?
+
+</h3>
+
+<ul>
+
+<li>
+
+Premium Fabrics
+
+</li>
+
+<li>
+
+Luxury Finishing
+
+</li>
+
+<li>
+
+Nationwide Delivery
+
+</li>
+
+<li>
+
+Custom Measurements
+
+</li>
+
+<li>
+
+Professional Tailoring
+
+</li>
+
+</ul>
+
+</div>
+
+</aside>
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+<button
+class="floating-bag"
+data-open-bag>
+
+👜
+
+<span
+id="bagCount">
+
+0
+
+</span>
+
+</button>
+
+<a
+class="floating-whatsapp"
+href="#">
+
+WhatsApp
+
+</a>
+
+<!-- Future Modules -->
+
+<div hidden>
+
+<div id="promoCodeModule"></div>
+
+<div id="giftCardModule"></div>
+
+<div id="loyaltyModule"></div>
+
+<div id="couponModule"></div>
+
+<div id="invoiceModule"></div>
+
+<div id="paymentGatewayModule"></div>
+
+<div id="customerPortal"></div>
+
+</div>
+
+<footer class="site-footer">
+
+<div class="container footer-grid">
+
+<div>
+
+<a
+class="brand"
+href="index.html">
+
+<img
+class="brand-logo"
+src="assets/images/logo/timzy-logo.png"
+alt="Logo">
+
+<span class="brand-copy">
+
+<span class="brand-name">
+
+TIMZY FASHION
+
+</span>
+
+<span class="brand-sub">
+
+Dress the Complete Gentleman
+
+</span>
+
+</span>
+
+</a>
+
+<p>
+
+Luxury tailoring.
+
+Premium finishing.
+
+Complete gentleman styling.
+
+</p>
+
+</div>
+
+<div>
+
+<h3>
+
+Support
+
+</h3>
+
+<a href="#">
+
+WhatsApp
+
+</a>
+
+<a href="#">
+
+Measurements
+
+</a>
+
+<a href="#">
+
+FAQs
+
+</a>
+
+</div>
+
+</div>
+
+<div class="footer-bottom">
+
+<p>
+
+© <span id="year"></span>
+
+Timzy Fashion
+
+</p>
+
+</div>
+
+</footer>
+
+<script src="assets/js/firebase-config.js"></script>
+
+<script src="assets/js/app.js"></script>
+
+</body>
+
+</html>
