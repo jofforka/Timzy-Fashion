@@ -6,7 +6,7 @@ const K={cart:"timzy.v6.cart",wishlist:"timzy.v6.wishlist",orders:"timzy.v6.orde
 const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 const num=v=>Number(String(v||0).replace(/[^0-9.-]/g,""))||0, money=v=>`${C().currency}${num(v).toLocaleString()}`;
 const store={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
-function toast(m){let h=$("#toastHost");if(!h){document.body.insertAdjacentHTML("beforeend",'<div class="toast-host" id="toastHost"></div>');h=$("#toastHost")}const id="t"+Date.now();h.insertAdjacentHTML("beforeend",`<div class="toast" id="${id}"><strong>Timzy Fashion</strong><p>${esc(m)}</p></div>`);setTimeout(()=>$("#"+id)?.remove(),2600)}
+function toast(m){let h=$("#toastHost");if(!h){document.body.insertAdjacentHTML("beforeend",'<div class="toast-host" id="toastHost"></div>');h=$("#toastHost")}const id="t"+Date.now();h.insertAdjacentHTML("beforeend",`<div class="toast compact-toast" id="${id}"><span class="toast-icon">✓</span><p>${esc(m)}</p></div>`);setTimeout(()=>$("#"+id)?.remove(),2200)}
 const App={products:[],activeCategory:"All",search:"",sort:"featured",async init(){App.nav();App.year();App.cart.mount();App.cart.render();App.bindGlobalActions();await App.loadProducts();App.featured();App.catalog.init();App.product.init();App.builder.init();App.checkout.init();},
 nav(){const t=$(".nav-toggle"),l=$(".nav-links");t?.addEventListener("click",()=>l?.classList.toggle("open"));const p=location.pathname.split("/").pop()||"index.html";$$('a[href]').forEach(a=>{const h=(a.getAttribute('href')||'').split('?')[0].split('#')[0].split('/').pop();if(h===p)a.classList.add('active')})},year(){const y=$("#year");if(y)y.textContent=new Date().getFullYear()},
 bindGlobalActions(){
@@ -51,4 +51,3 @@ checkout:{init(){const f=$('#checkoutForm');if(!f)return;App.checkout.summaryRen
 whatsapp:{number(){return String(C().whatsapp).replace(/[^0-9]/g,'')},send(m){window.open(`https://wa.me/${App.whatsapp.number()}?text=${encodeURIComponent(m)}`,'_blank','noopener')},sendBag(){const c=App.cart.list();App.whatsapp.send(c.length?`Hi Timzy Fashion, I want to order:\n\n${c.map(x=>`- ${x.name} x${x.qty}`).join('\n')}\n\nTotal: ${money(App.cart.total())}`:'Hi Timzy Fashion, I want to make an enquiry.')}}};
 document.addEventListener('DOMContentLoaded',App.init);window.Timzy=App;
 })();
-
