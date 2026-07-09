@@ -42,13 +42,117 @@ image(p){return p.images?.[0]||'assets/img/hero-senator-grey.jpg'},url(p){return
 card(p){return`<article class="product-card" data-product-id="${esc(p.id)}"><a class="product-card-link" href="${App.url(p)}"><div class="product-media"><img loading="lazy" src="${esc(App.image(p))}" alt="${esc(p.name)}" onerror="this.src='assets/img/hero-senator-grey.jpg'">${p.badge?`<span class="product-badge">${esc(p.badge)}</span>`:''}</div><div class="product-info"><h3>${esc(p.name)}</h3><div class="product-meta"><span>${esc(p.category)}</span><span class="price">${money(p.price)}</span></div></div></a><div class="product-actions"><button type="button" class="icon-btn" data-wishlist="${esc(p.id)}">♡</button><button type="button" class="btn btn-small btn-soft" data-add-bag="${esc(p.id)}">Add</button></div></article>`},
 featured(){const el=$("#featuredProducts");if(!el)return;const rows=App.products.filter(p=>p.featured).slice(0,8);el.innerHTML=(rows.length?rows:App.products.slice(0,8)).map(App.card).join('')||'<div class="empty">No products yet.</div>'},
 catalog:{init(){if(!$("#productGrid"))return;const c=new URLSearchParams(location.search).get('category');if(c)App.activeCategory=c;App.catalog.chips();App.catalog.bind();App.catalog.render()},categories(){return['All',...new Set(App.products.map(p=>p.category).filter(Boolean))]},chips(){const el=$("#chips");if(!el)return;el.innerHTML=App.catalog.categories().map(c=>`<button class="chip ${c===App.activeCategory?'active':''}" type="button" data-category="${esc(c)}">${esc(c)}</button>`).join('')},bind(){$("#chips")?.addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(!b)return;App.activeCategory=b.dataset.category;App.catalog.chips();App.catalog.render()});$("#search")?.addEventListener('input',e=>{App.search=e.target.value.toLowerCase().trim();App.catalog.render()});$("#sortProducts")?.addEventListener('change',e=>{App.sort=e.target.value;App.catalog.render()})},filtered(){let r=App.products.filter(p=>(App.activeCategory==='All'||p.category===App.activeCategory)&&(!App.search||JSON.stringify(p).toLowerCase().includes(App.search)));if(App.sort==='price-low')r.sort((a,b)=>num(a.price)-num(b.price));if(App.sort==='price-high')r.sort((a,b)=>num(b.price)-num(a.price));if(App.sort==='name')r.sort((a,b)=>a.name.localeCompare(b.name));if(App.sort==='newest')r.reverse();if(App.sort==='featured')r.sort((a,b)=>Number(b.featured)-Number(a.featured));return r},render(){const g=$("#productGrid");if(!g)return;const rows=App.catalog.filtered();g.innerHTML=rows.length?rows.map(App.card).join(''):'<div class="empty">No matching products.</div>';const c=$("#productCount");if(c)c.textContent=`${rows.length} product${rows.length===1?'':'s'}`}},
-product:{init(){const root=$("#productDetails");if(!root)return;const id=new URLSearchParams(location.search).get('id');const p=App.products.find(x=>String(x.id)===String(id))||App.products[0];if(!p){root.innerHTML='<div class="empty">Product not found.</div>';return}const imgs=p.images.length?p.images:[App.image(p)];root.innerHTML=`<div class="product-gallery"><div class="gallery-main"><img id="mainImage" src="${esc(imgs[0])}" alt="${esc(p.name)}" onerror="this.src='assets/img/hero-senator-grey.jpg'"></div><div class="thumbs">${imgs.map((im,i)=>`<button type="button" class="thumb-btn ${i===0?'active':''}" data-thumb="${i}"><img class="thumb" src="${esc(im)}" onerror="this.src='assets/img/hero-senator-grey.jpg'" alt="${esc(p.name)}"></button>`).join('')}</div></div><aside class="detail-card"><span class="eyebrow">${esc(p.badge||p.category)}</span><h1>${esc(p.name)}</h1><p class="lead">${esc(p.description)}</p><div class="detail-list"><div class="detail-row"><span>Price</span><b class="price">${money(p.price)}</b></div><div class="detail-row"><span>Includes</span><b>Material + Sewing</b></div><div class="detail-row"><span>Category</span><b>${esc(p.category)}</b></div><div class="detail-row"><span>Fabric</span><b>${esc(p.fabricType||'Premium Fabric')}</b></div><div class="detail-row"><span>Colour</span><b>${esc(p.color)}</b></div><div class="detail-row"><span>Delivery</span><b>${esc(p.deliveryEstimate)}</b></div></div><div class="sticky-actions"><button class="btn btn-primary" type="button" data-add-bag="${esc(p.id)}">Add to Bag</button><a class="btn btn-outline" href="checkout.html">Checkout</a></div><div class="mini-price-note"><b>Price includes fabric/material + tailoring.</b><span>Complete finished work unless stated otherwise.</span></div><div class="inline-accessories"><div class="inline-accessories-head"><span class="eyebrow">Complete The Style</span><h3>Add matching accessories</h3><p>Optional extras — open a category and add what completes the look.</p></div><div class="accordion style-accordion compact-accessory-accordion"><details open><summary>👞 Shoes</summary><div id="shoeRecommendations" class="product-grid accessory-grid"></div></details><details><summary>⌚ Wristwatches</summary><div id="watchRecommendations" class="product-grid accessory-grid"></div></details><details><summary>💎 Cufflinks</summary><div id="cufflinkRecommendations" class="product-grid accessory-grid"></div></details><details><summary>🧢 Caps</summary><div id="capRecommendations" class="product-grid accessory-grid"></div></details><details><summary>🕶 Sunglasses</summary><div id="glassRecommendations" class="product-grid accessory-grid"></div></details><details><summary>👔 Belts</summary><div id="beltRecommendations" class="product-grid accessory-grid"></div></details><details><summary>🌸 Perfumes</summary><div id="perfumeRecommendations" class="product-grid accessory-grid"></div></details></div></div></aside>`;$$('.thumb-btn',root).forEach(b=>b.onclick=()=>{const i=+b.dataset.thumb;$('#mainImage').src=imgs[i];$$('.thumb-btn',root).forEach(x=>x.classList.remove('active'));b.classList.add('active')});App.fillAccessorySections();const rel=$("#relatedProducts");if(rel)rel.innerHTML=App.products.filter(x=>x.id!==p.id&&x.category===p.category).slice(0,4).map(App.card).join('')||'<div class="empty">No related products.</div>'}},
+product:{init(){const root=$("#productDetails");if(!root)return;const id=new URLSearchParams(location.search).get('id');const p=App.products.find(x=>String(x.id)===String(id))||App.products[0];if(!p){root.innerHTML='<div class="empty">Product not found.</div>';return}const imgs=p.images.length?p.images:[App.image(p)];root.innerHTML=`<div class="product-gallery"><div class="gallery-main"><img id="mainImage" src="${esc(imgs[0])}" alt="${esc(p.name)}" onerror="this.src='assets/img/hero-senator-grey.jpg'"></div><div class="thumbs">${imgs.map((im,i)=>`<button type="button" class="thumb-btn ${i===0?'active':''}" data-thumb="${i}"><img class="thumb" src="${esc(im)}" onerror="this.src='assets/img/hero-senator-grey.jpg'" alt="${esc(p.name)}"></button>`).join('')}</div></div><aside class="detail-card"><span class="eyebrow">${esc(p.badge||p.category)}</span><h1>${esc(p.name)}</h1><p class="lead">${esc(p.description)}</p><div class="detail-list"><div class="detail-row"><span>Price</span><b class="price">${money(p.price)}</b></div><div class="detail-row"><span>Includes</span><b>Material + Sewing</b></div><div class="detail-row"><span>Category</span><b>${esc(p.category)}</b></div><div class="detail-row"><span>Fabric</span><b>${esc(p.fabricType||'Premium Fabric')}</b></div><div class="detail-row"><span>Colour</span><b>${esc(p.color)}</b></div><div class="detail-row"><span>Delivery</span><b>${esc(p.deliveryEstimate)}</b></div></div><div class="sticky-actions"><button class="btn btn-primary" type="button" data-add-bag="${esc(p.id)}">Add to Bag</button><a class="btn btn-outline" href="checkout.html">Checkout</a></div><div class="mini-price-note"><b>Price includes fabric/material + tailoring.</b><span>Complete finished work unless stated otherwise.</span></div><div class="product-inline-tools">
+<div class="inline-accessories">
+<div class="inline-accessories-head"><span class="eyebrow">Complete The Style</span><h3>Add matching accessories</h3><p>Optional extras — open a category and add what completes the look.</p></div>
+<div class="accordion style-accordion compact-accessory-accordion">
+<details><summary>👞 Shoes</summary><div id="shoeRecommendations" class="product-grid accessory-grid"></div></details>
+<details><summary>⌚ Wristwatches</summary><div id="watchRecommendations" class="product-grid accessory-grid"></div></details>
+<details><summary>💎 Cufflinks</summary><div id="cufflinkRecommendations" class="product-grid accessory-grid"></div></details>
+<details><summary>🧢 Caps</summary><div id="capRecommendations" class="product-grid accessory-grid"></div></details>
+<details><summary>🕶 Sunglasses</summary><div id="glassRecommendations" class="product-grid accessory-grid"></div></details>
+<details><summary>👔 Belts</summary><div id="beltRecommendations" class="product-grid accessory-grid"></div></details>
+<details><summary>🌸 Perfumes</summary><div id="perfumeRecommendations" class="product-grid accessory-grid"></div></details>
+</div></div>
+<div class="inline-measurements">
+<div class="inline-accessories-head"><span class="eyebrow">Measurements</span><h3>Add your measurement</h3><p>Open one option. You can also complete this later at checkout.</p></div>
+<div class="accordion compact-measurement-accordion">
+<details><summary>📍 Request Measurement Visit <small>Abuja only</small></summary><div class="measurement-mini-card"><p>Available within Abuja. Add your address and preferred date during checkout.</p><a class="btn btn-primary btn-small" href="checkout.html#measurements">Request Visit</a></div></details>
+<details><summary>📏 Enter Measurements Manually</summary><div class="measurement-mini-grid">
+<label>Neck <input class="field" name="neck"></label><label>Shoulder <input class="field" name="shoulder"></label><label>Chest <input class="field" name="chest"></label><label>Sleeve <input class="field" name="sleeve"></label><label>Wrist <input class="field" name="wrist"></label><label>Top Length <input class="field" name="top_length"></label><label>Waist <input class="field" name="waist"></label><label>Hip <input class="field" name="hip"></label><label>Thigh <input class="field" name="thigh"></label><label>Trouser Length <input class="field" name="trouser_length"></label><label>Ankle <input class="field" name="ankle"></label><label>Height <input class="field" name="height"></label><label class="measurement-notes">Notes <textarea class="field" rows="3" name="measurement_notes"></textarea></label>
+</div></details>
+</div></div>
+</div></aside>`;$$('.thumb-btn',root).forEach(b=>b.onclick=()=>{const i=+b.dataset.thumb;$('#mainImage').src=imgs[i];$$('.thumb-btn',root).forEach(x=>x.classList.remove('active'));b.classList.add('active')});App.fillAccessorySections();const rel=$("#relatedProducts");if(rel)rel.innerHTML=App.products.filter(x=>x.id!==p.id&&x.category===p.category).slice(0,4).map(App.card).join('')||'<div class="empty">No related products.</div>'}},
 fillAccessorySections(){const acc=App.products.filter(p=>/accessor|shoe|watch|belt|cap|cuff|sun|perfume|ring|sandals/i.test(`${p.category} ${p.name} ${p.tags}`));const by=t=>acc.filter(p=>JSON.stringify(p).toLowerCase().includes(t)).slice(0,4);const fill=(id,rows)=>{const el=$(id);if(el)el.innerHTML=rows.length?rows.map(App.card).join(''):'<div class="empty">Coming soon.</div>'};fill('#recommendedProducts',acc.slice(0,8));fill('#shoeRecommendations',[...by('shoe'),...by('sandals')].slice(0,4));fill('#watchRecommendations',by('watch'));fill('#cufflinkRecommendations',by('cuff'));fill('#capRecommendations',by('cap'));fill('#glassRecommendations',by('sunglass'));fill('#beltRecommendations',by('belt'));fill('#perfumeRecommendations',by('perfume'))},
 builder:{init(){if(!$('#mainOutfitGrid'))return;const outfits=App.products.filter(p=>/senator|agbada|kaftan|fabric|wear/i.test(`${p.category} ${p.productType} ${p.tags}`)).slice(0,8);const fill=(id,rows)=>{const el=$(id);if(el)el.innerHTML=rows.length?rows.map(App.card).join(''):'<div class="empty">Coming soon.</div>'};fill('#mainOutfitGrid',outfits.length?outfits:App.products.slice(0,8));App.fillAccessorySections();fill('#builderShoes',[...App.products.filter(p=>/shoe|sandals/i.test(JSON.stringify(p))).slice(0,4)]);fill('#builderWatches',App.products.filter(p=>/watch/i.test(JSON.stringify(p))).slice(0,4));fill('#builderCufflinks',App.products.filter(p=>/cuff/i.test(JSON.stringify(p))).slice(0,4));fill('#builderGlasses',App.products.filter(p=>/sunglass/i.test(JSON.stringify(p))).slice(0,4));fill('#builderCaps',App.products.filter(p=>/cap/i.test(JSON.stringify(p))).slice(0,4));fill('#builderBelts',App.products.filter(p=>/belt/i.test(JSON.stringify(p))).slice(0,4));fill('#builderPerfumes',App.products.filter(p=>/perfume/i.test(JSON.stringify(p))).slice(0,4))}},
 wishlist:{list(){return store.get(K.wishlist,[])},toggle(id){const l=App.wishlist.list();store.set(K.wishlist,l.includes(id)?l.filter(x=>x!==id):[...l,id]);toast(l.includes(id)?'Removed from saved items.':'Saved to wishlist.')}},
 cart:{list(){return store.get(K.cart,[])},save(x){store.set(K.cart,x);App.cart.render();App.checkout.summaryRender()},add(id){const p=App.products.find(x=>String(x.id)===String(id));if(!p)return toast('Product not found.');const c=App.cart.list(),ex=c.find(x=>String(x.id)===String(p.id));if(ex)ex.qty+=1;else c.push({id:p.id,name:p.name,category:p.category,price:p.price,image:App.image(p),qty:1});App.cart.save(c);toast(`${p.name} added to cart.`)},remove(id){App.cart.save(App.cart.list().filter(x=>String(x.id)!==String(id)))},qty(id,d){App.cart.save(App.cart.list().map(x=>String(x.id)===String(id)?{...x,qty:Math.max(1,x.qty+d)}:x))},total(){return App.cart.list().reduce((s,x)=>s+num(x.price)*x.qty,0)},count(){return App.cart.list().reduce((s,x)=>s+x.qty,0)},mount(){if($('.cart-drawer'))return;document.body.insertAdjacentHTML('beforeend',`<aside class="cart-drawer" id="cartDrawer"><div class="cart-head"><div><span class="eyebrow">Shopping Bag</span><h3>Your Look</h3></div><button class="btn btn-small" type="button" data-cart-close>Close</button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer"><div class="order-line"><b>Total</b><b class="price" id="cartTotal">₦0</b></div><a class="btn btn-primary btn-block" href="checkout.html">Proceed to Checkout</a><button class="btn btn-outline btn-block" type="button" id="cartWhatsApp">Send to WhatsApp</button></div></aside>`);document.addEventListener('click',e=>{if(e.target.closest('[data-open-bag],.floating-bag,.cart-fab'))App.cart.open();if(e.target.closest('[data-cart-close]'))App.cart.close();const m=e.target.closest('[data-cart-minus]');if(m)App.cart.qty(m.dataset.cartMinus,-1);const p=e.target.closest('[data-cart-plus]');if(p)App.cart.qty(p.dataset.cartPlus,1);const r=e.target.closest('[data-cart-remove]');if(r)App.cart.remove(r.dataset.cartRemove)});$('#cartWhatsApp')?.addEventListener('click',App.whatsapp.sendBag)},open(){$('#cartDrawer')?.classList.add('open')},close(){$('#cartDrawer')?.classList.remove('open')},render(){const count=App.cart.count();['#bagCount','#cartCount'].forEach(s=>{const e=$(s);if(e)e.textContent=count});const total=$('#cartTotal');if(total)total.textContent=money(App.cart.total());const el=$('#cartItems');if(!el)return;const c=App.cart.list();el.innerHTML=c.length?c.map(x=>`<div class="cart-item"><img src="${esc(x.image)}" onerror="this.src='assets/img/hero-senator-grey.jpg'" alt="${esc(x.name)}"><div><b>${esc(x.name)}</b><small>${esc(x.category)} • ${money(x.price)}</small><div class="qty"><button data-cart-minus="${esc(x.id)}">−</button><span>${x.qty}</span><button data-cart-plus="${esc(x.id)}">+</button></div></div><button class="btn btn-small" data-cart-remove="${esc(x.id)}">×</button></div>`).join(''):'<div class="empty">Your bag is empty.</div>'}},
-checkout:{init(){const f=$('#checkoutForm');if(!f)return;App.checkout.summaryRender();f.addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(f).entries());if(!App.cart.list().length)return toast('Your bag is empty.');if(!d.name||!d.phone)return toast('Name and phone are required.');App.whatsapp.send(App.checkout.message(d));toast('Order created. WhatsApp will open.')})},summaryRender(){const el=$('#checkoutItems');if(!el)return;const c=App.cart.list();el.innerHTML=c.length?c.map(x=>`<div class="order-line"><span>${esc(x.name)} × ${x.qty}</span><b>${money(num(x.price)*x.qty)}</b></div>`).join(''):'<p class="notice">Your bag is empty.</p>';const t=$('#checkoutTotal');if(t)t.textContent=money(App.cart.total())},message(d){return`New Timzy Fashion Order\n\nCustomer: ${d.name}\nPhone: ${d.phone}\nEmail: ${d.email||'N/A'}\n\nItems:\n${App.cart.list().map(x=>`- ${x.name} x${x.qty} = ${money(num(x.price)*x.qty)}`).join('\n')}\n\nTotal: ${money(App.cart.total())}\nDelivery: ${d.delivery||'N/A'}\nAddress: ${d.address||C().pickupAddress}\nMeasurement: ${d.measurement||'N/A'}\nNotes: ${d.notes||'N/A'}\nOrder Ref: TF-${Date.now().toString().slice(-7)}`}},
-whatsapp:{number(){return String(C().whatsapp).replace(/[^0-9]/g,'')},send(m){window.open(`https://wa.me/${App.whatsapp.number()}?text=${encodeURIComponent(m)}`,'_blank','noopener')},sendBag(){const c=App.cart.list();App.whatsapp.send(c.length?`Hi Timzy Fashion, I want to order:\n\n${c.map(x=>`- ${x.name} x${x.qty}`).join('\n')}\n\nTotal: ${money(App.cart.total())}`:'Hi Timzy Fashion, I want to make an enquiry.')}}};
+checkout:{
+init(){
+  const f=$('#checkoutForm');
+  if(!f)return;
+  App.checkout.summaryRender();
+  App.checkout.bindCheckoutUI();
+
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    const d=Object.fromEntries(new FormData(f).entries());
+    if(!App.cart.list().length)return toast('Your bag is empty.');
+    if(!d.name||!d.phone)return toast('Name and phone are required.');
+    App.whatsapp.send(App.checkout.message(d));
+    toast('Order created. WhatsApp will open.');
+  });
+
+  $('#clearCartBtn')?.addEventListener('click',()=>{
+    App.cart.save([]);
+    App.checkout.summaryRender();
+  });
+},
+
+bindCheckoutUI(){
+  const sync=()=>{
+    const delivery=$('input[name="delivery"]:checked')?.value || 'Home Delivery';
+    $$('[data-delivery-box]').forEach(x=>x.hidden=x.dataset.deliveryBox!==delivery);
+
+    const measurement=$('input[name="measurement"]:checked')?.value || 'Manual Measurement';
+    $$('[data-measurement-box]').forEach(x=>x.hidden=x.dataset.measurementBox!==measurement);
+
+    const payment=$('input[name="payment"]:checked')?.value || 'Pay Now';
+    $$('[data-payment-box]').forEach(x=>x.hidden=x.dataset.paymentBox!==payment);
+  };
+
+  $$('input[name="delivery"],input[name="measurement"],input[name="payment"]').forEach(x=>x.addEventListener('change',sync));
+  sync();
+
+  $('#copyAccountBtn')?.addEventListener('click',()=>{
+    const number=$('#accountNumber')?.textContent?.trim() || '';
+    navigator.clipboard?.writeText(number);
+    toast('Account number copied.');
+  });
+},
+
+summaryRender(){
+  const el=$('#checkoutItems');
+  if(!el)return;
+  const c=App.cart.list();
+  el.innerHTML=c.length?c.map(x=>`<div class="order-line"><span>${esc(x.name)} × ${x.qty}</span><b>${money(num(x.price)*x.qty)}</b></div>`).join(''):'<p class="notice">Your bag is empty.</p>';
+  const t=$('#checkoutTotal');
+  if(t)t.textContent=money(App.cart.total());
+},
+
+message(d){
+  const measurementLines=[
+    ['Neck',d.m_neck],['Shoulder',d.m_shoulder],['Chest',d.m_chest],['Sleeve',d.m_sleeve],
+    ['Wrist',d.m_wrist],['Top Length',d.m_top_length],['Waist',d.m_waist],['Hip',d.m_hip],
+    ['Thigh',d.m_thigh],['Trouser Length',d.m_trouser_length],['Ankle',d.m_ankle],['Height',d.m_height]
+  ].filter(x=>x[1]).map(x=>`${x[0]}: ${x[1]}`).join('\\n');
+
+  return`New Timzy Fashion Order
+
+Customer: ${d.name}
+Phone: ${d.phone}
+Email: ${d.email||'N/A'}
+City: ${d.city||'N/A'}
+
+Items:
+${App.cart.list().map(x=>`- ${x.name} x${x.qty} = ${money(num(x.price)*x.qty)}`).join('\\n')}
+
+Total: ${money(App.cart.total())}
+
+Delivery Method: ${d.delivery||'N/A'}
+Delivery Address: ${d.address||'N/A'}
+Landmark: ${d.landmark||'N/A'}
+
+Measurement Option: ${d.measurement||'N/A'}
+${measurementLines ? `Measurements:\\n${measurementLines}` : ''}
+Visit Date: ${d.visit_date||'N/A'}
+Visit Time: ${d.visit_time||'N/A'}
+Visit Address: ${d.visit_address||'N/A'}
+
+Payment: ${d.payment||'N/A'}
+Special Notes: ${d.notes||'N/A'}
+
+Order Ref: TF-${Date.now().toString().slice(-7)}`;
+}},whatsapp:{number(){return String(C().whatsapp).replace(/[^0-9]/g,'')},send(m){window.open(`https://wa.me/${App.whatsapp.number()}?text=${encodeURIComponent(m)}`,'_blank','noopener')},sendBag(){const c=App.cart.list();App.whatsapp.send(c.length?`Hi Timzy Fashion, I want to order:\n\n${c.map(x=>`- ${x.name} x${x.qty}`).join('\n')}\n\nTotal: ${money(App.cart.total())}`:'Hi Timzy Fashion, I want to make an enquiry.')}}};
 document.addEventListener('DOMContentLoaded',App.init);window.Timzy=App;
 })();
-
