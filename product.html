@@ -1,1 +1,295 @@
-<!doctype html><html lang="en"><head><title>Product | Timzy Fashion</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css"></head><body><div class="luxury-bg"></div><header class="site-header"><nav class="container nav"><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy"><span class="brand-copy"><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a><button class="nav-toggle"><span></span><span></span></button><div class="nav-links"><a class="" href="index.html">Home</a><a class="active" href="shop.html">Shop</a><a class="" href="training.html">Training</a><a class="" href="build-your-style.html">Build Your Style</a><a class="" href="checkout.html">Checkout</a><a href="contact.html">Contact</a></div></nav></header><main><section class="section"><div class="container"><div id="productDetails"></div></div></section><section class="section"><div class="container"><div class="section-head"><div><span class="eyebrow">Complete The Style</span><h2>Add matching accessories.</h2></div></div><div id="recommendedProducts" class="product-grid"></div></div></section><section class="section"><div class="container"><div class="section-head"><div><span class="eyebrow">Measurements</span><h2>Add your measurement.</h2></div></div><div class="split"><div class="panel"><h3>Request Measurement Visit</h3><p>Available within Abuja. Add your address and preferred date during checkout.</p></div><div class="panel"><h3>Enter Measurements Manually</h3><div class="grid-2"><input class="field" placeholder="Neck"><input class="field" placeholder="Shoulder"><input class="field" placeholder="Chest"><input class="field" placeholder="Sleeve"><input class="field" placeholder="Waist"><input class="field" placeholder="Trouser Length"></div></div></div></div></section><section class="section"><div class="container"><div class="section-head"><div><span class="eyebrow">Related</span><h2>Similar products.</h2></div></div><div id="relatedProducts" class="product-grid"></div></div></section></main><button class="floating-bag" data-open-bag>👜 <span id="bagCount">0</span></button><a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank">WhatsApp</a><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt=""><span class="brand-copy"><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a><p>Luxury bespoke fashion, training, and complete styling.</p></div><div><h3>Shop</h3><a href="shop.html">Shop</a><a href="build-your-style.html">Build Your Style</a><a href="checkout.html">Checkout</a></div><div><h3>Training</h3><a href="training.html">Programs</a><a href="training.html#register">Register</a></div><div><h3>Contact</h3><a href="contact.html">Contact</a><a href="login.html">Staff Login</a></div></div><div class="container footer-bottom"><p>© <span id="year"></span> Timzy Fashion</p><p>Premium fashion platform.</p></div></footer><script src="assets/js/config.js"></script><script src="assets/js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Product | Timzy Fashion</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body class="page-product">
+
+  <div class="luxury-bg"></div>
+
+  <header class="site-header">
+    <nav class="container nav">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
+        <span class="brand-copy">
+          <span class="brand-name">TIMZY FASHION</span>
+          <span class="brand-sub">Dress the Complete Gentleman</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Open menu">
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a class="active" href="shop.html">Shop</a>
+        <a href="training.html">Training</a>
+        <a href="build-your-style.html">Build Your Style</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- PRODUCT DETAILS RENDERED BY APP.JS -->
+    <section class="section product-main-section">
+      <div class="container">
+        <div id="productDetails">
+          <div class="empty">Loading product...</div>
+        </div>
+
+        <div class="product-note panel">
+          <strong>Price includes fabric/material and professional tailoring.</strong>
+          <p>Each design is priced as a complete finished work unless otherwise stated.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FABRIC / PRODUCT DETAILS -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head compact">
+          <div>
+            <span class="eyebrow">Product Details</span>
+            <h2>Fabric, fit and finish.</h2>
+          </div>
+        </div>
+
+        <div class="why-grid product-detail-grid">
+          <div class="why-card">
+            <span>01</span>
+            <strong>Material</strong>
+            <p id="productMaterial">Shown inside the product details above.</p>
+          </div>
+
+          <div class="why-card">
+            <span>02</span>
+            <strong>Design</strong>
+            <p>Finished design includes the selected style, fabric/material and sewing.</p>
+          </div>
+
+          <div class="why-card">
+            <span>03</span>
+            <strong>Measurement</strong>
+            <p>Use your custom measurements or request Abuja measurement support.</p>
+          </div>
+
+          <div class="why-card">
+            <span>04</span>
+            <strong>Delivery</strong>
+            <p>Production and delivery timeline depends on the design and location.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPLETE THE STYLE -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head compact">
+          <div>
+            <span class="eyebrow">Complete The Style</span>
+            <h2>Add matching accessories.</h2>
+          </div>
+          <button class="btn btn-outline" type="button" data-open-bag>View Bag</button>
+        </div>
+
+        <div class="accordion style-accordion">
+
+          <details open>
+            <summary>👞 Shoes</summary>
+            <div id="shoeRecommendations" class="product-grid accessory-grid"></div>
+          </details>
+
+          <details>
+            <summary>⌚ Wristwatches</summary>
+            <div id="watchRecommendations" class="product-grid accessory-grid"></div>
+          </details>
+
+          <details>
+            <summary>💎 Cufflinks</summary>
+            <div id="cufflinkRecommendations" class="product-grid accessory-grid"></div>
+          </details>
+
+          <details>
+            <summary>🧢 Caps</summary>
+            <div id="capRecommendations" class="product-grid accessory-grid"></div>
+          </details>
+
+          <details>
+            <summary>🕶 Sunglasses</summary>
+            <div id="glassRecommendations" class="product-grid accessory-grid"></div>
+          </details>
+
+          <details>
+            <summary>👔 Belts</summary>
+            <div id="beltRecommendations" class="product-grid accessory-grid"></div>
+          </details>
+
+          <details>
+            <summary>🌸 Perfumes</summary>
+            <div id="perfumeRecommendations" class="product-grid accessory-grid"></div>
+          </details>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- MEASUREMENTS -->
+    <section class="section" id="measurements">
+      <div class="container">
+        <div class="section-head compact">
+          <div>
+            <span class="eyebrow">Measurements</span>
+            <h2>Add your measurement.</h2>
+          </div>
+        </div>
+
+        <div class="split">
+          <div class="panel">
+            <h3>Request Measurement Visit</h3>
+            <p>Available within Abuja. Add your address and preferred date during checkout.</p>
+            <a class="btn btn-primary" href="checkout.html#measurements">Request Visit</a>
+          </div>
+
+          <div class="panel">
+            <h3>Enter Measurements Manually</h3>
+            <div class="grid-2">
+              <input class="field" placeholder="Neck">
+              <input class="field" placeholder="Shoulder">
+              <input class="field" placeholder="Chest">
+              <input class="field" placeholder="Sleeve">
+              <input class="field" placeholder="Wrist">
+              <input class="field" placeholder="Top Length">
+              <input class="field" placeholder="Waist">
+              <input class="field" placeholder="Hip">
+              <input class="field" placeholder="Thigh">
+              <input class="field" placeholder="Trouser Length">
+              <input class="field" placeholder="Ankle">
+              <input class="field" placeholder="Height">
+            </div>
+            <textarea class="field" rows="4" placeholder="Extra notes e.g. slim fit, gold buttons, event date..."></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORDER CTA -->
+    <section class="section">
+      <div class="container">
+        <div class="measurement-card">
+          <div>
+            <span class="eyebrow">Ready To Order?</span>
+            <h2>Review your look before checkout.</h2>
+            <p>Your selected outfit and accessories stay in the same shopping bag.</p>
+          </div>
+
+          <div class="measurement-actions">
+            <button class="btn btn-outline" type="button" data-open-bag>Open Bag</button>
+            <a class="btn btn-primary" href="checkout.html">Proceed To Checkout</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RELATED PRODUCTS -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head compact">
+          <div>
+            <span class="eyebrow">Related</span>
+            <h2>Similar products.</h2>
+          </div>
+        </div>
+
+        <div id="relatedProducts" class="product-grid"></div>
+      </div>
+    </section>
+
+    <!-- CARE + DELIVERY -->
+    <section class="section muted-section">
+      <div class="container split">
+        <div class="panel">
+          <h3>Care Instructions</h3>
+          <ul>
+            <li>Dry clean recommended.</li>
+            <li>Steam iron for best finish.</li>
+            <li>Store in a garment bag.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3>Delivery Information</h3>
+          <ul>
+            <li>Abuja delivery available.</li>
+            <li>Nationwide shipping available.</li>
+            <li>Pickup option available.</li>
+            <li>Timeline depends on design and measurement confirmation.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">
+    👜 <span id="bagCount">0</span>
+  </button>
+
+  <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank" aria-label="Chat on WhatsApp">💬</a>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
+          <span class="brand-copy">
+            <span class="brand-name">TIMZY FASHION</span>
+            <span class="brand-sub">Dress the Complete Gentleman</span>
+          </span>
+        </a>
+        <p>Luxury bespoke fashion, training, and complete styling.</p>
+      </div>
+
+      <div>
+        <h3>Shop</h3>
+        <a href="shop.html">Shop</a>
+        <a href="build-your-style.html">Build Your Style</a>
+        <a href="checkout.html">Checkout</a>
+      </div>
+
+      <div>
+        <h3>Training</h3>
+        <a href="training.html">Programs</a>
+        <a href="training.html#register">Register</a>
+      </div>
+
+      <div>
+        <h3>Contact</h3>
+        <a href="contact.html">Contact</a>
+        <a href="login.html">Staff Login</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> Timzy Fashion</p>
+      <p>Premium fashion platform.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
