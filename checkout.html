@@ -1,1 +1,344 @@
-<!doctype html><html lang="en"><head><title>Checkout | Timzy Fashion</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=6.0.0"></head><body class="page-checkout"><div class="luxury-bg"></div><header class="site-header"><nav class="container nav"><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion"><span><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a><button class="nav-toggle" type="button" aria-label="Open menu"><span></span><span></span></button><div class="nav-links"><a href="index.html">Home</a><a href="shop.html">Shop</a><a href="training.html">Training</a><a href="build-your-style.html">Build Your Style</a><a href="contact.html">Contact</a></div></nav></header><main><section class="section"><div class="container checkout-layout"><form class="checkout-form" id="checkoutForm"><span class="eyebrow">Checkout</span><h1 class="h1">Complete your order.</h1><div class="form-card"><h3>Customer Information</h3><div class="grid-2"><input class="field" name="name" placeholder="Full Name" required><input class="field" name="phone" placeholder="Phone Number" required><input class="field" name="email" type="email" placeholder="Email"><input class="field" name="city" placeholder="City"></div></div><div class="form-card"><h3>Delivery</h3><label><input type="radio" name="delivery" value="Delivery" checked> Home Delivery</label><br><label><input type="radio" name="delivery" value="Pickup"> Pickup</label><textarea class="field" name="address" rows="4" placeholder="Delivery address or pickup note"></textarea></div><div class="form-card" id="measurements"><h3>Measurements</h3><select class="field" name="measurement"><option>Enter Measurements Manually</option><option>Upload Existing Measurement</option><option>Request Abuja Measurement Visit</option></select><textarea class="field" name="measurements" rows="5" placeholder="Neck, shoulder, chest, sleeve, waist, trouser length, notes..."></textarea></div><div class="form-card"><h3>Payment</h3><label><input type="radio" name="payment" value="Pay Now" checked> Pay Now</label><br><label><input type="radio" name="payment" value="Pay on Delivery"> Pay on Delivery</label><br><label><input type="radio" name="payment" value="Pay on Pickup"> Pay on Pickup</label></div><div class="form-card"><h3>Special Notes</h3><textarea class="field" name="notes" rows="4" placeholder="Special request, event date, preferred fit..."></textarea></div><button class="btn btn-primary btn-block" type="submit">Place Order</button></form><aside class="summary-card"><span class="eyebrow">Summary</span><h2>Your Bag</h2><div id="checkoutItems">Loading...</div><div class="order-line"><strong>Total</strong><strong id="checkoutTotal">₦0</strong></div></aside></div></section></main><button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">👜 <span id="bagCount">0</span></button><a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank" aria-label="Chat on WhatsApp">WhatsApp</a><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion"><span><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Premium fashion platform</span></span></a><p>Luxury bespoke fashion, training, and complete styling.</p></div><div><h3>Shop</h3><a href="shop.html">Shop</a><a href="build-your-style.html">Build Your Style</a><a href="checkout.html">Checkout</a></div><div><h3>Training</h3><a href="training.html">Programs</a><a href="training.html#register">Register</a></div><div><h3>Contact</h3><a href="contact.html">Contact</a><a href="login.html">Staff Login</a></div></div><div class="container footer-bottom"><p>© <span id="year"></span> Timzy Fashion</p><p>Premium fashion platform.</p></div></footer><script src="assets/js/config.js"></script><script src="assets/js/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Checkout | Timzy Fashion</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css?v=6.7">
+</head>
+
+<body class="page-checkout">
+
+  <div class="luxury-bg"></div>
+
+  <header class="site-header">
+    <nav class="container nav">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
+        <span class="brand-copy">
+          <span class="brand-name">TIMZY FASHION</span>
+          <span class="brand-sub">Dress the Complete Gentleman</span>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Open menu">
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a href="training.html">Training</a>
+        <a class="active" href="checkout.html">Checkout</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+
+    <section class="checkout-hero section">
+      <div class="container">
+        <span class="eyebrow">Timzy Checkout</span>
+        <h1 class="hero-title">Complete your order.</h1>
+        <p class="hero-text">Confirm your details, delivery option, measurements, and payment preference. Your order summary will be sent to Timzy on WhatsApp.</p>
+
+        <div class="checkout-steps">
+          <span>Information</span>
+          <span>Measurements</span>
+          <span>Payment</span>
+          <span>Review</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section checkout-section">
+      <div class="container checkout-layout">
+
+        <form id="checkoutForm" class="checkout-form">
+
+          <div class="form-card premium-form-card">
+            <span class="eyebrow">Customer</span>
+            <h2>Customer Information</h2>
+
+            <div class="grid-2">
+              <label>Full Name *
+                <input class="field" name="name" required>
+              </label>
+
+              <label>Phone Number *
+                <input class="field" name="phone" required>
+              </label>
+
+              <label>Email Address
+                <input class="field" type="email" name="email">
+              </label>
+
+              <label>City
+                <input class="field" name="city">
+              </label>
+            </div>
+          </div>
+
+          <div class="form-card premium-form-card">
+            <span class="eyebrow">Delivery</span>
+            <h2>Delivery Method</h2>
+
+            <div class="choice-grid">
+              <label class="choice-card">
+                <input type="radio" name="delivery" value="Home Delivery" checked>
+                <span>
+                  <strong>Home Delivery</strong>
+                  <small>Deliver my order to my address.</small>
+                </span>
+              </label>
+
+              <label class="choice-card">
+                <input type="radio" name="delivery" value="Pickup">
+                <span>
+                  <strong>Pickup</strong>
+                  <small>I will pick up from Timzy Fashion.</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="conditional-box" data-delivery-box="Home Delivery">
+              <label>Delivery Address
+                <textarea class="field" name="address" rows="4" placeholder="House number, street, area..."></textarea>
+              </label>
+
+              <label>Landmark
+                <input class="field" name="landmark" placeholder="Optional">
+              </label>
+            </div>
+
+            <div class="conditional-box pickup-box" data-delivery-box="Pickup" hidden>
+              <strong>Pickup Location</strong>
+              <p>Timzy Fashion, Wuye Market, Abuja.</p>
+              <small>Exact shop address will be updated here.</small>
+            </div>
+          </div>
+
+          <div class="form-card premium-form-card" id="measurements">
+            <span class="eyebrow">Measurements</span>
+            <h2>Measurement Option</h2>
+
+            <div class="choice-grid three">
+              <label class="choice-card">
+                <input type="radio" name="measurement" value="Manual Measurement" checked>
+                <span>
+                  <strong>Enter Manually</strong>
+                  <small>Fill in your body measurements.</small>
+                </span>
+              </label>
+
+              <label class="choice-card">
+                <input type="radio" name="measurement" value="Upload Existing Measurement">
+                <span>
+                  <strong>Upload Existing</strong>
+                  <small>Upload picture, PDF, or file.</small>
+                </span>
+              </label>
+
+              <label class="choice-card">
+                <input type="radio" name="measurement" value="Request Measurement Visit">
+                <span>
+                  <strong>Request Visit</strong>
+                  <small>Available only within Abuja.</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="conditional-box" data-measurement-box="Manual Measurement">
+              <div class="measurement-form-grid">
+                <label>Neck <input class="field" name="m_neck"></label>
+                <label>Shoulder <input class="field" name="m_shoulder"></label>
+                <label>Chest <input class="field" name="m_chest"></label>
+                <label>Sleeve <input class="field" name="m_sleeve"></label>
+                <label>Wrist <input class="field" name="m_wrist"></label>
+                <label>Top Length <input class="field" name="m_top_length"></label>
+                <label>Waist <input class="field" name="m_waist"></label>
+                <label>Hip <input class="field" name="m_hip"></label>
+                <label>Thigh <input class="field" name="m_thigh"></label>
+                <label>Trouser Length <input class="field" name="m_trouser_length"></label>
+                <label>Ankle <input class="field" name="m_ankle"></label>
+                <label>Height <input class="field" name="m_height"></label>
+              </div>
+            </div>
+
+            <div class="conditional-box upload-box" data-measurement-box="Upload Existing Measurement" hidden>
+              <label class="upload-card">
+                <input type="file" name="measurement_file" accept=".pdf,.jpg,.jpeg,.png,.heic">
+                <span>
+                  <strong>Upload measurement file</strong>
+                  <small>Accepted: PDF, JPG, PNG, HEIC</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="conditional-box visit-box" data-measurement-box="Request Measurement Visit" hidden>
+              <strong>Request Measurement Visit — Abuja Only</strong>
+              <p>Timzy Fashion, Wuye Market, Abuja.</p>
+              <small>Exact address will be updated once you provide it.</small>
+
+              <div class="grid-2 visit-fields">
+                <label>Preferred Date <input class="field" type="date" name="visit_date"></label>
+                <label>Preferred Time <input class="field" type="time" name="visit_time"></label>
+                <label class="full-field">Visit Address / Area <textarea class="field" name="visit_address" rows="3"></textarea></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card premium-form-card">
+            <span class="eyebrow">Payment</span>
+            <h2>Payment Method</h2>
+
+            <div class="choice-grid three">
+              <label class="choice-card">
+                <input type="radio" name="payment" value="Pay Now" checked>
+                <span>
+                  <strong>Pay Now</strong>
+                  <small>Pay by bank transfer.</small>
+                </span>
+              </label>
+
+              <label class="choice-card">
+                <input type="radio" name="payment" value="Pay on Delivery">
+                <span>
+                  <strong>Pay on Delivery</strong>
+                  <small>Pay when order arrives.</small>
+                </span>
+              </label>
+
+              <label class="choice-card">
+                <input type="radio" name="payment" value="Pay on Pickup">
+                <span>
+                  <strong>Pay on Pickup</strong>
+                  <small>Pay when collecting.</small>
+                </span>
+              </label>
+            </div>
+
+            <div class="conditional-box payment-box" data-payment-box="Pay Now">
+              <span class="eyebrow">Bank Transfer</span>
+              <div class="bank-grid">
+                <div>
+                  <small>Bank Name</small>
+                  <strong id="bankName">BANK NAME</strong>
+                </div>
+                <div>
+                  <small>Account Name</small>
+                  <strong id="accountName">TIMZY FASHION</strong>
+                </div>
+                <div>
+                  <small>Account Number</small>
+                  <strong id="accountNumber">0000000000</strong>
+                </div>
+                <button class="btn btn-outline btn-small" type="button" id="copyAccountBtn">Copy Account</button>
+              </div>
+              <p class="payment-note">After payment, complete your order and send the WhatsApp confirmation.</p>
+            </div>
+          </div>
+
+          <div class="form-card premium-form-card">
+            <span class="eyebrow">Special Notes</span>
+            <h2>Special Instructions</h2>
+
+            <textarea class="field" name="notes" rows="5" placeholder="Example: slim fit, gold buttons, wedding date, urgent delivery..."></textarea>
+          </div>
+
+          <button class="btn btn-primary btn-block checkout-submit" type="submit">
+            Place Order
+          </button>
+
+        </form>
+
+        <aside class="checkout-summary">
+          <div class="summary-card premium-summary">
+            <span class="eyebrow">Order Summary</span>
+            <h2>Your Bag</h2>
+
+            <div id="checkoutItems">
+              <p class="notice">Your bag is empty.</p>
+            </div>
+
+            <div class="order-line total-line">
+              <strong>Total</strong>
+              <strong id="checkoutTotal">₦0</strong>
+            </div>
+
+            <button id="clearCartBtn" class="btn btn-outline btn-block" type="button">
+              Clear Bag
+            </button>
+          </div>
+
+          <div class="summary-card premium-summary">
+            <h3>Timzy Promise</h3>
+            <ul>
+              <li>Premium finishing</li>
+              <li>Custom measurement options</li>
+              <li>Complete styling support</li>
+              <li>WhatsApp order confirmation</li>
+            </ul>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+  </main>
+
+  <button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">
+    👜 <span id="bagCount">0</span>
+  </button>
+
+  <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank" aria-label="Chat on WhatsApp">💬</a>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="brand" href="index.html">
+          <img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
+          <span class="brand-copy">
+            <span class="brand-name">TIMZY FASHION</span>
+            <span class="brand-sub">Dress the Complete Gentleman</span>
+          </span>
+        </a>
+        <p>Luxury bespoke fashion, training, and complete styling.</p>
+      </div>
+
+      <div>
+        <h3>Shop</h3>
+        <a href="shop.html">Shop</a>
+        <a href="checkout.html">Checkout</a>
+      </div>
+
+      <div>
+        <h3>Training</h3>
+        <a href="training.html">Programs</a>
+        <a href="training.html#register">Register</a>
+      </div>
+
+      <div>
+        <h3>Contact</h3>
+        <a href="contact.html">Contact</a>
+        <a href="login.html">Staff Login</a>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> Timzy Fashion</p>
+      <p>Premium fashion platform.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/app.js?v=6.7"></script>
+</body>
+</html>
