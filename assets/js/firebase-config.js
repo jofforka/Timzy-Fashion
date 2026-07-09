@@ -1,0 +1,1 @@
+/* Firebase setup will be activated in admin phase. Public site works without Firebase. */

@@ -1,1593 +1,677 @@
-from pathlib import Path
-
-app_js = r'''/*!
- * Timzy Fashion Boutique — Production Application Engine
+/*!
+ * Timzy Fashion Boutique — Lightweight Public Engine
  * File: assets/js/app.js
- * Version: 6.1.0
- *
- * Purpose:
- * One-file JavaScript engine for Timzy Fashion Boutique.
- * Includes:
- * - Core app initialization
- * - Config + feature flags
- * - Navigation
- * - Mobile menu
- * - Toast notifications
- * - Shopping bag/cart
- * - Wishlist
- * - Catalog rendering/search/filter/sort
- * - Product gallery + zoom
- * - Build Your Look engine
- * - Checkout flow
- * - Payment abstraction
- * - WhatsApp order summary
- * - Admin helpers
- * - Sales/expenses/reports storage helpers
- * - Firebase-safe integration hooks
- * - Future-ready modules disabled by feature flags
+ * Purpose: Home, Shop/Catalog, Product, Bag, Checkout
+ * Keep this file lightweight. Admin will be handled later.
  */
 
 (() => {
   "use strict";
 
-  /* ==========================================================
-     TIMZY APP OBJECT
-  ========================================================== */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-  const Timzy = {
-    version: "6.1.0",
-
-    keys: {
-      cart: "timzy.v6.cart",
-      wishlist: "timzy.v6.wishlist",
-      products: "timzy.v6.products",
-      orders: "timzy.v6.orders",
-      sales: "timzy.v6.sales",
-      expenses: "timzy.v6.expenses",
-      settings: "timzy.v6.settings",
-      customer: "timzy.v6.customer",
-      recentlyViewed: "timzy.v6.recentlyViewed",
-      activity: "timzy.v6.activity"
-    },
-
-    defaults: {
-      whatsapp: "2340000000000",
-      currency: "NGN",
-      currencySymbol: "₦",
-      fallbackImage: "assets/images/backgrounds/placeholder-product.jpg",
-      productDataUrl: "data/products.json",
-      businessName: "Timzy Fashion",
-      businessTagline: "Dress the Complete Gentleman",
-      pickupAddress: "Timzy Fashion Studio, Abuja",
-      paymentGatewayUrl: "",
-      paystackPublicKey: "",
-      productFormUrl: "",
-      productSheetUrl: ""
-    },
-
-    flags: {
-      wishlist: true,
-      buildLook: true,
-      checkout: true,
-      payments: true,
-      whatsapp: true,
-      admin: true,
-      firebase: true,
-      analytics: false,
-      customerAccount: false,
-      loyalty: false,
-      promoCodes: false,
-      giftCards: false,
-      aiStylist: false,
-      notifications: true,
-      appointments: true
-    },
-
-    state: {
-      products: [],
-      activeCategory: "All",
-      activeSort: "featured",
-      searchTerm: "",
-      currentProduct: null,
-      galleryIndex: 0,
-      initialized: false
-    }
+  const CONFIG = () => {
+    const c = window.TIMZY_CONFIG || {};
+    return {
+      brandName: c.brandName || "Timzy Fashion",
+      currencySymbol: c.currencySymbol || c.currency || "₦",
+      whatsapp: c.whatsapp || c.whatsappNumber || "2348118103510",
+      productDataUrl: c.productDataUrl || "data/products.json",
+      productSheetCsvUrl: c.productSheetCsvUrl || "",
+      paymentGatewayUrl: c.paymentGatewayUrl || "",
+      paystackPublicKey: c.paystackPublicKey || "",
+      pickupAddress: c.pickupAddress || "Timzy Fashion Studio, Abuja"
+    };
   };
 
-  window.Timzy = Timzy;
+  const KEYS = {
+    cart: "timzy.cart.v1",
+    wishlist: "timzy.wishlist.v1",
+    orders: "timzy.orders.v1"
+  };
 
-  /* ==========================================================
-     UTILITIES
-  ========================================================== */
-
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-
-  const cfg = () => ({
-    ...Timzy.defaults,
-    ...(window.TIMZY_CONFIG || {})
-  });
-
-  const safeText = value => String(value ?? "").trim();
-
-  const escapeHtml = value => safeText(value)
+  const escapeHTML = value => String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
-  const slugify = value => safeText(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+  const toNumber = value => Number(String(value || 0).replace(/[^0-9.-]/g, "")) || 0;
+  const money = value => `${CONFIG().currencySymbol}${toNumber(value).toLocaleString()}`;
 
-  const moneyNum = value => Number(String(value || 0).replace(/[^0-9.-]/g, "")) || 0;
-
-  const formatMoney = value => {
-    const symbol = cfg().currencySymbol || "₦";
-    return `${symbol}${moneyNum(value).toLocaleString()}`;
-  };
-
-  const nowISO = () => new Date().toISOString();
-
-  const generateRef = (prefix = "TF") => `${prefix}-${Date.now().toString().slice(-8)}`;
-
-  const isAdminPath = () => location.pathname.includes("/admin/");
-  const isLoginPage = () => location.pathname.endsWith("login.html");
-  const currentPage = () => (location.pathname.split("/").pop() || "index.html").toLowerCase();
-
-  const debounce = (fn, delay = 250) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), delay);
-    };
-  };
-
-  const throttle = (fn, limit = 150) => {
-    let waiting = false;
-    return (...args) => {
-      if (waiting) return;
-      fn(...args);
-      waiting = true;
-      setTimeout(() => waiting = false, limit);
-    };
-  };
-
-  const storage = {
-    get(key, fallback = null) {
+  const store = {
+    get(key, fallback) {
       try {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : fallback;
-      } catch (error) {
-        Timzy.core.error("Storage read failed", error);
+      } catch {
         return fallback;
       }
     },
-
     set(key, value) {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-        return true;
-      } catch (error) {
-        Timzy.core.error("Storage write failed", error);
-        return false;
-      }
-    },
-
-    remove(key) {
-      try {
-        localStorage.removeItem(key);
-      } catch (error) {
-        Timzy.core.error("Storage remove failed", error);
-      }
+      localStorage.setItem(key, JSON.stringify(value));
     }
   };
 
-  /* ==========================================================
-     CORE
-  ========================================================== */
-
-  Timzy.core = {
-    init() {
-      if (Timzy.state.initialized) return;
-      Timzy.state.initialized = true;
-
-      Timzy.core.applyConfigLinks();
-      Timzy.ui.init();
-      Timzy.analytics.pageView();
-
-      Timzy.products.load().then(() => {
-        Timzy.catalog.init();
-        Timzy.product.init();
-        Timzy.checkout.init();
-        Timzy.admin.init();
-        Timzy.featured.init();
-      });
-
-      Timzy.cart.init();
-      Timzy.wishlist.init();
-      Timzy.future.init();
-
-      document.dispatchEvent(new CustomEvent("timzy:ready", { detail: { version: Timzy.version } }));
-    },
-
-    error(message, error) {
-      console.error(`[Timzy] ${message}`, error || "");
-      if (Timzy.flags.notifications) {
-        Timzy.toast.show("Something went wrong. Please try again.", "error");
-      }
-    },
-
-    applyConfigLinks() {
-      $$("[data-form-link]").forEach(link => link.href = cfg().productFormUrl || "#");
-      $$("[data-sheet-link]").forEach(link => link.href = cfg().productSheetUrl || "#");
-      $$("[data-whatsapp-link]").forEach(link => {
-        const number = Timzy.whatsapp.number();
-        link.href = `https://wa.me/${number}`;
-      });
-
-      const year = $("#year");
-      if (year) year.textContent = String(new Date().getFullYear());
-    },
-
-    page() {
-      return currentPage();
+  const toast = (message) => {
+    let host = $("#toastHost");
+    if (!host) {
+      document.body.insertAdjacentHTML("beforeend", `<div class="toast-host" id="toastHost"></div>`);
+      host = $("#toastHost");
     }
+    const id = `toast-${Date.now()}`;
+    host.insertAdjacentHTML("beforeend", `
+      <div class="toast" id="${id}">
+        <strong>Timzy Fashion</strong>
+        <p>${escapeHTML(message)}</p>
+      </div>
+    `);
+    const el = $(`#${id}`);
+    setTimeout(() => el?.remove(), 3200);
   };
 
-  /* ==========================================================
-     UI / NAVIGATION / ANIMATIONS
-  ========================================================== */
+  const App = {
+    products: [],
+    activeCategory: "All",
+    search: "",
+    sort: "featured",
 
-  Timzy.ui = {
-    init() {
-      Timzy.ui.mobileMenu();
-      Timzy.ui.activeLinks();
-      Timzy.ui.stickyHeader();
-      Timzy.ui.bottomNav();
-      Timzy.ui.revealOnScroll();
-      Timzy.ui.escapeToClose();
+    async init() {
+      App.nav();
+      App.year();
+      App.cart.mount();
+      App.cart.render();
+
+      await App.loadProducts();
+
+      App.featured();
+      App.catalog.init();
+      App.product.init();
+      App.checkout.init();
+      App.builder.init();
     },
 
-    mobileMenu() {
-      const toggles = $$(".mobile-menu, .nav-toggle");
+    year() {
+      const y = $("#year");
+      if (y) y.textContent = new Date().getFullYear();
+    },
+
+    nav() {
+      const toggle = $(".nav-toggle, .mobile-menu");
       const links = $(".nav-links");
 
-      toggles.forEach(btn => {
-        btn.addEventListener("click", () => {
-          links?.classList.toggle("open");
-          document.body.classList.toggle("menu-open");
-        });
-      });
+      toggle?.addEventListener("click", () => links?.classList.toggle("open"));
 
-      $$(".nav-links a").forEach(link => {
-        link.addEventListener("click", () => {
-          links?.classList.remove("open");
-          document.body.classList.remove("menu-open");
-        });
+      const page = location.pathname.split("/").pop() || "index.html";
+      $$("a[href]").forEach(a => {
+        const href = (a.getAttribute("href") || "").split("?")[0].split("#")[0].split("/").pop();
+        if (href === page) a.classList.add("active");
       });
     },
 
-    activeLinks() {
-      const page = currentPage();
-      $$("a[href]").forEach(anchor => {
-        const href = anchor.getAttribute("href") || "";
-        const hrefPage = href.split("#")[0].split("?")[0].split("/").pop();
-        if (hrefPage && hrefPage === page) anchor.classList.add("active");
-      });
-    },
+    async loadProducts() {
+      // 1. Local override from admin later
+      const local = store.get("timzy_products", null);
+      if (Array.isArray(local) && local.length) {
+        App.products = App.normalize(local);
+        return;
+      }
 
-    stickyHeader() {
-      const header = $(".site-header, .topbar");
-      if (!header) return;
-
-      const onScroll = throttle(() => {
-        header.classList.toggle("is-scrolled", window.scrollY > 12);
-      }, 80);
-
-      onScroll();
-      window.addEventListener("scroll", onScroll, { passive: true });
-    },
-
-    bottomNav() {
-      if (isAdminPath() || isLoginPage()) return;
-      if ($(".bottom-nav")) return;
-
-      document.body.insertAdjacentHTML("beforeend", `
-        <nav class="bottom-nav" aria-label="Mobile bottom navigation">
-          <a href="index.html" data-page="index.html"><span>⌂</span><small>Home</small></a>
-          <a href="catalog.html" data-page="catalog.html"><span>⌕</span><small>Shop</small></a>
-          <button type="button" data-open-bag><span>👜</span><small>Bag</small></button>
-          <a href="wishlist.html" data-page="wishlist.html"><span>♡</span><small>Saved</small></a>
-          <a href="login.html" data-page="login.html"><span>◎</span><small>Staff</small></a>
-        </nav>
-      `);
-
-      const page = currentPage();
-      $$("[data-page]").forEach(item => {
-        if (item.dataset.page === page) item.classList.add("active");
-      });
-    },
-
-    revealOnScroll() {
-      const items = $$("[data-reveal], .section, .product-card, .collection-card, .why-card, .review-card");
-      if (!items.length || !("IntersectionObserver" in window)) return;
-
-      items.forEach(item => item.classList.add("reveal-ready"));
-
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("revealed");
-            observer.unobserve(entry.target);
+      // 2. Google Sheet CSV if configured later
+      if (CONFIG().productSheetCsvUrl) {
+        try {
+          const res = await fetch(CONFIG().productSheetCsvUrl, { cache: "no-store" });
+          if (res.ok) {
+            const csv = await res.text();
+            App.products = App.normalize(App.csvToProducts(csv));
+            return;
           }
-        });
-      }, { threshold: 0.08 });
-
-      items.forEach(item => observer.observe(item));
-    },
-
-    escapeToClose() {
-      document.addEventListener("keydown", event => {
-        if (event.key !== "Escape") return;
-        $(".cart-drawer")?.classList.remove("open");
-        $(".modal.open")?.classList.remove("open");
-        $(".nav-links.open")?.classList.remove("open");
-      });
-    }
-  };
-
-  /* ==========================================================
-     TOAST NOTIFICATIONS
-  ========================================================== */
-
-  Timzy.toast = {
-    ensure() {
-      let host = $("#toastHost");
-      if (!host) {
-        document.body.insertAdjacentHTML("beforeend", `<div class="toast-host" id="toastHost" aria-live="polite"></div>`);
-        host = $("#toastHost");
-      }
-      return host;
-    },
-
-    show(message, type = "success", action = null) {
-      const host = Timzy.toast.ensure();
-      const id = `toast-${Date.now()}`;
-
-      host.insertAdjacentHTML("beforeend", `
-        <div class="toast toast-${type}" id="${id}">
-          <div>
-            <strong>${type === "error" ? "Notice" : "Timzy Fashion"}</strong>
-            <p>${escapeHtml(message)}</p>
-          </div>
-          ${action ? `<button type="button" class="toast-action">${escapeHtml(action.label)}</button>` : ""}
-          <button type="button" class="toast-close" aria-label="Close">×</button>
-        </div>
-      `);
-
-      const toast = $(`#${id}`);
-
-      $(".toast-close", toast)?.addEventListener("click", () => Timzy.toast.close(toast));
-      $(".toast-action", toast)?.addEventListener("click", () => {
-        action?.handler?.();
-        Timzy.toast.close(toast);
-      });
-
-      setTimeout(() => Timzy.toast.close(toast), 4200);
-    },
-
-    close(toast) {
-      if (!toast) return;
-      toast.classList.add("toast-exit");
-      setTimeout(() => toast.remove(), 220);
-    }
-  };
-
-  /* ==========================================================
-     PRODUCTS
-  ========================================================== */
-
-  Timzy.products = {
-    async load() {
-      const local = storage.get(Timzy.keys.products, null);
-      if (Array.isArray(local)) {
-        Timzy.state.products = Timzy.products.clean(local);
-        return Timzy.state.products;
+        } catch (err) {
+          console.warn("CSV product load failed. Falling back to JSON.", err);
+        }
       }
 
+      // 3. Main products.json
       try {
-        const response = await fetch(cfg().productDataUrl || Timzy.defaults.productDataUrl, { cache: "no-store" });
-        if (!response.ok) throw new Error(`Product fetch failed: ${response.status}`);
-        const data = await response.json();
-        Timzy.state.products = Timzy.products.clean(Array.isArray(data) ? data : []);
-      } catch (error) {
-        Timzy.core.error("Could not load products", error);
-        Timzy.state.products = [];
+        const res = await fetch(CONFIG().productDataUrl, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status} while loading ${CONFIG().productDataUrl}`);
+        const data = await res.json();
+        App.products = App.normalize(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Products failed to load:", err);
+        const grid = $("#productGrid");
+        if (grid) {
+          grid.innerHTML = `
+            <div class="empty">
+              Products could not load. Confirm this file exists: <b>${escapeHTML(CONFIG().productDataUrl)}</b>
+            </div>
+          `;
+        }
       }
-
-      return Timzy.state.products;
     },
 
-    clean(products) {
+    normalize(products) {
       return products
-        .filter(product => product && !["hidden", "deleted"].includes(safeText(product.status).toLowerCase()))
-        .map((product, index) => ({
-          id: product.id || product.sku || `TFP-${index + 1}`,
-          sku: product.sku || product.id || `TFP-${index + 1}`,
-          name: product.name || product.productName || "Timzy Product",
-          category: product.category || "Collection",
-          badge: product.badge || "",
-          description: product.description || "",
-          fabricType: product.fabricType || product.fabric || "",
-          sizes: product.sizes || product.size || "Custom",
-          color: product.color || product.colour || "As shown",
-          price: product.price || 0,
-          salePrice: product.salePrice || product.price || 0,
-          deliveryEstimate: product.deliveryEstimate || "7–14 working days",
-          featured: product.featured === true || String(product.featured).toLowerCase() === "true",
-          status: product.status || "Active",
-          lookGroup: product.lookGroup || product.category || "General",
-          images: Timzy.products.images(product),
-          raw: product
-        }));
+        .filter(p => p && !["hidden", "deleted", "draft"].includes(String(p.status || "").toLowerCase()))
+        .map((p, index) => {
+          const id = p.id || p.sku || `TF-${index + 1}`;
+          const images = [
+            ...(Array.isArray(p.images) ? p.images : []),
+            p.image1, p.image2, p.image3, p.image4, p.image5, p.image6, p.image7, p.image8, p.videoUrl
+          ]
+            .filter(Boolean)
+            .map(x => String(x).trim())
+            .filter(Boolean);
+
+          return {
+            id,
+            sku: p.sku || id,
+            name: p.name || p.productName || "Timzy Product",
+            category: p.category || "Collection",
+            productType: p.productType || "",
+            status: p.status || "Published",
+            price: toNumber(p.salePrice) > 0 ? p.salePrice : p.price,
+            originalPrice: p.price || 0,
+            color: p.color || p.colour || "As shown",
+            sizes: p.sizes || p.size || "Custom",
+            badge: p.badge || "",
+            featured: p.featured === true || String(p.featured).toLowerCase() === "true",
+            tags: p.tags || "",
+            fabricType: p.fabricType || p.fabric || "",
+            measurementRequired: p.measurementRequired === true || String(p.measurementRequired).toLowerCase() === "true",
+            deliveryEstimate: p.deliveryEstimate || "7–14 business days after confirmation",
+            description: p.description || "Premium Timzy Fashion piece.",
+            images,
+            raw: p
+          };
+        });
     },
 
-    images(product) {
-      const fromArray = Array.isArray(product.images) ? product.images : [];
-      const manual = [
-        product.image1, product.image2, product.image3, product.image4,
-        product.image5, product.image6, product.image7, product.image8,
-        product.image9, product.image10, product.image11, product.image12
-      ];
-
-      return [...fromArray, ...manual]
-        .filter(Boolean)
-        .map(item => safeText(item))
-        .filter(Boolean);
+    csvToProducts(csv) {
+      const lines = csv.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+      const headers = lines[0].split(",").map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const values = line.split(",");
+        const row = {};
+        headers.forEach((h, i) => row[h] = values[i] || "");
+        return row;
+      });
     },
 
-    find(id) {
-      return Timzy.state.products.find(product => String(product.id) === String(id) || String(product.sku) === String(id));
+    image(product) {
+      return product.images?.[0] || "assets/images/backgrounds/placeholder-product.jpg";
     },
 
-    related(product, limit = 4) {
-      if (!product) return [];
-      const same = Timzy.state.products.filter(item => item.id !== product.id && item.category === product.category);
-      const fallback = Timzy.state.products.filter(item => item.id !== product.id);
-      return (same.length ? same : fallback).slice(0, limit);
+    productURL(product) {
+      return `product.html?id=${encodeURIComponent(product.id)}`;
     },
 
-    categories() {
-      return ["All", ...new Set(Timzy.state.products.map(product => product.category).filter(Boolean))];
-    },
-
-    saveLocal(products) {
-      storage.set(Timzy.keys.products, products);
-      Timzy.activity.log("Products updated locally");
-    }
-  };
-
-  /* ==========================================================
-     PRODUCT CARD
-  ========================================================== */
-
-  Timzy.components = {
-    productCard(product, options = {}) {
-      const image = product.images?.[0] || cfg().fallbackImage;
-      const price = product.salePrice || product.price;
-      const productUrl = `product.html?id=${encodeURIComponent(product.id)}`;
-
+    card(product) {
       return `
-        <article class="product-card" data-product-id="${escapeHtml(product.id)}">
-          <a class="product-card-link" href="${productUrl}" aria-label="View ${escapeHtml(product.name)}">
+        <article class="product-card" data-product-id="${escapeHTML(product.id)}">
+          <a class="product-card-link" href="${App.productURL(product)}">
             <div class="product-media">
-              <img loading="lazy" src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}">
-              ${product.badge ? `<span class="product-badge">${escapeHtml(product.badge)}</span>` : ""}
+              <img loading="lazy" src="${escapeHTML(App.image(product))}" alt="${escapeHTML(product.name)}">
+              ${product.badge ? `<span class="product-badge">${escapeHTML(product.badge)}</span>` : ""}
             </div>
             <div class="product-info">
-              <h3>${escapeHtml(product.name)}</h3>
+              <h3>${escapeHTML(product.name)}</h3>
               <div class="product-meta">
-                <span>${escapeHtml(product.category)}</span>
-                <span class="price">${formatMoney(price)}</span>
+                <span>${escapeHTML(product.category)}</span>
+                <span class="price">${money(product.price)}</span>
               </div>
             </div>
           </a>
-
           <div class="product-actions">
-            <button type="button" class="icon-btn" data-add-wishlist="${escapeHtml(product.id)}" aria-label="Save ${escapeHtml(product.name)}">♡</button>
-            <button type="button" class="btn btn-small btn-soft" data-add-bag="${escapeHtml(product.id)}">Add</button>
+            <button type="button" class="icon-btn" data-wishlist="${escapeHTML(product.id)}">♡</button>
+            <button type="button" class="btn btn-small btn-soft" data-add-bag="${escapeHTML(product.id)}">Add</button>
           </div>
         </article>
       `;
-    }
-  };
+    },
 
-  /* ==========================================================
-     FEATURED PRODUCTS
-  ========================================================== */
-
-  Timzy.featured = {
-    init() {
+    featured() {
       const el = $("#featuredProducts");
       if (!el) return;
-
-      const featured = Timzy.state.products
-        .filter(product => product.featured || safeText(product.badge).toLowerCase().includes("best"))
-        .slice(0, 4);
-
-      const products = (featured.length ? featured : Timzy.state.products.slice(0, 4));
-
-      el.innerHTML = products.length
-        ? products.map(product => Timzy.components.productCard(product)).join("")
-        : `<div class="empty">No products yet.</div>`;
-    }
-  };
-
-  /* ==========================================================
-     CATALOG
-  ========================================================== */
-
-  Timzy.catalog = {
-    init() {
-      const grid = $("#productGrid");
-      if (!grid) return;
-
-      Timzy.catalog.mountFilters();
-      Timzy.catalog.bindEvents();
-      Timzy.catalog.render();
+      const products = App.products.filter(p => p.featured).slice(0, 4);
+      const fallback = App.products.slice(0, 4);
+      el.innerHTML = (products.length ? products : fallback).map(App.card).join("") || `<div class="empty">No products yet.</div>`;
     },
 
-    mountFilters() {
-      const chips = $("#chips");
-      if (!chips) return;
+    catalog: {
+      init() {
+        if (!$("#productGrid")) return;
 
-      chips.innerHTML = Timzy.products.categories().map(category => `
-        <button class="chip ${category === "All" ? "active" : ""}" data-cat="${escapeHtml(category)}">${escapeHtml(category)}</button>
-      `).join("");
-    },
+        App.catalog.applyCategoryFromURL();
+        App.catalog.renderChips();
+        App.catalog.bind();
+        App.catalog.render();
+      },
 
-    bindEvents() {
-      $("#chips")?.addEventListener("click", event => {
-        const chip = event.target.closest(".chip");
-        if (!chip) return;
+      applyCategoryFromURL() {
+        const c = new URLSearchParams(location.search).get("category");
+        if (c) App.activeCategory = c;
+      },
 
-        Timzy.state.activeCategory = chip.dataset.cat || "All";
-        $$(".chip", $("#chips")).forEach(item => item.classList.remove("active"));
-        chip.classList.add("active");
-        Timzy.catalog.render();
-      });
+      categories() {
+        return ["All", ...new Set(App.products.map(p => p.category).filter(Boolean))];
+      },
 
-      $("#search")?.addEventListener("input", debounce(event => {
-        Timzy.state.searchTerm = event.target.value.toLowerCase().trim();
-        Timzy.catalog.render();
-      }, 180));
+      renderChips() {
+        const chips = $("#chips");
+        if (!chips) return;
+        chips.innerHTML = App.catalog.categories().map(cat => `
+          <button class="chip ${cat === App.activeCategory ? "active" : ""}" type="button" data-category="${escapeHTML(cat)}">${escapeHTML(cat)}</button>
+        `).join("");
+      },
 
-      $("#sortProducts")?.addEventListener("change", event => {
-        Timzy.state.activeSort = event.target.value;
-        Timzy.catalog.render();
-      });
+      bind() {
+        $("#chips")?.addEventListener("click", e => {
+          const btn = e.target.closest("[data-category]");
+          if (!btn) return;
+          App.activeCategory = btn.dataset.category;
+          App.catalog.renderChips();
+          App.catalog.render();
+        });
 
-      document.addEventListener("click", event => {
-        const addBag = event.target.closest("[data-add-bag]");
-        if (addBag) {
-          event.preventDefault();
-          Timzy.cart.add(addBag.dataset.addBag);
-        }
+        $("#search")?.addEventListener("input", e => {
+          App.search = e.target.value.trim().toLowerCase();
+          App.catalog.render();
+        });
 
-        const addWishlist = event.target.closest("[data-add-wishlist]");
-        if (addWishlist) {
-          event.preventDefault();
-          Timzy.wishlist.toggle(addWishlist.dataset.addWishlist);
-        }
-      });
-    },
+        $("#sortProducts")?.addEventListener("change", e => {
+          App.sort = e.target.value;
+          App.catalog.render();
+        });
 
-    filtered() {
-      const category = Timzy.state.activeCategory;
-      const query = Timzy.state.searchTerm;
+        document.addEventListener("click", e => {
+          const add = e.target.closest("[data-add-bag]");
+          if (add) {
+            e.preventDefault();
+            App.cart.add(add.dataset.addBag);
+          }
 
-      let products = Timzy.state.products.filter(product => {
-        const matchesCategory = category === "All" || product.category === category;
-        const haystack = JSON.stringify(product).toLowerCase();
-        const matchesSearch = !query || haystack.includes(query);
-        return matchesCategory && matchesSearch;
-      });
+          const wish = e.target.closest("[data-wishlist]");
+          if (wish) {
+            e.preventDefault();
+            App.wishlist.toggle(wish.dataset.wishlist);
+          }
+        });
+      },
 
-      products = Timzy.catalog.sort(products);
-      return products;
-    },
+      filtered() {
+        let rows = App.products.filter(p => {
+          const cat = App.activeCategory === "All" || p.category === App.activeCategory;
+          const text = JSON.stringify(p).toLowerCase();
+          return cat && (!App.search || text.includes(App.search));
+        });
 
-    sort(products) {
-      const mode = Timzy.state.activeSort;
+        if (App.sort === "price-low") rows.sort((a, b) => toNumber(a.price) - toNumber(b.price));
+        if (App.sort === "price-high") rows.sort((a, b) => toNumber(b.price) - toNumber(a.price));
+        if (App.sort === "name") rows.sort((a, b) => a.name.localeCompare(b.name));
+        if (App.sort === "newest") rows.reverse();
+        if (App.sort === "featured") rows.sort((a, b) => Number(b.featured) - Number(a.featured));
 
-      if (mode === "price-low") return [...products].sort((a, b) => moneyNum(a.salePrice || a.price) - moneyNum(b.salePrice || b.price));
-      if (mode === "price-high") return [...products].sort((a, b) => moneyNum(b.salePrice || b.price) - moneyNum(a.salePrice || a.price));
-      if (mode === "name") return [...products].sort((a, b) => a.name.localeCompare(b.name));
-      if (mode === "newest") return [...products].reverse();
+        return rows;
+      },
 
-      return [...products].sort((a, b) => Number(b.featured) - Number(a.featured));
-    },
+      render() {
+        const grid = $("#productGrid");
+        if (!grid) return;
 
-    render() {
-      const grid = $("#productGrid");
-      if (!grid) return;
+        const rows = App.catalog.filtered();
+        grid.innerHTML = rows.length ? rows.map(App.card).join("") : `<div class="empty">No matching products.</div>`;
 
-      const products = Timzy.catalog.filtered();
-
-      grid.innerHTML = products.length
-        ? products.map(product => Timzy.components.productCard(product)).join("")
-        : `<div class="empty">No matching products.</div>`;
-
-      const count = $("#productCount");
-      if (count) count.textContent = `${products.length} item${products.length === 1 ? "" : "s"}`;
-    }
-  };
-
-  /* ==========================================================
-     PRODUCT PAGE
-  ========================================================== */
-
-  Timzy.product = {
-    init() {
-      const el = $("#productDetails");
-      if (!el) return;
-
-      const id = new URLSearchParams(location.search).get("id");
-      const product = Timzy.products.find(id) || Timzy.state.products[0];
-
-      if (!product) {
-        el.innerHTML = `<div class="empty">Product not found.</div>`;
-        return;
+        const count = $("#productCount");
+        if (count) count.textContent = `${rows.length} product${rows.length === 1 ? "" : "s"}`;
       }
-
-      Timzy.state.currentProduct = product;
-      Timzy.state.galleryIndex = 0;
-      Timzy.product.trackRecentlyViewed(product.id);
-      Timzy.product.render(product);
-      Timzy.product.bind(product);
-      Timzy.product.related(product);
-      Timzy.look.render(product);
     },
 
-    render(product) {
-      const el = $("#productDetails");
-      const images = product.images.length ? product.images : [cfg().fallbackImage];
-      const main = images[Timzy.state.galleryIndex] || images[0];
+    product: {
+      init() {
+        const root = $("#productDetails");
+        if (!root) return;
 
-      el.innerHTML = `
-        <div class="product-gallery">
-          <div class="gallery-main" data-open-zoom>
-            <img id="mainImage" src="${escapeHtml(main)}" alt="${escapeHtml(product.name)}">
-          </div>
+        const id = new URLSearchParams(location.search).get("id");
+        const product = App.products.find(p => String(p.id) === String(id)) || App.products[0];
 
-          <div class="thumbs">
-            ${images.map((image, index) => `
-              <button type="button" class="thumb-btn ${index === 0 ? "active" : ""}" data-gallery-index="${index}">
-                <img class="thumb" src="${escapeHtml(image)}" alt="${escapeHtml(product.name)} view ${index + 1}">
-              </button>
-            `).join("")}
-          </div>
-        </div>
-
-        <aside class="detail-card">
-          <span class="eyebrow">${escapeHtml(product.badge || product.category || "Timzy Collection")}</span>
-          <h1>${escapeHtml(product.name)}</h1>
-          <p class="lead">${escapeHtml(product.description || "Premium Timzy Fashion piece made for classy, confident dressing.")}</p>
-
-          <div class="detail-list">
-            <div class="detail-row"><span>Price</span><b class="gold">${formatMoney(product.salePrice || product.price)}</b></div>
-            <div class="detail-row"><span>Category</span><b>${escapeHtml(product.category)}</b></div>
-            <div class="detail-row"><span>Fabric</span><b>${escapeHtml(product.fabricType || "Premium Fabric")}</b></div>
-            <div class="detail-row"><span>Size</span><b>${escapeHtml(product.sizes || "Custom")}</b></div>
-            <div class="detail-row"><span>Colour</span><b>${escapeHtml(product.color || "As shown")}</b></div>
-            <div class="detail-row"><span>Delivery</span><b>${escapeHtml(product.deliveryEstimate || "7–14 working days")}</b></div>
-          </div>
-
-          <div class="sticky-actions">
-            <button class="btn btn-primary" type="button" data-add-bag="${escapeHtml(product.id)}">Add to Bag</button>
-            <button class="btn btn-outline" type="button" data-add-wishlist="${escapeHtml(product.id)}">Save</button>
-            <a class="btn btn-soft" href="checkout.html">Checkout</a>
-          </div>
-        </aside>
-      `;
-    },
-
-    bind(product) {
-      const images = product.images.length ? product.images : [cfg().fallbackImage];
-
-      document.addEventListener("click", event => {
-        const thumb = event.target.closest("[data-gallery-index]");
-        if (thumb) {
-          Timzy.state.galleryIndex = Number(thumb.dataset.galleryIndex);
-          $("#mainImage").src = images[Timzy.state.galleryIndex];
-          $$("[data-gallery-index]").forEach(item => item.classList.remove("active"));
-          thumb.classList.add("active");
+        if (!product) {
+          root.innerHTML = `<div class="empty">Product not found.</div>`;
+          return;
         }
 
-        if (event.target.closest("[data-open-zoom]")) {
-          Timzy.gallery.open(images, Timzy.state.galleryIndex);
+        const images = product.images.length ? product.images : [App.image(product)];
+
+        root.innerHTML = `
+          <div class="product-gallery">
+            <div class="gallery-main">
+              <img id="mainImage" src="${escapeHTML(images[0])}" alt="${escapeHTML(product.name)}">
+            </div>
+            <div class="thumbs">
+              ${images.map((img, i) => `
+                <button type="button" class="thumb-btn ${i === 0 ? "active" : ""}" data-thumb="${i}">
+                  <img class="thumb" src="${escapeHTML(img)}" alt="${escapeHTML(product.name)} view ${i + 1}">
+                </button>
+              `).join("")}
+            </div>
+          </div>
+
+          <aside class="detail-card">
+            <span class="eyebrow">${escapeHTML(product.badge || product.category)}</span>
+            <h1>${escapeHTML(product.name)}</h1>
+            <p class="lead">${escapeHTML(product.description)}</p>
+
+            <div class="detail-list">
+              <div class="detail-row"><span>Price</span><b class="gold">${money(product.price)}</b></div>
+              <div class="detail-row"><span>Category</span><b>${escapeHTML(product.category)}</b></div>
+              <div class="detail-row"><span>Fabric</span><b>${escapeHTML(product.fabricType || "Premium Fabric")}</b></div>
+              <div class="detail-row"><span>Size</span><b>${escapeHTML(product.sizes)}</b></div>
+              <div class="detail-row"><span>Colour</span><b>${escapeHTML(product.color)}</b></div>
+              <div class="detail-row"><span>Delivery</span><b>${escapeHTML(product.deliveryEstimate)}</b></div>
+            </div>
+
+            <div class="sticky-actions">
+              <button class="btn btn-primary" type="button" data-add-bag="${escapeHTML(product.id)}">Add to Bag</button>
+              <a class="btn btn-outline" href="checkout.html">Checkout</a>
+            </div>
+          </aside>
+        `;
+
+        $("[data-add-bag]", root)?.addEventListener("click", () => App.cart.add(product.id));
+
+        $$(".thumb-btn", root).forEach(btn => {
+          btn.addEventListener("click", () => {
+            const i = Number(btn.dataset.thumb);
+            $("#mainImage").src = images[i];
+            $$(".thumb-btn", root).forEach(x => x.classList.remove("active"));
+            btn.classList.add("active");
+          });
+        });
+
+        const rel = $("#relatedProducts");
+        if (rel) {
+          const related = App.products.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
+          rel.innerHTML = related.map(App.card).join("");
         }
-      });
-
-      let touchStartX = 0;
-      $("#productDetails")?.addEventListener("touchstart", event => {
-        touchStartX = event.changedTouches[0].clientX;
-      }, { passive: true });
-
-      $("#productDetails")?.addEventListener("touchend", event => {
-        const diff = event.changedTouches[0].clientX - touchStartX;
-        if (Math.abs(diff) < 50) return;
-        Timzy.product.move(diff < 0 ? 1 : -1, images);
-      }, { passive: true });
+      }
     },
 
-    move(delta, images) {
-      Timzy.state.galleryIndex = (Timzy.state.galleryIndex + delta + images.length) % images.length;
-      const main = $("#mainImage");
-      if (main) main.src = images[Timzy.state.galleryIndex];
-      $$("[data-gallery-index]").forEach(item => item.classList.toggle("active", Number(item.dataset.galleryIndex) === Timzy.state.galleryIndex));
+    wishlist: {
+      list() {
+        return store.get(KEYS.wishlist, []);
+      },
+      toggle(id) {
+        const list = App.wishlist.list();
+        const exists = list.includes(id);
+        const next = exists ? list.filter(x => x !== id) : [...list, id];
+        store.set(KEYS.wishlist, next);
+        toast(exists ? "Removed from saved items." : "Saved to wishlist.");
+      }
     },
 
-    related(product) {
-      const el = $("#relatedProducts");
-      if (!el) return;
+    cart: {
+      list() {
+        return store.get(KEYS.cart, []);
+      },
 
-      const products = Timzy.products.related(product, 4);
+      save(items) {
+        store.set(KEYS.cart, items);
+        App.cart.render();
+        App.checkout.renderSummary();
+      },
 
-      el.innerHTML = products.length
-        ? products.map(item => Timzy.components.productCard(item)).join("")
-        : "";
-    },
+      add(id) {
+        const product = App.products.find(p => String(p.id) === String(id));
+        if (!product) return toast("Product not found.");
 
-    trackRecentlyViewed(productId) {
-      const viewed = storage.get(Timzy.keys.recentlyViewed, []);
-      const next = [productId, ...viewed.filter(id => String(id) !== String(productId))].slice(0, 12);
-      storage.set(Timzy.keys.recentlyViewed, next);
-    }
-  };
+        const cart = App.cart.list();
+        const existing = cart.find(item => String(item.id) === String(product.id));
 
-  /* ==========================================================
-     FULLSCREEN GALLERY
-  ========================================================== */
+        if (existing) existing.qty += 1;
+        else {
+          cart.push({
+            id: product.id,
+            name: product.name,
+            category: product.category,
+            price: product.price,
+            image: App.image(product),
+            qty: 1
+          });
+        }
 
-  Timzy.gallery = {
-    open(images, index = 0) {
-      let modal = $("#galleryModal");
-      if (!modal) {
+        App.cart.save(cart);
+        toast(`${product.name} added to bag.`);
+        App.cart.open();
+      },
+
+      remove(id) {
+        App.cart.save(App.cart.list().filter(item => String(item.id) !== String(id)));
+      },
+
+      qty(id, delta) {
+        App.cart.save(App.cart.list().map(item => String(item.id) === String(id) ? {
+          ...item,
+          qty: Math.max(1, item.qty + delta)
+        } : item));
+      },
+
+      total() {
+        return App.cart.list().reduce((sum, item) => sum + toNumber(item.price) * item.qty, 0);
+      },
+
+      count() {
+        return App.cart.list().reduce((sum, item) => sum + item.qty, 0);
+      },
+
+      mount() {
+        if ($(".cart-drawer")) return;
+
         document.body.insertAdjacentHTML("beforeend", `
-          <div class="modal gallery-modal" id="galleryModal" aria-hidden="true">
-            <button type="button" class="btn btn-small modal-close" data-close-gallery>Close</button>
-            <button type="button" class="gallery-arrow prev" data-gallery-prev>‹</button>
-            <img alt="Product image zoom" id="galleryModalImage">
-            <button type="button" class="gallery-arrow next" data-gallery-next>›</button>
-          </div>
+          <aside class="cart-drawer" id="cartDrawer">
+            <div class="cart-head">
+              <div>
+                <span class="eyebrow">Shopping Bag</span>
+                <h3>Your Look</h3>
+              </div>
+              <button class="btn btn-small" type="button" data-cart-close>Close</button>
+            </div>
+
+            <div class="cart-items" id="cartItems"></div>
+
+            <div class="cart-footer">
+              <div class="order-line">
+                <b>Total</b>
+                <b class="gold" id="cartTotal">₦0</b>
+              </div>
+              <a class="btn btn-primary btn-block" href="checkout.html">Proceed to Checkout</a>
+              <button class="btn btn-outline btn-block" type="button" id="cartWhatsApp">Send to WhatsApp</button>
+            </div>
+          </aside>
         `);
 
-        modal = $("#galleryModal");
+        document.addEventListener("click", e => {
+          if (e.target.closest("[data-open-bag], .floating-bag, .cart-fab")) App.cart.open();
+          if (e.target.closest("[data-cart-close]")) App.cart.close();
 
-        modal.addEventListener("click", event => {
-          if (event.target.matches("[data-close-gallery]") || event.target === modal) modal.classList.remove("open");
-          if (event.target.matches("[data-gallery-prev]")) Timzy.gallery.move(-1);
-          if (event.target.matches("[data-gallery-next]")) Timzy.gallery.move(1);
+          const minus = e.target.closest("[data-cart-minus]");
+          if (minus) App.cart.qty(minus.dataset.cartMinus, -1);
+
+          const plus = e.target.closest("[data-cart-plus]");
+          if (plus) App.cart.qty(plus.dataset.cartPlus, 1);
+
+          const remove = e.target.closest("[data-cart-remove]");
+          if (remove) App.cart.remove(remove.dataset.cartRemove);
         });
 
-        document.addEventListener("keydown", event => {
-          if (!modal.classList.contains("open")) return;
-          if (event.key === "ArrowRight") Timzy.gallery.move(1);
-          if (event.key === "ArrowLeft") Timzy.gallery.move(-1);
+        $("#cartWhatsApp")?.addEventListener("click", App.whatsapp.sendBag);
+      },
+
+      open() {
+        $("#cartDrawer")?.classList.add("open");
+      },
+
+      close() {
+        $("#cartDrawer")?.classList.remove("open");
+      },
+
+      render() {
+        const count = App.cart.count();
+
+        ["#bagCount", "#cartCount"].forEach(sel => {
+          const el = $(sel);
+          if (el) el.textContent = String(count);
         });
-      }
 
-      Timzy.gallery.images = images;
-      Timzy.gallery.index = index;
-      Timzy.gallery.paint();
-      modal.classList.add("open");
-    },
+        const total = $("#cartTotal");
+        if (total) total.textContent = money(App.cart.total());
 
-    images: [],
-    index: 0,
+        const items = $("#cartItems");
+        if (!items) return;
 
-    move(delta) {
-      const images = Timzy.gallery.images;
-      Timzy.gallery.index = (Timzy.gallery.index + delta + images.length) % images.length;
-      Timzy.gallery.paint();
-    },
+        const cart = App.cart.list();
 
-    paint() {
-      const image = $("#galleryModalImage");
-      if (image) image.src = Timzy.gallery.images[Timzy.gallery.index];
-    }
-  };
-
-  /* ==========================================================
-     SHOPPING BAG / CART
-  ========================================================== */
-
-  Timzy.cart = {
-    init() {
-      if (isAdminPath() || isLoginPage()) return;
-      Timzy.cart.mount();
-      Timzy.cart.updateUI();
-
-      document.addEventListener("click", event => {
-        const open = event.target.closest("[data-open-bag]");
-        if (open) Timzy.cart.open();
-
-        const close = event.target.closest("[data-close-bag]");
-        if (close) Timzy.cart.close();
-
-        const remove = event.target.closest("[data-remove-cart]");
-        if (remove) Timzy.cart.remove(remove.dataset.removeCart);
-
-        const qty = event.target.closest("[data-cart-qty]");
-        if (qty) Timzy.cart.updateQty(qty.dataset.id, Number(qty.dataset.cartQty));
-      });
-    },
-
-    list() {
-      return storage.get(Timzy.keys.cart, []);
-    },
-
-    save(cart) {
-      storage.set(Timzy.keys.cart, cart);
-      Timzy.cart.updateUI();
-      Timzy.checkout.renderSummary();
-    },
-
-    add(productOrId, quantity = 1) {
-      const product = typeof productOrId === "object" ? productOrId : Timzy.products.find(productOrId);
-      if (!product) return Timzy.toast.show("Product could not be added.", "error");
-
-      const cart = Timzy.cart.list();
-      const existing = cart.find(item => String(item.id) === String(product.id));
-
-      if (existing) {
-        existing.qty += quantity;
-      } else {
-        cart.push({
-          id: product.id,
-          sku: product.sku,
-          name: product.name,
-          category: product.category,
-          price: product.salePrice || product.price,
-          image: product.images?.[0] || cfg().fallbackImage,
-          qty: quantity,
-          lookGroup: product.lookGroup || product.category
-        });
-      }
-
-      Timzy.cart.save(cart);
-      Timzy.activity.log(`Added to bag: ${product.name}`);
-      Timzy.toast.show(`${product.name} added to your shopping bag.`, "success", {
-        label: "View Bag",
-        handler: () => Timzy.cart.open()
-      });
-    },
-
-    remove(id) {
-      const cart = Timzy.cart.list().filter(item => String(item.id) !== String(id));
-      Timzy.cart.save(cart);
-      Timzy.toast.show("Item removed from bag.");
-    },
-
-    updateQty(id, delta) {
-      const cart = Timzy.cart.list()
-        .map(item => String(item.id) === String(id) ? { ...item, qty: Math.max(1, item.qty + delta) } : item);
-      Timzy.cart.save(cart);
-    },
-
-    clear() {
-      Timzy.cart.save([]);
-      Timzy.toast.show("Shopping bag cleared.");
-    },
-
-    count() {
-      return Timzy.cart.list().reduce((sum, item) => sum + item.qty, 0);
-    },
-
-    total() {
-      return Timzy.cart.list().reduce((sum, item) => sum + moneyNum(item.price) * item.qty, 0);
-    },
-
-    mount() {
-      if ($(".cart-fab")) return;
-
-      document.body.insertAdjacentHTML("beforeend", `
-        <button class="cart-fab" id="cartFab" type="button" data-open-bag aria-label="Open shopping bag">
-          🛍
-          <span class="cart-count" id="cartCount">0</span>
-        </button>
-
-        <aside class="cart-drawer" id="cartDrawer" aria-label="Shopping bag">
-          <div class="cart-head">
-            <div>
-              <span class="eyebrow">Shopping Bag</span>
-              <h3>Your Look</h3>
-            </div>
-            <button class="btn btn-small" type="button" data-close-bag>Close</button>
-          </div>
-
-          <div class="cart-items" id="cartItems"></div>
-
-          <div class="cart-footer">
-            <div class="order-line">
-              <b>Total</b>
-              <b class="gold" id="cartTotal">₦0</b>
-            </div>
-            <a class="btn btn-primary btn-block" href="checkout.html">Proceed to Checkout</a>
-            <button class="btn btn-outline btn-block" type="button" id="cartWhatsApp">Send to WhatsApp</button>
-          </div>
-        </aside>
-      `);
-
-      $("#cartWhatsApp")?.addEventListener("click", () => Timzy.whatsapp.sendBag());
-    },
-
-    open() {
-      Timzy.cart.updateUI();
-      $("#cartDrawer")?.classList.add("open");
-    },
-
-    close() {
-      $("#cartDrawer")?.classList.remove("open");
-    },
-
-    updateUI() {
-      const cart = Timzy.cart.list();
-      const count = Timzy.cart.count();
-
-      ["#cartCount", "#bagCount"].forEach(selector => {
-        const el = $(selector);
-        if (el) el.textContent = String(count);
-      });
-
-      const total = $("#cartTotal");
-      if (total) total.textContent = formatMoney(Timzy.cart.total());
-
-      const items = $("#cartItems");
-      if (!items) return;
-
-      items.innerHTML = cart.length
-        ? cart.map(item => `
+        items.innerHTML = cart.length ? cart.map(item => `
           <div class="cart-item">
-            <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
+            <img src="${escapeHTML(item.image)}" alt="${escapeHTML(item.name)}">
             <div>
-              <b>${escapeHtml(item.name)}</b>
-              <small>${escapeHtml(item.category || "Collection")} • ${formatMoney(item.price)}</small>
+              <b>${escapeHTML(item.name)}</b>
+              <small>${escapeHTML(item.category)} • ${money(item.price)}</small>
               <div class="qty">
-                <button type="button" data-cart-qty="-1" data-id="${escapeHtml(item.id)}">−</button>
+                <button type="button" data-cart-minus="${escapeHTML(item.id)}">−</button>
                 <span>${item.qty}</span>
-                <button type="button" data-cart-qty="1" data-id="${escapeHtml(item.id)}">+</button>
+                <button type="button" data-cart-plus="${escapeHTML(item.id)}">+</button>
               </div>
             </div>
-            <button class="btn btn-small" type="button" data-remove-cart="${escapeHtml(item.id)}">×</button>
+            <button class="btn btn-small" type="button" data-cart-remove="${escapeHTML(item.id)}">×</button>
           </div>
-        `).join("")
-        : `<div class="empty">Your bag is empty. Add clothes, shoes, cufflinks, glasses, fabrics, and accessories to build a complete dress down.</div>`;
-    }
-  };
-
-  /* ==========================================================
-     WISHLIST
-  ========================================================== */
-
-  Timzy.wishlist = {
-    init() {
-      if (!Timzy.flags.wishlist) return;
-      Timzy.wishlist.updateUI();
-    },
-
-    list() {
-      return storage.get(Timzy.keys.wishlist, []);
-    },
-
-    save(items) {
-      storage.set(Timzy.keys.wishlist, items);
-      Timzy.wishlist.updateUI();
-    },
-
-    has(id) {
-      return Timzy.wishlist.list().some(item => String(item) === String(id));
-    },
-
-    toggle(id) {
-      const items = Timzy.wishlist.list();
-      const exists = Timzy.wishlist.has(id);
-      const next = exists ? items.filter(item => String(item) !== String(id)) : [...items, id];
-      Timzy.wishlist.save(next);
-      Timzy.toast.show(exists ? "Removed from saved items." : "Saved to wishlist.");
-    },
-
-    updateUI() {
-      const count = Timzy.wishlist.list().length;
-      $$("[data-wishlist-count]").forEach(el => el.textContent = String(count));
-    }
-  };
-
-  /* ==========================================================
-     BUILD YOUR LOOK
-  ========================================================== */
-
-  Timzy.look = {
-    render(product) {
-      const el = $("#buildLook, #completeLook");
-      if (!el || !Timzy.flags.buildLook || !product) return;
-
-      const accessories = Timzy.state.products
-        .filter(item => item.id !== product.id)
-        .filter(item => {
-          const cat = safeText(item.category).toLowerCase();
-          return ["shoes", "shoe", "watch", "belt", "accessories", "cufflinks", "sunglasses", "cap", "perfume"].some(key => cat.includes(key));
-        })
-        .slice(0, 6);
-
-      if (!accessories.length) {
-        el.innerHTML = `
-          <div class="panel">
-            <span class="eyebrow">Complete the Look</span>
-            <h2>Accessories coming soon.</h2>
-            <p>Matching shoes, cufflinks, sunglasses, belts, caps, and fragrance can be activated once added to the catalog.</p>
-          </div>
-        `;
-        return;
+        `).join("") : `<div class="empty">Your bag is empty.</div>`;
       }
-
-      el.innerHTML = `
-        <div class="section-head">
-          <div>
-            <span class="eyebrow">Complete the Look</span>
-            <h2>Style the full gentleman.</h2>
-          </div>
-        </div>
-        <div class="product-grid">
-          ${accessories.map(item => Timzy.components.productCard(item)).join("")}
-        </div>
-      `;
-    }
-  };
-
-  /* ==========================================================
-     CHECKOUT
-  ========================================================== */
-
-  Timzy.checkout = {
-    init() {
-      const form = $("#checkoutForm");
-      if (!form) return;
-
-      Timzy.checkout.renderSummary();
-      Timzy.checkout.bindConditionalFields();
-
-      $("#clearCartBtn")?.addEventListener("click", () => Timzy.cart.clear());
-
-      form.addEventListener("submit", event => {
-        event.preventDefault();
-        Timzy.checkout.submit(form);
-      });
     },
 
-    bindConditionalFields() {
-      const delivery = $$("[name='delivery']");
-      const measurement = $$("[name='measurement']");
+    checkout: {
+      init() {
+        const form = $("#checkoutForm");
+        if (!form) return;
 
-      const update = () => {
-        const deliveryValue = Timzy.checkout.formValue("delivery");
-        const measurementValue = Timzy.checkout.formValue("measurement");
+        App.checkout.renderSummary();
 
-        $$("[data-delivery-section]").forEach(el => {
-          el.hidden = el.dataset.deliverySection !== deliveryValue;
+        form.addEventListener("submit", e => {
+          e.preventDefault();
+          const data = Object.fromEntries(new FormData(form).entries());
+
+          if (!App.cart.list().length) return toast("Your bag is empty.");
+          if (!data.name || !data.phone) return toast("Name and phone number are required.");
+
+          const summary = App.checkout.summary(data);
+          const orders = store.get(KEYS.orders, []);
+          orders.push({
+            id: `TF-${Date.now().toString().slice(-7)}`,
+            date: new Date().toISOString(),
+            customer: data.name,
+            phone: data.phone,
+            total: App.cart.total(),
+            payment: data.payment,
+            delivery: data.delivery,
+            summary
+          });
+          store.set(KEYS.orders, orders);
+
+          if (data.payment === "Pay Now" && CONFIG().paymentGatewayUrl) {
+            location.href = CONFIG().paymentGatewayUrl;
+          } else {
+            App.whatsapp.send(summary);
+            toast("Order created. WhatsApp will open with full order details.");
+          }
         });
 
-        $$("[data-measurement-section]").forEach(el => {
-          el.hidden = el.dataset.measurementSection !== measurementValue;
+        $("#clearCartBtn")?.addEventListener("click", () => {
+          App.cart.save([]);
+          App.checkout.renderSummary();
         });
-      };
+      },
 
-      delivery.forEach(input => input.addEventListener("change", update));
-      measurement.forEach(input => input.addEventListener("change", update));
-      update();
-    },
+      renderSummary() {
+        const el = $("#checkoutItems");
+        if (!el) return;
 
-    formValue(name) {
-      return new FormData($("#checkoutForm")).get(name);
-    },
-
-    renderSummary() {
-      const items = $("#checkoutItems");
-      if (!items) return;
-
-      const cart = Timzy.cart.list();
-
-      items.innerHTML = cart.length
-        ? cart.map(item => `
+        const cart = App.cart.list();
+        el.innerHTML = cart.length ? cart.map(item => `
           <div class="order-line">
-            <span>${escapeHtml(item.name)} × ${item.qty}</span>
-            <b>${formatMoney(moneyNum(item.price) * item.qty)}</b>
+            <span>${escapeHTML(item.name)} × ${item.qty}</span>
+            <b>${money(toNumber(item.price) * item.qty)}</b>
           </div>
-        `).join("")
-        : `<p class="notice">Your bag is empty. Go back to the catalog and add items.</p>`;
+        `).join("") : `<p class="notice">Your bag is empty. Go back to the shop and add items.</p>`;
 
-      const total = $("#checkoutTotal");
-      if (total) total.textContent = formatMoney(Timzy.cart.total());
-    },
+        const total = $("#checkoutTotal");
+        if (total) total.textContent = money(App.cart.total());
+      },
 
-    validate(data) {
-      const required = ["name", "phone", "delivery", "measurement", "payment"];
-      for (const key of required) {
-        if (!safeText(data[key])) return `${key} is required.`;
-      }
-
-      if (!Timzy.cart.list().length) return "Your bag is empty.";
-      return null;
-    },
-
-    submit(form) {
-      const data = Object.fromEntries(new FormData(form).entries());
-      const error = Timzy.checkout.validate(data);
-
-      if (error) {
-        Timzy.toast.show(error, "error");
-        return;
-      }
-
-      const summary = Timzy.orders.summary(data);
-      const order = Timzy.orders.create(data, summary);
-
-      if (data.payment === "Pay Now") {
-        Timzy.payment.start(order, data, summary);
-      } else {
-        Timzy.whatsapp.send(summary);
-        Timzy.toast.show("Order created. WhatsApp will open with full details.");
-      }
-    }
-  };
-
-  /* ==========================================================
-     ORDERS
-  ========================================================== */
-
-  Timzy.orders = {
-    list() {
-      return storage.get(Timzy.keys.orders, []);
-    },
-
-    save(orders) {
-      storage.set(Timzy.keys.orders, orders);
-    },
-
-    create(data, summary) {
-      const order = {
-        id: generateRef("TF"),
-        createdAt: nowISO(),
-        customer: data.name,
-        phone: data.phone,
-        email: data.email || "",
-        delivery: data.delivery,
-        address: data.address || "",
-        measurement: data.measurement,
-        measurements: data.measurements || "",
-        payment: data.payment,
-        notes: data.notes || "",
-        total: Timzy.cart.total(),
-        items: Timzy.cart.list(),
-        summary,
-        status: data.payment === "Pay Now" ? "Payment Started" : "Pending"
-      };
-
-      const orders = Timzy.orders.list();
-      orders.push(order);
-      Timzy.orders.save(orders);
-      Timzy.activity.log(`New order created: ${order.id}`);
-      return order;
-    },
-
-    summary(data) {
-      const lines = Timzy.cart.list()
-        .map(item => `- ${item.name} x${item.qty} = ${formatMoney(moneyNum(item.price) * item.qty)}`)
-        .join("\n");
-
-      return `New Timzy Fashion Order
+      summary(data) {
+        const items = App.cart.list().map(item => `- ${item.name} x${item.qty} = ${money(toNumber(item.price) * item.qty)}`).join("\\n");
+        return `New Timzy Fashion Order
 
 Customer: ${data.name}
 Phone: ${data.phone}
 Email: ${data.email || "N/A"}
 
 Items:
-${lines}
+${items}
 
-Total: ${formatMoney(Timzy.cart.total())}
+Total: ${money(App.cart.total())}
 
-Delivery: ${data.delivery}
-Address / Pickup Note: ${data.address || cfg().pickupAddress || "N/A"}
+Delivery: ${data.delivery || "N/A"}
+Address/Pickup Note: ${data.address || CONFIG().pickupAddress}
 
-Measurement Option: ${data.measurement}
-Measurements / Appointment Note: ${data.measurements || "N/A"}
+Measurement Option: ${data.measurement || "N/A"}
+Measurements/Notes: ${data.measurements || data.notes || "N/A"}
 
-Payment: ${data.payment}
-Notes: ${data.notes || "N/A"}
+Payment: ${data.payment || "N/A"}
 
-Order Ref: ${generateRef("TF")}`;
-    }
-  };
-
-  /* ==========================================================
-     PAYMENT ABSTRACTION
-  ========================================================== */
-
-  Timzy.payment = {
-    start(order, data, summary) {
-      if (!Timzy.flags.payments) {
-        Timzy.whatsapp.send(`${summary}\n\nPayment status: Pending.`);
-        return;
-      }
-
-      const amount = Timzy.cart.total();
-      const gateway = safeText(cfg().paymentGatewayUrl);
-      const paystackKey = safeText(cfg().paystackPublicKey);
-      const reference = order.id || generateRef("TF");
-
-      if (gateway) {
-        const separator = gateway.includes("?") ? "&" : "?";
-        const params = new URLSearchParams({
-          amount: String(amount),
-          customer: data.name,
-          phone: data.phone,
-          email: data.email || "",
-          ref: reference
-        }).toString();
-
-        location.href = `${gateway}${separator}${params}`;
-        return;
-      }
-
-      if (paystackKey && window.PaystackPop) {
-        window.PaystackPop.setup({
-          key: paystackKey,
-          email: data.email || "customer@timzyfashion.com",
-          amount: amount * 100,
-          currency: cfg().currency || "NGN",
-          ref: reference,
-          callback() {
-            Timzy.orders.save(Timzy.orders.list().map(item => item.id === order.id ? { ...item, status: "Paid" } : item));
-            Timzy.whatsapp.send(`${summary}\n\nPayment: PAID ONLINE\nPayment Ref: ${reference}`);
-            Timzy.toast.show("Payment successful. Order sent to Timzy.");
-          },
-          onClose() {
-            Timzy.toast.show("Payment window closed.", "error");
-          }
-        }).openIframe();
-
-        return;
-      }
-
-      Timzy.toast.show("Payment gateway is not configured yet. Sending order as pending payment.", "error");
-      Timzy.whatsapp.send(`${summary}\n\nPayment status: Pending online payment setup.`);
-    }
-  };
-
-  /* ==========================================================
-     WHATSAPP
-  ========================================================== */
-
-  Timzy.whatsapp = {
-    number() {
-      return safeText(cfg().whatsapp || Timzy.defaults.whatsapp).replace(/[^0-9]/g, "");
-    },
-
-    send(message) {
-      if (!Timzy.flags.whatsapp) return;
-      const url = `https://wa.me/${Timzy.whatsapp.number()}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank", "noopener");
-    },
-
-    sendBag() {
-      const cart = Timzy.cart.list();
-      const message = cart.length
-        ? `Hi Timzy Fashion, I want to order these items:\n\n${cart.map(item => `- ${item.name} x${item.qty}`).join("\n")}\n\nTotal: ${formatMoney(Timzy.cart.total())}`
-        : "Hi Timzy Fashion, I would like to make an enquiry.";
-      Timzy.whatsapp.send(message);
-    }
-  };
-
-  /* ==========================================================
-     ACTIVITY LOG
-  ========================================================== */
-
-  Timzy.activity = {
-    list() {
-      return storage.get(Timzy.keys.activity, []);
-    },
-
-    log(message, meta = {}) {
-      const rows = Timzy.activity.list();
-      rows.unshift({
-        id: generateRef("ACT"),
-        message,
-        meta,
-        date: nowISO()
-      });
-      storage.set(Timzy.keys.activity, rows.slice(0, 100));
-      Timzy.analytics.track("activity", { message, ...meta });
-    }
-  };
-
-  /* ==========================================================
-     ADMIN HELPERS
-  ========================================================== */
-
-  Timzy.admin = {
-    init() {
-      if (!isAdminPath()) return;
-      if (!Timzy.flags.admin) return;
-
-      Timzy.admin.dashboard();
-      Timzy.admin.products();
-      Timzy.admin.sales();
-      Timzy.admin.expenses();
-      Timzy.admin.reports();
-    },
-
-    dashboard() {
-      const root = $("#adminDashboard");
-      if (!root) return;
-
-      const sales = Timzy.admin.salesList();
-      const expenses = Timzy.admin.expenseList();
-      const orders = Timzy.orders.list();
-
-      const today = new Date().toISOString().slice(0, 10);
-      const todaySales = sales.filter(row => safeText(row.date).startsWith(today)).reduce((sum, row) => sum + moneyNum(row.amount), 0);
-      const todayExpenses = expenses.filter(row => safeText(row.date).startsWith(today)).reduce((sum, row) => sum + moneyNum(row.amount), 0);
-      const pendingOrders = orders.filter(order => !["Delivered", "Cancelled", "Paid"].includes(order.status)).length;
-
-      root.innerHTML = `
-        <div class="kpi-grid">
-          <div class="kpi-card"><span>Today's Sales</span><strong>${formatMoney(todaySales)}</strong></div>
-          <div class="kpi-card"><span>Today's Expenses</span><strong>${formatMoney(todayExpenses)}</strong></div>
-          <div class="kpi-card"><span>Profit Estimate</span><strong>${formatMoney(todaySales - todayExpenses)}</strong></div>
-          <div class="kpi-card"><span>Pending Orders</span><strong>${pendingOrders}</strong></div>
-        </div>
-      `;
-    },
-
-    products() {
-      const root = $("#adminProducts");
-      if (!root) return;
-
-      const render = () => {
-        root.innerHTML = Timzy.state.products.length
-          ? Timzy.state.products.map(product => `
-            <article class="admin-product-row" data-id="${escapeHtml(product.id)}">
-              <img src="${escapeHtml(product.images?.[0] || cfg().fallbackImage)}" alt="${escapeHtml(product.name)}">
-              <div>
-                <b>${escapeHtml(product.name)}</b>
-                <small>${escapeHtml(product.category)} • ${formatMoney(product.salePrice || product.price)}</small>
-              </div>
-              <div class="admin-row-actions">
-                <button class="btn btn-small" data-admin-edit="${escapeHtml(product.id)}">Edit</button>
-                <button class="btn btn-small" data-admin-duplicate="${escapeHtml(product.id)}">Duplicate</button>
-                <button class="btn btn-small" data-admin-delete="${escapeHtml(product.id)}">Delete</button>
-              </div>
-            </article>
-          `).join("")
-          : `<div class="empty">No products yet.</div>`;
-      };
-
-      render();
-
-      root.addEventListener("click", event => {
-        const edit = event.target.closest("[data-admin-edit]");
-        const duplicate = event.target.closest("[data-admin-duplicate]");
-        const del = event.target.closest("[data-admin-delete]");
-
-        if (edit) Timzy.admin.editProduct(edit.dataset.adminEdit);
-        if (duplicate) Timzy.admin.duplicateProduct(duplicate.dataset.adminDuplicate, render);
-        if (del) Timzy.admin.deleteProduct(del.dataset.adminDelete, render);
-      });
-    },
-
-    editProduct(id) {
-      const product = Timzy.products.find(id);
-      if (!product) return;
-
-      const name = prompt("Product name", product.name);
-      if (name === null) return;
-
-      const price = prompt("Price", product.salePrice || product.price);
-      if (price === null) return;
-
-      Timzy.state.products = Timzy.state.products.map(item => item.id === product.id ? { ...item, name, price, salePrice: price } : item);
-      Timzy.products.saveLocal(Timzy.state.products);
-      Timzy.toast.show("Product updated.");
-      location.reload();
-    },
-
-    duplicateProduct(id, callback) {
-      const product = Timzy.products.find(id);
-      if (!product) return;
-
-      const copy = {
-        ...product,
-        id: `${product.id}-copy-${Date.now()}`,
-        sku: `${product.sku || product.id}-COPY`,
-        name: `${product.name} Copy`
-      };
-
-      Timzy.state.products.unshift(copy);
-      Timzy.products.saveLocal(Timzy.state.products);
-      Timzy.toast.show("Product duplicated.");
-      callback?.();
-    },
-
-    deleteProduct(id, callback) {
-      if (!confirm("Delete this product?")) return;
-      Timzy.state.products = Timzy.state.products.filter(product => String(product.id) !== String(id));
-      Timzy.products.saveLocal(Timzy.state.products);
-      Timzy.toast.show("Product deleted.");
-      callback?.();
-    },
-
-    salesList() {
-      return storage.get(Timzy.keys.sales, []);
-    },
-
-    expenseList() {
-      return storage.get(Timzy.keys.expenses, []);
-    },
-
-    sales() {
-      const form = $("#salesForm");
-      if (!form) return;
-
-      form.addEventListener("submit", event => {
-        event.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
-        const rows = Timzy.admin.salesList();
-        rows.unshift({ ...data, id: generateRef("SALE"), date: data.date || nowISO() });
-        storage.set(Timzy.keys.sales, rows);
-        Timzy.activity.log(`Sale recorded: ${data.customer || data.product || "Sale"}`);
-        Timzy.toast.show("Sale recorded.");
-        form.reset();
-      });
-    },
-
-    expenses() {
-      const form = $("#expensesForm");
-      if (!form) return;
-
-      form.addEventListener("submit", event => {
-        event.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
-        const rows = Timzy.admin.expenseList();
-        rows.unshift({ ...data, id: generateRef("EXP"), date: data.date || nowISO() });
-        storage.set(Timzy.keys.expenses, rows);
-        Timzy.activity.log(`Expense recorded: ${data.title || "Expense"}`);
-        Timzy.toast.show("Expense recorded.");
-        form.reset();
-      });
-    },
-
-    reports() {
-      const root = $("#reportsTable");
-      if (!root) return;
-
-      const sales = Timzy.admin.salesList();
-      const expenses = Timzy.admin.expenseList();
-
-      root.innerHTML = `
-        <div class="report-grid">
-          <div class="panel"><span class="eyebrow">Sales</span><h2>${formatMoney(sales.reduce((s, r) => s + moneyNum(r.amount), 0))}</h2></div>
-          <div class="panel"><span class="eyebrow">Expenses</span><h2>${formatMoney(expenses.reduce((s, r) => s + moneyNum(r.amount), 0))}</h2></div>
-        </div>
-      `;
-    }
-  };
-
-  /* ==========================================================
-     FIREBASE HOOKS
-  ========================================================== */
-
-  Timzy.firebase = {
-    enabled() {
-      return Timzy.flags.firebase && window.firebase && window.TIMZY_FIREBASE_READY;
-    },
-
-    async saveOrder(order) {
-      if (!Timzy.firebase.enabled()) return null;
-      try {
-        // Hook point for Firestore order save.
-        // Implement with your Firebase SDK setup:
-        // await addDoc(collection(db, "orders"), order)
-        return order;
-      } catch (error) {
-        Timzy.core.error("Firebase order save failed", error);
-        return null;
+Order Ref: TF-${Date.now().toString().slice(-7)}`;
       }
     },
 
-    async uploadProductImage(file) {
-      if (!Timzy.firebase.enabled()) return null;
-      try {
-        // Hook point for Firebase Storage upload.
-        return null;
-      } catch (error) {
-        Timzy.core.error("Firebase image upload failed", error);
-        return null;
+,
+    builder: {
+      init() {
+        if (!document.getElementById("mainOutfitGrid")) return;
+        const outfits = App.products.filter(p => ["senator","agbada","kaftan","wear","fabric"].some(k => String(p.category + " " + p.productType + " " + p.tags).toLowerCase().includes(k))).slice(0, 8);
+        const accessories = App.products.filter(p => String(p.category).toLowerCase().includes("accessor"));
+        const by = term => accessories.filter(p => JSON.stringify(p).toLowerCase().includes(term)).slice(0, 4);
+        const fill = (id, rows) => { const el=document.getElementById(id); if(el) el.innerHTML = rows.length ? rows.map(App.card).join("") : '<div class="empty">Coming soon.</div>'; };
+        fill("mainOutfitGrid", outfits.length ? outfits : App.products.slice(0,8));
+        fill("builderShoes", by("shoe").concat(by("sandals")).slice(0,4));
+        fill("builderWatches", by("watch"));
+        fill("builderCufflinks", by("cufflink"));
+        fill("builderGlasses", by("sunglass"));
+        fill("builderCaps", by("cap"));
+        fill("builderBelts", by("belt"));
+        fill("builderPerfumes", by("perfume"));
+      }
+    }
+
+    whatsapp: {
+      number() {
+        return String(CONFIG().whatsapp).replace(/[^0-9]/g, "");
+      },
+
+      send(message) {
+        window.open(`https://wa.me/${App.whatsapp.number()}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+      },
+
+      sendBag() {
+        const cart = App.cart.list();
+        const msg = cart.length
+          ? `Hi Timzy Fashion, I want to order these items:\\n\\n${cart.map(item => `- ${item.name} x${item.qty}`).join("\\n")}\\n\\nTotal: ${money(App.cart.total())}`
+          : "Hi Timzy Fashion, I want to make an enquiry.";
+        App.whatsapp.send(msg);
       }
     }
   };
 
-  /* ==========================================================
-     ANALYTICS HOOKS
-  ========================================================== */
-
-  Timzy.analytics = {
-    pageView() {
-      Timzy.analytics.track("page_view", { page: currentPage(), path: location.pathname });
-    },
-
-    track(eventName, payload = {}) {
-      if (!Timzy.flags.analytics) return;
-      try {
-        console.info("[Timzy Analytics]", eventName, payload);
-      } catch {}
-    }
-  };
-
-  /* ==========================================================
-     FUTURE MODULES — DISABLED UNTIL ACTIVATED
-  ========================================================== */
-
-  Timzy.future = {
-    init() {
-      if (Timzy.flags.aiStylist) Timzy.future.aiStylist();
-      if (Timzy.flags.loyalty) Timzy.future.loyalty();
-      if (Timzy.flags.promoCodes) Timzy.future.promoCodes();
-      if (Timzy.flags.giftCards) Timzy.future.giftCards();
-      if (Timzy.flags.customerAccount) Timzy.future.customerAccount();
-    },
-
-    aiStylist() {
-      console.info("AI Stylist module is ready to activate.");
-    },
-
-    loyalty() {
-      console.info("Loyalty module is ready to activate.");
-    },
-
-    promoCodes() {
-      console.info("Promo code module is ready to activate.");
-    },
-
-    giftCards() {
-      console.info("Gift card module is ready to activate.");
-    },
-
-    customerAccount() {
-      console.info("Customer account module is ready to activate.");
-    }
-  };
-
-  /* ==========================================================
-     GLOBAL EXPORTS FOR INLINE HTML COMPATIBILITY
-  ========================================================== */
-
-  window.updateQty = (id, delta) => Timzy.cart.updateQty(id, delta);
-  window.removeCart = id => Timzy.cart.remove(id);
-  window.addToCart = productOrId => Timzy.cart.add(productOrId);
-
-  /* ==========================================================
-     INIT
-  ========================================================== */
-
-  document.addEventListener("DOMContentLoaded", () => Timzy.core.init());
-
+  document.addEventListener("DOMContentLoaded", App.init);
+  window.Timzy = App;
 })();
-'''
-
-out = Path("/mnt/data/app.production.js")
-out.write_text(app_js, encoding="utf-8")
-print(out)
