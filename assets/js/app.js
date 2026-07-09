@@ -51,3 +51,4 @@ checkout:{init(){const f=$('#checkoutForm');if(!f)return;App.checkout.summaryRen
 whatsapp:{number(){return String(C().whatsapp).replace(/[^0-9]/g,'')},send(m){window.open(`https://wa.me/${App.whatsapp.number()}?text=${encodeURIComponent(m)}`,'_blank','noopener')},sendBag(){const c=App.cart.list();App.whatsapp.send(c.length?`Hi Timzy Fashion, I want to order:\n\n${c.map(x=>`- ${x.name} x${x.qty}`).join('\n')}\n\nTotal: ${money(App.cart.total())}`:'Hi Timzy Fashion, I want to make an enquiry.')}}};
 document.addEventListener('DOMContentLoaded',App.init);window.Timzy=App;
 })();
+
