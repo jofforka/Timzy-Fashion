@@ -1,24 +1,11 @@
-# Timzy Fashion Premium Fresh Public Build
+# Timzy Fashion v6 Clean Rebuild
 
-Clean rebuild focused on the public customer experience.
+Upload all files to the root of your GitHub Pages repository.
 
-## Keep
-- index.html
-- shop.html / catalog.html
-- product.html
-- build-your-style.html
-- training.html
-- checkout.html
-- contact.html
-- login.html
-- data/products.json
-- assets/img/*
-- assets/css/style.css
-- assets/js/config.js
-- assets/js/app.js
+Important files:
+- `assets/css/style.css`
+- `assets/js/app.js`
+- `assets/js/config.js`
+- `data/products.json`
 
-## Upload to GitHub Pages
-Replace the old project files with this clean bundle.
-
-## Important
-Product image paths have been updated to `assets/img/...`.
+Products and images are already connected using `assets/img/...` paths.
