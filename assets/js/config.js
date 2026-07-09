@@ -1,1 +1,9 @@
-window.TIMZY_CONFIG={brandName:'Timzy Fashion',currency:'₦',currencySymbol:'₦',whatsappNumber:'2348118103510',whatsapp:'2348118103510',productDataUrl:'data/products.json',productFormUrl:'',productSheetUrl:'',productSheetCsvUrl:'',pickupAddress:'Timzy Fashion Studio, Abuja',paymentGatewayUrl:'',paystackPublicKey:'',firebaseConfig:{apiKey:'AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU',authDomain:'timzy-fashion-os.firebaseapp.com',projectId:'timzy-fashion-os',storageBucket:'timzy-fashion-os.firebasestorage.app',messagingSenderId:'1015146526947',appId:'1:1015146526947:web:6d4bd493d6fa9a3c7b65e8'}};
+window.TIMZY_CONFIG = {
+  brandName: 'Timzy Fashion',
+  currency: '₦',
+  whatsappNumber: '2348118103510',
+  productDataUrl: 'data/products.json',
+  pickupAddress: 'Timzy Fashion Studio, Abuja',
+  paymentGatewayUrl: '',
+  paystackPublicKey: ''
+};
