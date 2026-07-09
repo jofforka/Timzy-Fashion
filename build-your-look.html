@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Build Your Look | Timzy Fashion</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body class="page-build-look">
+
+<div class="luxury-bg"></div>
+
+<header class="site-header">
+<nav class="container nav">
+<a class="brand" href="index.html">
+<img class="brand-logo" src="assets/images/logo/timzy-logo.png" alt="Timzy Fashion">
+<span class="brand-copy">
+<span class="brand-name">TIMZY FASHION</span>
+<span class="brand-sub">Build Your Complete Look</span>
+</span>
+</a>
+
+<button class="nav-toggle"><span></span><span></span></button>
+
+<div class="nav-links">
+<a href="index.html">Home</a>
+<a href="shop.html">Shop</a>
+<a href="index.html#collections">Collections</a>
+<a class="active" href="build-your-look.html">Build Your Look</a>
+<a href="checkout.html">Checkout</a>
+</div>
+</nav>
+</header>
+
+<main>
+
+<section class="catalog-hero section">
+<div class="container catalog-hero-grid">
+
+<div>
+<span class="eyebrow">Signature Timzy Experience</span>
+<h1 class="hero-title">Build Your Complete Look</h1>
+<p class="hero-text">
+Start with your outfit and finish it with matching shoes, watches, cufflinks, sunglasses, caps, belts and perfumes.
+</p>
+
+<div class="hero-actions">
+<a class="btn btn-primary" href="#builder">Start Building</a>
+<button class="btn btn-outline" data-open-bag>View Shopping Bag</button>
+</div>
+</div>
+
+<div class="catalog-note">
+<span>Luxury Styling</span>
+<strong>Everything coordinated in one place.</strong>
+<p>Select only what you need. Your shopping bag updates automatically.</p>
+</div>
+
+</div>
+</section>
+
+<section class="section" id="builder">
+
+<div class="container">
+
+<div class="section-head">
+<div>
+<span class="eyebrow">Step 1</span>
+<h2>Choose Your Outfit</h2>
+</div>
+</div>
+
+<div id="mainOutfitGrid" class="product-grid"></div>
+
+</div>
+
+</section>
+
+<section class="section">
+
+<div class="container">
+
+<div class="section-head">
+<div>
+<span class="eyebrow">Step 2</span>
+<h2>Complete Your Look</h2>
+</div>
+</div>
+
+<div class="accordion">
+
+<details open>
+<summary>👞 Shoes</summary>
+<div id="builderShoes" class="product-grid"></div>
+</details>
+
+<details>
+<summary>⌚ Watches</summary>
+<div id="builderWatches" class="product-grid"></div>
+</details>
+
+<details>
+<summary>💎 Cufflinks</summary>
+<div id="builderCufflinks" class="product-grid"></div>
+</details>
+
+<details>
+<summary>🕶️ Sunglasses</summary>
+<div id="builderGlasses" class="product-grid"></div>
+</details>
+
+<details>
+<summary>🧢 Caps</summary>
+<div id="builderCaps" class="product-grid"></div>
+</details>
+
+<details>
+<summary>👔 Belts</summary>
+<div id="builderBelts" class="product-grid"></div>
+</details>
+
+<details>
+<summary>🌸 Perfumes</summary>
+<div id="builderPerfumes" class="product-grid"></div>
+</details>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="section">
+
+<div class="container split">
+
+<div class="panel">
+
+<span class="eyebrow">Live Summary</span>
+
+<h2>Your Complete Look</h2>
+
+<div id="lookSummary">
+<p>Your selections will appear here.</p>
+</div>
+
+</div>
+
+<div class="panel">
+
+<span class="eyebrow">Measurements</span>
+
+<h2>Choose Measurement Method</h2>
+
+<label><input type="radio" name="measure" checked> Enter Measurements</label><br>
+<label><input type="radio" name="measure"> Upload Measurement Sheet</label><br>
+<label><input type="radio" name="measure"> Abuja Home Measurement</label>
+
+<textarea class="field" rows="5" placeholder="Special tailoring instructions..."></textarea>
+
+<div class="hero-actions">
+<button class="btn btn-outline">Save This Look</button>
+<a class="btn btn-primary" href="checkout.html">Proceed to Checkout</a>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<div hidden>
+<div id="aiStylist"></div>
+<div id="savedLooks"></div>
+<div id="occasionTemplates"></div>
+<div id="shareLook"></div>
+<div id="giftLook"></div>
+</div>
+
+</main>
+
+<button class="floating-bag" data-open-bag>
+👜 <span id="bagCount">0</span>
+</button>
+
+<a class="floating-whatsapp" href="https://wa.me/2348118103510">WhatsApp</a>
+
+<footer class="site-footer">
+<div class="container footer-grid">
+
+<div>
+<a class="brand" href="index.html">
+<img class="brand-logo" src="assets/images/logo/timzy-logo.png" alt="">
+<span class="brand-copy">
+<span class="brand-name">TIMZY FASHION</span>
+<span class="brand-sub">Dress the Complete Gentleman</span>
+</span>
+</a>
+</div>
+
+<div>
+<h3>Quick Links</h3>
+<a href="shop.html">Shop</a>
+<a href="checkout.html">Checkout</a>
+<a href="login.html">Staff Login</a>
+</div>
+
+</div>
+
+<div class="container footer-bottom">
+<p>© <span id="year"></span> Timzy Fashion</p>
+</div>
+</footer>
+
+<script src="assets/js/firebase-config.js"></script>
+<script src="assets/js/app.js"></script>
+
+</body>
+</html>
