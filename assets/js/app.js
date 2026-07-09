@@ -634,7 +634,6 @@ Order Ref: TF-${Date.now().toString().slice(-7)}`;
       }
     },
 
-,
     builder: {
       init() {
         if (!document.getElementById("mainOutfitGrid")) return;
@@ -651,7 +650,7 @@ Order Ref: TF-${Date.now().toString().slice(-7)}`;
         fill("builderBelts", by("belt"));
         fill("builderPerfumes", by("perfume"));
       }
-    }
+    },
 
     whatsapp: {
       number() {
