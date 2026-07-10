@@ -7,7 +7,7 @@ const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replac
 const num=v=>Number(String(v||0).replace(/[^0-9.-]/g,""))||0, money=v=>`${C().currency}${num(v).toLocaleString()}`;
 const store={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 function toast(m){let h=$("#toastHost");if(!h){document.body.insertAdjacentHTML("beforeend",'<div class="toast-host" id="toastHost"></div>');h=$("#toastHost")}const id="t"+Date.now();h.insertAdjacentHTML("beforeend",`<div class="toast compact-toast" id="${id}"><span class="toast-icon">✓</span><p>${esc(m)}</p></div>`);setTimeout(()=>$("#"+id)?.remove(),2200)}
-const App={products:[],activeCategory:"All",search:"",sort:"featured",async init(){App.nav();App.year();App.cart.mount();App.cart.render();App.bindGlobalActions();await App.loadProducts();App.featured();App.catalog.init();App.product.init();App.builder.init();App.checkout.init();},
+const App={products:[],activeCategory:"All",search:"",sort:"featured",async init(){App.nav();App.year();App.cart.mount();App.cart.render();App.bindGlobalActions();await App.loadProducts();App.featured();App.catalog.init();App.product.init();App.builder.init();App.checkout.init();App.contact.init();},
 nav(){const t=$(".nav-toggle"),l=$(".nav-links");t?.addEventListener("click",()=>l?.classList.toggle("open"));const p=location.pathname.split("/").pop()||"index.html";$$('a[href]').forEach(a=>{const h=(a.getAttribute('href')||'').split('?')[0].split('#')[0].split('/').pop();if(h===p)a.classList.add('active')})},year(){const y=$("#year");if(y)y.textContent=new Date().getFullYear()},
 bindGlobalActions(){
   if(App._globalActionsBound)return;
@@ -153,6 +153,7 @@ Payment: ${d.payment||'N/A'}
 Special Notes: ${d.notes||'N/A'}
 
 Order Ref: TF-${Date.now().toString().slice(-7)}`;
-}},whatsapp:{number(){return String(C().whatsapp).replace(/[^0-9]/g,'')},send(m){window.open(`https://wa.me/${App.whatsapp.number()}?text=${encodeURIComponent(m)}`,'_blank','noopener')},sendBag(){const c=App.cart.list();App.whatsapp.send(c.length?`Hi Timzy Fashion, I want to order:\n\n${c.map(x=>`- ${x.name} x${x.qty}`).join('\n')}\n\nTotal: ${money(App.cart.total())}`:'Hi Timzy Fashion, I want to make an enquiry.')}}};
+}},contact:{init(){const f=$('#contactForm');if(!f)return;f.addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(f).entries());if(!d.name||!d.phone||!d.message)return toast('Please complete the required fields.');App.whatsapp.send(`Timzy Fashion Enquiry\n\nName: ${d.name}\nPhone: ${d.phone}\nEmail: ${d.email||'N/A'}\nEnquiry: ${d.type||'General Enquiry'}\n\nMessage:\n${d.message}`);toast('Opening WhatsApp.');})}},
+whatsapp:{number(){return String(C().whatsapp).replace(/[^0-9]/g,'')},send(m){window.open(`https://wa.me/${App.whatsapp.number()}?text=${encodeURIComponent(m)}`,'_blank','noopener')},sendBag(){const c=App.cart.list();App.whatsapp.send(c.length?`Hi Timzy Fashion, I want to order:\n\n${c.map(x=>`- ${x.name} x${x.qty}`).join('\n')}\n\nTotal: ${money(App.cart.total())}`:'Hi Timzy Fashion, I want to make an enquiry.')}}};
 document.addEventListener('DOMContentLoaded',App.init);window.Timzy=App;
 })();
