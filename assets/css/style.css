@@ -568,3 +568,184 @@
 .business-list p{margin-bottom:18px}.map-placeholder{margin-top:22px;min-height:220px;display:grid;place-content:center;text-align:center;border:1px dashed rgba(241,216,138,.34);border-radius:22px;background:rgba(201,162,79,.04);padding:20px}.map-placeholder span{color:var(--gold2);text-transform:uppercase;letter-spacing:.12em;font-size:11px}.map-placeholder strong{font-family:var(--serif);font-size:28px;margin:8px 0}
 @media(max-width:980px){.training-hero-grid,.contact-hero-grid,.training-path{grid-template-columns:1fr}.training-grid{grid-template-columns:repeat(2,1fr)}.contact-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.home-academy-card,.promo-banner,.cta-panel,.training-register{display:block;padding:22px}.home-academy-card .btn,.promo-banner .btn,.cta-panel .btn,.training-register .btn{width:100%;margin-top:16px}.training-grid,.contact-grid{grid-template-columns:1fr}.training-card h3,.contact-card strong{font-size:22px}}
+
+
+/* =========================================================
+   TIMZY V7.1 — INSTAGRAM PRODUCT VIDEO MODAL
+========================================================= */
+.product-video-trigger{
+  width:100%;
+  margin-top:12px;
+  padding:13px 14px;
+  border:1px solid rgba(241,216,138,.28);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at top right,rgba(241,216,138,.13),transparent 44%),
+    rgba(255,255,255,.035);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.product-video-trigger:hover{
+  transform:translateY(-1px);
+  border-color:rgba(241,216,138,.52);
+  background:
+    radial-gradient(circle at top right,rgba(241,216,138,.2),transparent 44%),
+    rgba(255,255,255,.05);
+}
+.product-video-icon{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  padding-left:2px;
+  background:linear-gradient(135deg,var(--gold2),var(--gold));
+  color:#160f08;
+  box-shadow:0 10px 28px rgba(0,0,0,.25);
+}
+.product-video-trigger b{
+  display:block;
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:1.1;
+}
+.product-video-trigger small{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-top:3px;
+}
+
+body.modal-open{
+  overflow:hidden;
+}
+
+.video-modal{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  padding:18px;
+  display:grid;
+  place-items:center;
+  background:rgba(3,3,3,.82);
+  backdrop-filter:blur(14px);
+  opacity:0;
+  transition:opacity .18s ease;
+}
+.video-modal.is-visible{
+  opacity:1;
+}
+.video-modal-card{
+  width:min(520px,100%);
+  max-height:calc(100vh - 36px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border:1px solid rgba(241,216,138,.28);
+  border-radius:26px;
+  background:linear-gradient(180deg,#211913,#100d0b);
+  box-shadow:0 30px 100px rgba(0,0,0,.62);
+  transform:translateY(10px) scale(.985);
+  transition:transform .18s ease,width .2s ease,height .2s ease;
+}
+.video-modal.is-visible .video-modal-card{
+  transform:translateY(0) scale(1);
+}
+.video-modal.is-maximized{
+  padding:0;
+}
+.video-modal.is-maximized .video-modal-card{
+  width:100%;
+  height:100%;
+  max-height:none;
+  border-radius:0;
+}
+.video-modal-head{
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  border-bottom:1px solid var(--line);
+}
+.video-modal-head h3{
+  margin:7px 0 0;
+  font-family:var(--serif);
+  font-size:21px;
+  line-height:1.1;
+}
+.video-modal-actions{
+  display:flex;
+  gap:8px;
+}
+.video-modal-control{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  color:var(--gold2);
+  font-size:20px;
+  cursor:pointer;
+}
+.instagram-frame-wrap{
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  background:#050505;
+}
+.instagram-frame-wrap iframe{
+  display:block;
+  width:100%;
+  height:min(650px,68vh);
+  border:0;
+  background:#fff;
+}
+.video-modal.is-maximized .instagram-frame-wrap iframe{
+  height:calc(100vh - 168px);
+}
+.video-modal-footer{
+  padding:13px 16px 15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  border-top:1px solid var(--line);
+}
+.video-modal-footer p{
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+  max-width:330px;
+}
+
+@media(max-width:620px){
+  .video-modal{
+    padding:10px;
+    align-items:center;
+  }
+  .video-modal-card{
+    max-height:calc(100vh - 20px);
+    border-radius:22px;
+  }
+  .instagram-frame-wrap iframe{
+    height:62vh;
+  }
+  .video-modal-footer{
+    display:block;
+  }
+  .video-modal-footer .btn{
+    width:100%;
+    margin-top:10px;
+  }
+  .product-video-trigger{
+    border-radius:16px;
+  }
+}
