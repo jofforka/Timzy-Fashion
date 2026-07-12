@@ -1,1 +1,268 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard | Timzy Fashion OS</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="css/admin.css"></head><body><div class="app"><aside class="sidebar"><div class="brand"><img src="../assets/img/timzy-logo.png" alt="Logo"><span><b>TIMZY</b><span>Fashion OS</span></span></div><nav class="nav"><a data-page="index.html" href="index.html">Dashboard</a><a data-page="products.html" href="products.html">Products</a><a data-page="sales.html" href="sales.html">Sales</a><a data-page="expenses.html" href="expenses.html">Expenses</a><a data-page="reports.html" href="reports.html">Reports</a></nav><button class="btn logout" onclick="logout()">Logout</button></aside><main class="main"><header class="header"><button class="btn menu">Menu</button><h1>Dashboard</h1><a class="btn" href="../index.html">View Site</a></header><div class="content"><section class="grid kpis"><div class="card kpi"><span>Today Sales</span><b id="kpiSales">₦0</b></div><div class="card kpi"><span>Today Expenses</span><b id="kpiExpenses">₦0</b></div><div class="card kpi"><span>Profit Estimate</span><b id="kpiProfit">₦0</b></div><div class="card kpi"><span>Sales Count</span><b id="kpiOrders">0</b></div></section><section class="grid two" style="margin-top:16px"><div class="card"><h2 class="section-title">Quick Actions</h2><div class="actions"><a class="btn primary" href="sales.html">Record Sale</a><a class="btn" href="expenses.html">Add Expense</a><a class="btn" href="products.html">View Products</a><a class="btn" href="#" data-form-link>Open Product Form</a></div></div><div class="card"><h2 class="section-title">Shop Note</h2><p class="muted">This is a lean admin: products through Google Form/Sheet; sales and expenses are simple daily entries.</p></div></section><section class="card" style="margin-top:16px"><h2 class="section-title">Recent Activity</h2><div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Item</th><th>Amount</th></tr></thead><tbody id="activityRows"></tbody></table></div></section></div></main></div><nav class="mobile-tabs"><a data-page="index.html" href="index.html">Home</a><a data-page="products.html" href="products.html">Products</a><a data-page="sales.html" href="sales.html">Sales</a><a data-page="expenses.html" href="expenses.html">Expenses</a></nav><script src="../assets/js/config.js"></script><script src="js/admin.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Timzy Fashion Admin</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="admin.css?v=2.0">
+</head>
+<body>
+  <div id="adminLogin" class="auth-screen">
+    <form id="adminLoginForm" class="auth-card">
+      <img src="../assets/img/timzy-logo.png" alt="Timzy Fashion">
+      <span class="eyebrow">Secure Staff Access</span>
+      <h1>Timzy Admin</h1>
+      <p>Manage products, images, Instagram videos, sales, and expenses.</p>
+
+      <label>Email<input type="email" name="email" required autocomplete="username"></label>
+      <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
+
+      <button class="primary-btn" type="submit">Sign In</button>
+      <p id="loginMessage" class="form-message"></p>
+    </form>
+  </div>
+
+  <div id="adminApp" class="admin-shell" hidden>
+    <aside class="sidebar">
+      <a class="admin-brand" href="../index.html">
+        <img src="../assets/img/timzy-logo.png" alt="Timzy Fashion">
+        <span><b>TIMZY FASHION</b><small>Admin OS v2</small></span>
+      </a>
+
+      <nav class="side-nav">
+        <button class="active" data-view="dashboard">Dashboard</button>
+        <button data-view="products">Products</button>
+        <button data-view="orders">Orders</button>
+        <button data-view="sales">Sales</button>
+        <button data-view="expenses">Expenses</button>
+        <button data-view="settings">Settings</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="../shop.html" target="_blank">View Store</a>
+        <button id="logoutBtn" type="button">Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div>
+          <span class="eyebrow">Timzy Operations</span>
+          <h1 id="viewTitle">Dashboard</h1>
+        </div>
+        <div class="top-actions">
+          <button id="mobileSidebarBtn" class="icon-control" type="button">☰</button>
+          <button id="quickAddProduct" class="primary-btn" type="button">+ Add Product</button>
+        </div>
+      </header>
+
+      <section id="dashboardView" class="admin-view">
+        <div class="stats-grid">
+          <article><span>Products</span><strong id="statProducts">0</strong></article>
+          <article><span>Published</span><strong id="statPublished">0</strong></article>
+          <article><span>Sales</span><strong id="statSales">₦0</strong></article>
+          <article><span>Expenses</span><strong id="statExpenses">₦0</strong></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="admin-card">
+            <div class="card-head"><div><span class="eyebrow">Recent</span><h2>Latest Products</h2></div><button data-view="products">Manage</button></div>
+            <div id="latestProducts" class="compact-list"></div>
+          </section>
+
+          <section class="admin-card">
+            <div class="card-head"><div><span class="eyebrow">Activity</span><h2>Recent Records</h2></div></div>
+            <div id="recentActivity" class="compact-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="productsView" class="admin-view" hidden>
+        <div class="view-toolbar">
+          <input id="productSearch" type="search" placeholder="Search products...">
+          <select id="productFilter">
+            <option value="All">All categories</option>
+          </select>
+          <button id="addProductBtn" class="primary-btn" type="button">+ New Product</button>
+        </div>
+
+        <div id="productTable" class="product-table"></div>
+      </section>
+
+      <section id="ordersView" class="admin-view" hidden>
+        <div class="admin-card empty-state"><h2>Orders</h2><p>Orders created through the connected checkout will appear here.</p></div>
+      </section>
+
+      <section id="salesView" class="admin-view" hidden>
+        <div class="admin-card">
+          <div class="card-head"><div><span class="eyebrow">Daily Records</span><h2>Sales</h2></div></div>
+          <form id="saleForm" class="record-form">
+            <input name="description" placeholder="Sale description" required>
+            <input name="amount" type="number" min="0" placeholder="Amount" required>
+            <input name="date" type="date" required>
+            <button class="primary-btn" type="submit">Add Sale</button>
+          </form>
+          <div id="salesList" class="record-list"></div>
+        </div>
+      </section>
+
+      <section id="expensesView" class="admin-view" hidden>
+        <div class="admin-card">
+          <div class="card-head"><div><span class="eyebrow">Daily Records</span><h2>Expenses</h2></div></div>
+          <form id="expenseForm" class="record-form">
+            <input name="description" placeholder="Expense description" required>
+            <input name="amount" type="number" min="0" placeholder="Amount" required>
+            <input name="date" type="date" required>
+            <button class="primary-btn" type="submit">Add Expense</button>
+          </form>
+          <div id="expensesList" class="record-list"></div>
+        </div>
+      </section>
+
+      <section id="settingsView" class="admin-view" hidden>
+        <form id="settingsForm" class="admin-card settings-form">
+          <div class="card-head"><div><span class="eyebrow">Store Details</span><h2>Settings</h2></div></div>
+          <div class="form-grid">
+            <label>WhatsApp Number<input name="whatsappNumber"></label>
+            <label>Pickup Address<input name="pickupAddress"></label>
+            <label>Bank Name<input name="bankName"></label>
+            <label>Account Name<input name="accountName"></label>
+            <label>Account Number<input name="accountNumber"></label>
+            <label>Instagram URL<input name="instagramUrl"></label>
+          </div>
+          <button class="primary-btn" type="submit">Save Settings</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div id="productModal" class="modal" hidden>
+    <div class="modal-card product-editor">
+      <header class="modal-head">
+        <div><span class="eyebrow">Product CMS</span><h2 id="productModalTitle">Add Product</h2></div>
+        <button id="closeProductModal" type="button">×</button>
+      </header>
+
+      <form id="productForm">
+        <input type="hidden" name="id">
+
+        <div class="editor-grid">
+          <section>
+            <h3>Product Information</h3>
+            <div class="form-grid">
+              <label>Product Name<input name="name" required></label>
+              <label>SKU<input name="sku"></label>
+              <label>Category
+                <select name="category" required>
+                  <option>Senator</option>
+                  <option>Agbada</option>
+                  <option>Fabrics</option>
+                  <option>Shoes</option>
+                  <option>Watches</option>
+                  <option>Cufflinks</option>
+                  <option>Caps</option>
+                  <option>Sunglasses</option>
+                  <option>Belts</option>
+                  <option>Perfumes</option>
+                  <option>Accessories</option>
+                </select>
+              </label>
+              <label>Product Type<input name="productType"></label>
+              <label>Price<input name="price" type="number" min="0" required></label>
+              <label>Sale Price<input name="salePrice" type="number" min="0"></label>
+              <label>Fabric / Material<input name="fabricType"></label>
+              <label>Colour<input name="color"></label>
+              <label>Sizes<input name="sizes" value="Custom"></label>
+              <label>Delivery Estimate<input name="deliveryEstimate"></label>
+              <label>Status
+                <select name="status">
+                  <option>Published</option>
+                  <option>Draft</option>
+                  <option>Out of Stock</option>
+                </select>
+              </label>
+              <label>Badge
+                <select name="badge">
+                  <option value="">None</option>
+                  <option>NEW</option>
+                  <option>BESTSELLER</option>
+                  <option>LIMITED</option>
+                  <option>SALE</option>
+                </select>
+              </label>
+            </div>
+
+            <label>Description<textarea name="description" rows="5"></textarea></label>
+            <label>Tags<input name="tags" placeholder="Wedding, Executive, Traditional"></label>
+
+            <div class="toggle-row">
+              <label><input type="checkbox" name="featured"> Feature on Homepage</label>
+              <label><input type="checkbox" name="measurementRequired"> Measurement Required</label>
+            </div>
+          </section>
+
+          <section>
+            <h3>Product Media</h3>
+
+            <div id="imagePreviewGrid" class="image-preview-grid"></div>
+
+            <label class="upload-zone">
+              <input id="imageUploadInput" type="file" accept="image/*" multiple>
+              <span>Upload new images</span>
+              <small>JPG, PNG, WEBP. New uploads replace or extend the current gallery.</small>
+            </label>
+
+            <div class="media-actions">
+              <button id="replaceAllImages" type="button">Replace All Images</button>
+              <button id="clearImages" type="button">Clear Images</button>
+            </div>
+
+            <label>Instagram Reel / Post URL
+              <input name="instagramVideoUrl" type="url" placeholder="https://www.instagram.com/reel/...">
+            </label>
+
+            <button id="previewInstagramBtn" class="secondary-btn" type="button">Preview Instagram Post</button>
+
+            <div class="upload-progress" id="uploadProgress" hidden>
+              <span></span>
+            </div>
+          </section>
+        </div>
+
+        <footer class="editor-footer">
+          <button id="deleteProductBtn" class="danger-btn" type="button" hidden>Delete Product</button>
+          <div>
+            <button id="cancelProductBtn" class="secondary-btn" type="button">Cancel</button>
+            <button class="primary-btn" type="submit">Save Product</button>
+          </div>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <div id="videoPreviewModal" class="modal" hidden>
+    <div class="modal-card video-preview-card">
+      <header class="modal-head"><h2>Instagram Preview</h2><button data-close-video type="button">×</button></header>
+      <iframe id="adminInstagramFrame" title="Instagram preview"></iframe>
+      <p>Kindly like the post and follow the Timzy Instagram page.</p>
+    </div>
+  </div>
+
+  <div id="adminToast" class="admin-toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
+
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/firebase.js"></script>
+  <script src="admin.js?v=2.0"></script>
+</body>
+</html>
