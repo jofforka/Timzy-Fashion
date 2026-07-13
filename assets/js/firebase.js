@@ -1,31 +1,18 @@
-(() => {
-  'use strict';
+// Firebase Initialization
 
-  const config = window.TIMZY_CONFIG?.firebaseConfig;
+const firebaseConfig = {
+  apiKey: "AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU",
+  authDomain: "timzy-fashion-os.firebaseapp.com",
+  projectId: "timzy-fashion-os",
+  storageBucket: "timzy-fashion-os.firebasestorage.app",
+  messagingSenderId: "1015146526947",
+  appId: "1:1015146526947:web:6d4bd493d6fa9a3c7b65e8"
+};
 
-  if (!config || typeof firebase === 'undefined') {
-    console.error('Firebase SDK or configuration is missing.');
-    window.TIMZY_FIREBASE = null;
-    return;
-  }
+firebase.initializeApp(firebaseConfig);
 
-  try {
-    if (!firebase.apps.length) firebase.initializeApp(config);
-
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.warn);
-
-    window.TIMZY_FIREBASE = {
-      app: firebase.app(),
-      auth,
-      db,
-      storage
-    };
-  } catch (error) {
-    console.error('Firebase initialization failed:', error);
-    window.TIMZY_FIREBASE = null;
-  }
-})();
+window.TIMZY_FIREBASE = {
+    auth: firebase.auth(),
+    db: firebase.firestore(),
+    storage: firebase.storage()
+};
