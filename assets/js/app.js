@@ -36,8 +36,43 @@ bindGlobalActions(){
     }
   });
 },
-async loadProducts(){try{const r=await fetch(C().productDataUrl,{cache:"no-store"});if(!r.ok)throw new Error(r.status);const d=await r.json();App.products=App.normalize(Array.isArray(d)?d:[])}catch(e){console.error(e);const g=$("#productGrid");if(g)g.innerHTML=`<div class="empty">Products could not load. Check <b>${esc(C().productDataUrl)}</b></div>`}},
-normalize(rows){return rows.filter(p=>p&&!['hidden','deleted','draft'].includes(String(p.status||'').toLowerCase())).map((p,i)=>{const id=p.id||p.sku||`TF-${i+1}`;let imgs=[...(Array.isArray(p.images)?p.images:[]),p.image,p.image1,p.image2,p.image3,p.image4,p.image5,p.image6,p.image7,p.image8].filter(Boolean).map(x=>String(x).trim()).filter(Boolean).map(x=>{if(x.startsWith('assets/'))return x;if(x.startsWith('img/'))return 'assets/'+x;return 'assets/img/'+x});return{id,sku:p.sku||id,name:p.name||p.productName||'Timzy Product',category:p.category||'Collection',productType:p.productType||'',status:p.status||'Published',price:num(p.salePrice)>0?p.salePrice:p.price,color:p.color||p.colour||'As shown',sizes:p.sizes||p.size||'Custom',badge:p.badge||'',featured:p.featured===true||String(p.featured).toLowerCase()==='true',tags:p.tags||'',fabricType:p.fabricType||p.fabric||'',measurementRequired:p.measurementRequired===true||String(p.measurementRequired).toLowerCase()==='true',deliveryEstimate:p.deliveryEstimate||'7–14 business days after confirmation',description:p.description||'Premium Timzy Fashion piece.',instagramVideoUrl:p.instagramVideoUrl||p.videoUrl||'',images:imgs,raw:p}})},
+async loadProducts(){
+  const fb=window.TIMZY_FIREBASE;
+  const collectionName=window.TIMZY_CONFIG?.collections?.products||"products";
+
+  if(fb?.db){
+    try{
+      const snapshot=await fb.db.collection(collectionName).get();
+      const firestoreProducts=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
+
+      if(firestoreProducts.length){
+        App.products=App.normalize(firestoreProducts);
+        console.log(`Loaded ${App.products.length} products from Firestore.`);
+        return;
+      }
+    }catch(error){
+      console.warn("Firestore product load failed. Falling back to products.json.",error);
+    }
+  }
+
+  try{
+    const response=await fetch(C().productDataUrl,{cache:"no-store"});
+    if(!response.ok)throw new Error(response.status);
+    const data=await response.json();
+    App.products=App.normalize(Array.isArray(data)?data:[]);
+    console.log(`Loaded ${App.products.length} products from products.json fallback.`);
+  }catch(error){
+    console.error(error);
+    const grid=$("#productGrid");
+    if(grid)grid.innerHTML=`<div class="empty">Products could not load.</div>`;
+  }
+},
+normalize(rows){return rows.filter(p=>p&&!['hidden','deleted','draft'].includes(String(p.status||'').toLowerCase())).map((p,i)=>{const id=p.id||p.sku||`TF-${i+1}`;let imgs=[...(Array.isArray(p.images)?p.images:[]),p.image,p.image1,p.image2,p.image3,p.image4,p.image5,p.image6,p.image7,p.image8].filter(Boolean).map(x=>String(x).trim()).filter(Boolean).map(x=>{
+  if(/^https?:\/\//i.test(x)||x.startsWith('data:')||x.startsWith('blob:'))return x;
+  if(x.startsWith('assets/'))return x;
+  if(x.startsWith('img/'))return 'assets/'+x;
+  return 'assets/img/'+x;
+});return{id,sku:p.sku||id,name:p.name||p.productName||'Timzy Product',category:p.category||'Collection',productType:p.productType||'',status:p.status||'Published',price:num(p.salePrice)>0?p.salePrice:p.price,color:p.color||p.colour||'As shown',sizes:p.sizes||p.size||'Custom',badge:p.badge||'',featured:p.featured===true||String(p.featured).toLowerCase()==='true',tags:p.tags||'',fabricType:p.fabricType||p.fabric||'',measurementRequired:p.measurementRequired===true||String(p.measurementRequired).toLowerCase()==='true',deliveryEstimate:p.deliveryEstimate||'7–14 business days after confirmation',description:p.description||'Premium Timzy Fashion piece.',instagramVideoUrl:p.instagramVideoUrl||p.videoUrl||'',images:imgs,raw:p}})},
 image(p){return p.images?.[0]||'assets/img/hero-senator-grey.jpg'},url(p){return`product.html?id=${encodeURIComponent(p.id)}`},
 card(p){return`<article class="product-card" data-product-id="${esc(p.id)}"><a class="product-card-link" href="${App.url(p)}"><div class="product-media"><img loading="lazy" src="${esc(App.image(p))}" alt="${esc(p.name)}" onerror="this.src='assets/img/hero-senator-grey.jpg'">${p.badge?`<span class="product-badge">${esc(p.badge)}</span>`:''}</div><div class="product-info"><h3>${esc(p.name)}</h3><div class="product-meta"><span>${esc(p.category)}</span><span class="price">${money(p.price)}</span></div></div></a><div class="product-actions"><button type="button" class="icon-btn" data-wishlist="${esc(p.id)}">♡</button><button type="button" class="btn btn-small btn-soft" data-add-bag="${esc(p.id)}">Add</button></div></article>`},
 featured(){const el=$("#featuredProducts");if(!el)return;const rows=App.products.filter(p=>p.featured).slice(0,8);el.innerHTML=(rows.length?rows:App.products.slice(0,8)).map(App.card).join('')||'<div class="empty">No products yet.</div>'},
