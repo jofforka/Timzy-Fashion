@@ -7,6 +7,10 @@ window.TIMZY_CONFIG = {
   paymentGatewayUrl: '',
   paystackPublicKey: '',
 
+  mediaProvider: 'google-drive',
+  googleDriveUploadUrl: '',
+  googleDriveUploadToken: '',
+
   firebaseConfig: {
     apiKey: 'AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU',
     authDomain: 'timzy-fashion-os.firebaseapp.com',
