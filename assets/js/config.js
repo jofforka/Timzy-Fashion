@@ -1,20 +1,30 @@
 window.TIMZY_CONFIG = {
-  brandName: "Timzy Fashion",
-  currency: "₦",
-  whatsappNumber: "2348114599250",
+  brandName: 'Timzy Fashion',
+  currency: '₦',
+  whatsappNumber: '2348114599250',
+  productDataUrl: 'data/products.json',
+  pickupAddress: 'Timzy Fashion Studio, Shop 4, Stella Obasanjo Block, Wuye Market, Abuja',
+  paymentGatewayUrl: '',
+  paystackPublicKey: '',
 
-  productDataUrl: "data/products.json",
+  mediaProvider: 'google-drive',
+  googleDriveUploadUrl: '',
+  googleDriveUploadToken: '',
 
-  pickupAddress: "Shop 4, Stella Obasanjo Block, Wuye Market, Abuja",
+  firebaseConfig: {
+    apiKey: 'AIzaSyBCizR30KTtGXwlelD4Qxdu9IHJdPm-IlU',
+    authDomain: 'timzy-fashion-os.firebaseapp.com',
+    projectId: 'timzy-fashion-os',
+    storageBucket: 'timzy-fashion-os.firebasestorage.app',
+    messagingSenderId: '1015146526947',
+    appId: '1:1015146526947:web:6d4bd493d6fa9a3c7b65e8'
+  },
 
-  paymentGatewayUrl: "",
-  paystackPublicKey: "",
-
-  mediaProvider: "google-drive",
-
-  googleDriveUploadUrl:
-    "https://script.google.com/macros/s/AKfycbxknv001bHUwut7j_Mw9vg-jb9e3FGlYm0l-H5j3RoNBocCzGhefCu_3jJLhFGsqAOLfw/exec",
-
-  googleDriveUploadToken:
-    "TimzyMedia_8x4P29Qz_2026_Private"
+  collections: {
+    products: 'products',
+    orders: 'orders',
+    sales: 'sales',
+    expenses: 'expenses',
+    settings: 'settings'
+  }
 };
