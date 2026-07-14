@@ -1,29 +1,116 @@
-(() => {
-  'use strict';
+/* ===========================================================
+   TIMZY FASHION OS v8.5
+   Firebase Bootstrap
+=========================================================== */
 
-  const config = window.TIMZY_CONFIG?.firebaseConfig;
+(function () {
+  "use strict";
 
-  if (!config || typeof firebase === 'undefined') {
-    console.error('Firebase SDK or configuration is missing.');
+  const cfg = window.TIMZY_CONFIG?.firebaseConfig;
+
+  // ---------------------------------------------------------
+  // Check SDK
+  // ---------------------------------------------------------
+  if (typeof firebase === "undefined") {
+    console.error("Firebase SDK not loaded.");
+    window.TIMZY_FIREBASE = null;
+    return;
+  }
+
+  // ---------------------------------------------------------
+  // Check Config
+  // ---------------------------------------------------------
+  if (
+    !cfg ||
+    !cfg.apiKey ||
+    !cfg.projectId ||
+    !cfg.authDomain
+  ) {
+    console.error("Firebase configuration missing.");
     window.TIMZY_FIREBASE = null;
     return;
   }
 
   try {
-    if (!firebase.apps.length) firebase.initializeApp(config);
 
+    // -------------------------------------------------------
+    // Initialize App
+    // -------------------------------------------------------
+    if (!firebase.apps.length) {
+      firebase.initializeApp(cfg);
+    }
+
+    const app = firebase.app();
+
+    // -------------------------------------------------------
+    // Authentication
+    // -------------------------------------------------------
     const auth = firebase.auth();
+
+    auth.setPersistence(
+      firebase.auth.Auth.Persistence.LOCAL
+    ).catch((err) => {
+      console.warn("Persistence:", err);
+    });
+
+    // -------------------------------------------------------
+    // Firestore
+    // -------------------------------------------------------
     const db = firebase.firestore();
 
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.warn);
+    db.settings({
+      ignoreUndefinedProperties: true
+    });
 
+    // -------------------------------------------------------
+    // Expose Globally
+    // -------------------------------------------------------
     window.TIMZY_FIREBASE = {
-      app: firebase.app(),
+      app,
       auth,
-      db
+      db,
+
+      login(email, password) {
+        return auth.signInWithEmailAndPassword(email, password);
+      },
+
+      logout() {
+        return auth.signOut();
+      },
+
+      currentUser() {
+        return auth.currentUser;
+      },
+
+      products() {
+        return db.collection("products");
+      },
+
+      orders() {
+        return db.collection("orders");
+      },
+
+      sales() {
+        return db.collection("sales");
+      },
+
+      expenses() {
+        return db.collection("expenses");
+      },
+
+      settings() {
+        return db.collection("settings");
+      }
     };
-  } catch (error) {
-    console.error('Firebase initialization failed:', error);
+
+    console.log("✅ Firebase initialized.");
+
+  } catch (err) {
+
+    console.error("Firebase initialization failed:", err);
+
     window.TIMZY_FIREBASE = null;
+
   }
+
 })();
