@@ -50,8 +50,8 @@
   }
 
   function requireFirebase() {
-    if (!fb?.auth || !fb?.db || !fb?.storage) {
-      $("#loginMessage").textContent = "Firebase is not available. Check the Firebase SDK and configuration.";
+    if (!fb?.auth || !fb?.db) {
+      $("#loginMessage").textContent = "Firebase Authentication or Firestore is unavailable. Check the SDK and configuration.";
       return false;
     }
     return true;
@@ -371,8 +371,27 @@
     renderImagePreviews();
   }
 
+  async function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const value = String(reader.result || "");
+        resolve(value.includes(",") ? value.split(",")[1] : value);
+      };
+      reader.onerror = () => reject(reader.error || new Error("The image could not be read."));
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function uploadPendingImages(productId) {
     if (!state.pendingFiles.length) return [];
+
+    const endpoint = String(state.settings.googleDriveUploadUrl || cfg.googleDriveUploadUrl || "").trim();
+    const uploadToken = String(state.settings.googleDriveUploadToken || cfg.googleDriveUploadToken || "").trim();
+
+    if (!endpoint) {
+      throw new Error("Google Drive upload is not configured. Add the deployed Apps Script URL to googleDriveUploadUrl in assets/js/config.js.");
+    }
 
     const progress = $("#uploadProgress");
     const bar = $("span", progress);
@@ -380,16 +399,37 @@
     bar.style.width = "0%";
 
     const urls = [];
-    let completed = 0;
 
-    for (const file of state.pendingFiles) {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      const path = `products/${productId}/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
-      const ref = fb.storage.ref(path);
-      await ref.put(file);
-      urls.push(await ref.getDownloadURL());
-      completed += 1;
-      bar.style.width = `${Math.round((completed / state.pendingFiles.length) * 100)}%`;
+    for (let index = 0; index < state.pendingFiles.length; index += 1) {
+      const file = state.pendingFiles[index];
+      const base64 = await fileToBase64(file);
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "uploadProductImage",
+          token: uploadToken,
+          productId,
+          category: $("#productForm").elements.category.value || "Products",
+          fileName: file.name,
+          mimeType: file.type,
+          base64
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Google Drive upload failed with status ${response.status}.`);
+      }
+
+      const result = await response.json();
+
+      if (!result.ok || !result.url) {
+        throw new Error(result.error || "Google Drive did not return an image URL.");
+      }
+
+      urls.push(result.url);
+      bar.style.width = `${Math.round(((index + 1) / state.pendingFiles.length) * 100)}%`;
     }
 
     return urls;

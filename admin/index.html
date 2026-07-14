@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="admin.css?v=8.0">
+  <link rel="stylesheet" href="admin.css?v=8.5">
 </head>
 <body>
   <div id="adminLogin" class="auth-screen">
@@ -135,6 +135,8 @@
             <label>Account Name<input name="accountName"></label>
             <label>Account Number<input name="accountNumber"></label>
             <label>Instagram URL<input name="instagramUrl"></label>
+            <label>Google Apps Script Upload URL<input name="googleDriveUploadUrl" placeholder="https://script.google.com/macros/s/.../exec"></label>
+            <label>Google Drive Upload Token<input name="googleDriveUploadToken" type="password" placeholder="Private upload token"></label>
           </div>
           <button class="primary-btn" type="submit">Save Settings</button>
         </form>
@@ -215,7 +217,7 @@
             <label class="upload-zone">
               <input id="imageUploadInput" type="file" accept="image/*" multiple>
               <span>Upload new images</span>
-              <small>JPG, PNG, WEBP. New uploads replace or extend the current gallery.</small>
+              <small>JPG, PNG, WEBP. Images upload to the Timzy Google Drive media folder and update the product gallery.</small>
             </label>
 
             <div class="media-actions">
@@ -259,10 +261,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
-
+  
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
-  <script src="admin.js?v=8.0"></script>
+  <script src="admin.js?v=8.5"></script>
 </body>
 </html>
