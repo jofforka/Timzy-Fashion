@@ -1,0 +1,8 @@
+{
+  "name": "Timzy Fashion OS",
+  "version": "8.5.0",
+  "mediaProvider": "Google Drive via Google Apps Script",
+  "database": "Cloud Firestore",
+  "authentication": "Firebase Email/Password",
+  "hosting": "GitHub Pages"
+}
