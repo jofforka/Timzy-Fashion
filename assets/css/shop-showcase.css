@@ -1,0 +1,267 @@
+/* Timzy Fashion — editorial shop showcase.
+   Scoped to shop.html so existing product, checkout, and admin views remain unchanged. */
+.page-shop .catalog-hero {
+  padding: clamp(52px, 7vw, 96px) 0 clamp(28px, 4vw, 56px);
+  background: radial-gradient(circle at 78% 12%, rgba(224,180,100,.12), transparent 42%);
+}
+.page-shop .showcase-intro { max-width: 990px; }
+.page-shop .showcase-intro .eyebrow { letter-spacing: .22em; }
+.page-shop .showcase-intro h1 {
+  max-width: 900px;
+  margin: 14px 0 20px;
+  font-family: var(--serif), Georgia, serif;
+  font-size: clamp(48px, 7vw, 94px);
+  line-height: .99;
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+.page-shop .showcase-intro h1 em { font-style: italic; color: var(--gold2, #f1d88a); }
+.page-shop .showcase-intro .hero-text {
+  max-width: 650px;
+  margin: 0;
+  font-size: clamp(15px, 1.55vw, 18px);
+  line-height: 1.75;
+}
+.page-shop .showcase-intro-note {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  color: var(--muted, #b9ac98);
+  font-size: 13px;
+}
+.page-shop .showcase-intro-note span { display: inline-flex; gap: 8px; align-items: center; }
+.page-shop .showcase-intro-note span:before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--gold2,#e9c874); }
+.page-shop .showcase-section { padding-top: 20px; }
+.page-shop .showcase-toolbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.page-shop .showcase-toolbar-header h2 {
+  font-family: var(--serif), Georgia, serif;
+  font-size: clamp(29px, 4vw, 48px);
+  line-height: 1.1;
+  margin: 9px 0 0;
+}
+.page-shop #productCount {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--muted, #b9ac98);
+}
+.page-shop .showcase-controls {
+  grid-template-columns: minmax(0, 1fr) minmax(175px, 240px);
+  gap: 13px;
+  margin-bottom: 12px;
+}
+.page-shop .showcase-controls .field {
+  border-radius: 13px;
+  min-height: 50px;
+  background: rgba(255,255,255,.035);
+}
+.page-shop .showcase-categories {
+  gap: 9px;
+  padding: 6px 0 24px;
+  scrollbar-width: thin;
+}
+.page-shop .showcase-categories .chip {
+  border-radius: 100px;
+  padding: 10px 17px;
+  font-size: 13px;
+  line-height: 1.2;
+  background: rgba(255,255,255,.035);
+}
+.page-shop .showcase-categories .chip[aria-pressed="true"] {
+  background: var(--gold2, #edcf83);
+  color: #1a1309;
+  border-color: transparent;
+}
+.page-shop .showcase-categories .chip-count {
+  margin-left: 6px;
+  font-size: 11px;
+  opacity: .7;
+}
+.page-shop .showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2.2vw, 26px);
+  align-items: start;
+}
+.page-shop .showcase-card {
+  min-width: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #201914, #120f0d);
+  border: 1px solid rgba(226,197,139,.2);
+  border-radius: 19px;
+  box-shadow: 0 15px 40px rgba(0,0,0,.16);
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.page-shop .showcase-card:hover,
+.page-shop .showcase-card:focus-within {
+  border-color: rgba(238,205,135,.55);
+  box-shadow: 0 20px 55px rgba(0,0,0,.3);
+  transform: translateY(-3px);
+}
+.page-shop .showcase-card__media {
+  display: block;
+  aspect-ratio: 4 / 5;
+  position: relative;
+  overflow: hidden;
+  background: #2b241d;
+}
+.page-shop .showcase-card__media:after {
+  content: '';
+  position: absolute;
+  inset: 57% 0 0;
+  pointer-events: none;
+  background: linear-gradient(transparent, rgba(5,5,5,.42));
+}
+.page-shop .showcase-card__media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform .45s ease;
+}
+.page-shop .showcase-card:hover .showcase-card__media img { transform: scale(1.035); }
+.page-shop .showcase-card__badge {
+  position: absolute;
+  z-index: 1;
+  top: 14px;
+  left: 14px;
+  padding: 8px 11px;
+  background: rgba(11,10,9,.8);
+  border: 1px solid rgba(239,211,157,.42);
+  border-radius: 7px;
+  color: #f8e2a8;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: .11em;
+}
+.page-shop .showcase-card__number {
+  position: absolute;
+  z-index: 1;
+  right: 14px;
+  bottom: 14px;
+  font-family: var(--serif), Georgia, serif;
+  font-size: 18px;
+  color: #fff;
+  letter-spacing: .02em;
+}
+.page-shop .showcase-card__body { padding: 20px 20px 22px; }
+.page-shop .showcase-card__kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  color: var(--gold2, #f1d88a);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 800;
+}
+.page-shop .showcase-card__kicker span + span:before { content: '·'; margin-right: 9px; opacity: .7; }
+.page-shop .showcase-card__title {
+  font-family: var(--serif), Georgia, serif;
+  font-size: clamp(21px, 2.1vw, 27px);
+  line-height: 1.22;
+  margin: 10px 0 10px;
+  min-height: 2.45em;
+  overflow-wrap: anywhere;
+}
+.page-shop .showcase-card__title a { color: var(--text, #f7efe1); }
+.page-shop .showcase-card__title a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.page-shop .showcase-card__detail {
+  min-height: 20px;
+  margin: 0 0 14px;
+  color: var(--muted, #b9ac98);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.page-shop .showcase-card__price {
+  display: block;
+  color: #f5d98f;
+  font-size: clamp(21px, 2vw, 25px);
+  line-height: 1.2;
+  font-weight: 800;
+  margin-bottom: 17px;
+}
+.page-shop .showcase-card__actions { display: grid; grid-template-columns: minmax(0, 1fr) 48px; gap: 9px; }
+.page-shop .showcase-card__buy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, #f6dfa5, #cda251);
+  border: 1px solid #e3bb71;
+  border-radius: 10px;
+  color: #1a1207;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: filter .2s ease;
+}
+.page-shop .showcase-card__buy:hover { filter: brightness(1.06); }
+.page-shop .showcase-card__add {
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid rgba(233,200,137,.44);
+  background: rgba(255,255,255,.04);
+  color: #f8e2a8;
+  font-size: 22px;
+  cursor: pointer;
+}
+.page-shop .showcase-card__add:hover { background: rgba(233,200,137,.12); }
+.page-shop .showcase-card__footer {
+  margin: 12px 0 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--muted, #b9ac98);
+}
+.page-shop .showcase-card__footer a { text-decoration: underline; text-underline-offset: 3px; }
+.page-shop .showcase-bottom-note {
+  border-top: 1px solid rgba(226,197,139,.18);
+  margin-top: 36px;
+  padding-top: 22px;
+  color: var(--muted, #b9ac98);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.page-shop .showcase-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+.page-shop .showcase-card__buy:focus-visible,
+.page-shop .showcase-card__add:focus-visible,
+.page-shop .showcase-card a:focus-visible,
+.page-shop .showcase-categories .chip:focus-visible {
+  outline: 3px solid #f7e8b0;
+  outline-offset: 3px;
+}
+@media (max-width: 980px) {
+  .page-shop .showcase-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 620px) {
+  .page-shop .catalog-hero { padding: 42px 0 26px; }
+  .page-shop .showcase-intro h1 { font-size: clamp(41px, 12vw, 58px); letter-spacing: -.035em; }
+  .page-shop .showcase-intro-note { gap: 8px 15px; font-size: 12px; }
+  .page-shop .showcase-toolbar-header { align-items: start; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+  .page-shop .showcase-controls { grid-template-columns: 1fr; }
+  .page-shop .showcase-grid { grid-template-columns: 1fr; gap: 24px; }
+  .page-shop .showcase-card__title { min-height: 0; font-size: 25px; }
+  .page-shop .showcase-card__body { padding: 19px; }
+  .page-shop .showcase-card__detail { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-shop .showcase-card, .page-shop .showcase-card__media img { transition: none; }
+  .page-shop .showcase-card:hover, .page-shop .showcase-card:focus-within { transform: none; }
+}
