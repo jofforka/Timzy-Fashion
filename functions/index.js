@@ -240,6 +240,97 @@ exports.recordSale = onCall(OPTIONS, async request => {
   return result;
 });
 
+// Reversals preserve the original sale and amounts for the audit trail.
+// They do not send customer refunds or recover money paid to investors.
+exports.reverseSale = onCall(OPTIONS, async request => {
+  const actor = await profileFor(request, ['super_admin']);
+  const saleId = validId(request.data?.saleId, 'Sale ID');
+  const reason = textValue(request.data?.reason, 'Reason for reversal', 12, 300);
+  const kind = textValue(request.data?.kind, 'Reversal type', 5, 30);
+  if (!['entry_error', 'customer_refunded'].includes(kind)) {
+    fail('Select mistaken entry or confirmed customer refund.');
+  }
+  const reference = kind === 'customer_refunded'
+    ? textValue(request.data?.refundReference, 'Customer refund reference', 5, 120)
+    : null;
+  const saleRef = db.collection('sales').doc(saleId);
+  const financeRef = db.collection('financeSales').doc(saleId);
+  const outcome = await db.runTransaction(async tx => {
+    const [saleDoc, financeDoc] = await Promise.all([
+      tx.get(saleRef), tx.get(financeRef)
+    ]);
+    if (!saleDoc.exists) fail('Sale not found.', 'not-found');
+    const sale = saleDoc.data();
+    if (sale.status === 'reversed') fail('Sale has already been reversed.', 'already-exists');
+    if (!sale.receiptCode || !Number.isSafeInteger(sale.quantity) || sale.quantity < 1 ||
+        !sale.productId || !Number.isSafeInteger(sale.amount)) {
+      fail('Legacy or incomplete sales require a separately reviewed correction.', 'failed-precondition');
+    }
+    if (financeDoc.exists && financeDoc.data().status !== 'due') {
+      fail('An investor payout was already settled or changed. Reconcile that payment before reversing this sale.',
+        'failed-precondition');
+    }
+
+    const productRef = db.collection('products').doc(sale.productId);
+    const productDoc = await tx.get(productRef);
+    if (!productDoc.exists || !Number.isSafeInteger(productDoc.data().stockOnHand)) {
+      fail('Cannot restore unverified or missing inventory.', 'failed-precondition');
+    }
+    const restored = productDoc.data().stockOnHand + sale.quantity;
+    if (!Number.isSafeInteger(restored) || restored > 1000000000) {
+      fail('Inventory correction exceeds supported quantity.', 'failed-precondition');
+    }
+
+    let investorRef;
+    let investorLineRef;
+    if (financeDoc.exists) {
+      const finance = financeDoc.data();
+      const owner = validId(finance.investorUid, 'Investor UID');
+      investorRef = db.doc('investorCatalog/' + owner + '/items/' + sale.productId);
+      investorLineRef = db.doc('investorSales/' + owner + '/entries/' + saleId);
+      const [catalog, investorLine] = await Promise.all([
+        tx.get(investorRef), tx.get(investorLineRef)
+      ]);
+      if (!catalog.exists || !Number.isSafeInteger(catalog.data().unitsSold) ||
+          catalog.data().unitsSold < sale.quantity || !investorLine.exists ||
+          investorLine.data().status !== 'due') {
+        fail('Investor ledger is inconsistent; review before reversal.', 'failed-precondition');
+      }
+    }
+
+    tx.update(productRef, {
+      stockOnHand: restored,
+      status: 'Published',
+      updatedAt: FieldValue.serverTimestamp()
+    });
+    tx.update(saleRef, {
+      status: 'reversed', reversalKind: kind, reversalReason: reason,
+      ...(reference ? { refundReference: reference } : {}),
+      reversedBy: actor.uid, reversedAt: FieldValue.serverTimestamp()
+    });
+    if (financeDoc.exists) {
+      tx.update(financeRef, {
+        status: 'reversed', reversedBy: actor.uid,
+        reversedAt: FieldValue.serverTimestamp()
+      });
+      tx.update(investorLineRef, {
+        status: 'reversed', reversedAt: FieldValue.serverTimestamp()
+      });
+      tx.update(investorRef, {
+        unitsSold: FieldValue.increment(-sale.quantity),
+        updatedAt: FieldValue.serverTimestamp()
+      });
+    }
+    tx.create(db.collection('auditEvents').doc(), {
+      action: 'sale_reversed', saleId, productId: sale.productId,
+      reason, kind, actorUid: actor.uid, createdAt: FieldValue.serverTimestamp()
+    });
+    return { saleId, status: 'reversed', restoredStock: restored,
+      investorEntitlementCancelled: financeDoc.exists };
+  });
+  return outcome;
+});
+
 exports.markInvestorPayout = onCall(OPTIONS, async request => {
   const actor = await profileFor(request, ['super_admin']);
   const investorUid = validId(request.data?.investorUid, 'Investor account');
