@@ -33,7 +33,7 @@ const outfitsTab = button('Outfits');
 const materialsTab = button('Materials');
 const nodes = {
   '#chips': { querySelectorAll() { return [outfitsTab, materialsTab]; },
-    addEventListener(name, cb) { callbacks['chips:' + name] = cb; } },
+    addEventListener(name, cb) { (callbacks['chips:' + name] ||= []).push(cb); } },
   '#productGrid': { innerHTML: '' },
   '#productCount': { textContent: '' },
   '#sectionTitle': { textContent: '' },
@@ -97,7 +97,9 @@ const injected = app.card({ ...first, id: 'x"><img src=x>', name:'<script>alert(
 assert.doesNotMatch(injected, /<script>/, 'Product names escaped');
 assert.doesNotMatch(injected, /data-product-id="x"><img/, 'IDs escaped');
 
-callbacks['chips:click']({ target: { closest(sel) { return sel === '[data-category]' ? materialsTab : null; } } });
+for (const click of callbacks['chips:click']) {
+  click({ target: { closest(sel) { return sel === '[data-category]' ? materialsTab : null; } } });
+}
 assert.equal(app.activeCategory, 'Materials');
 assert.equal(materialsTab.pressed, 'true');
 assert.equal(outfitsTab.pressed, 'false');
