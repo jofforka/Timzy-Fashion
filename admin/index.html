@@ -11,14 +11,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="admin.css?v=8.5">
+  <link rel="stylesheet" href="role-portal.css?v=1">
 </head>
 <body>
   <div id="adminLogin" class="auth-screen">
     <form id="adminLoginForm" class="auth-card">
       <img src="../assets/img/timzy-logo.png" alt="Timzy Fashion">
-      <span class="eyebrow">Secure Staff Access</span>
+      <span class="eyebrow">Secure Role-Based Access</span>
       <h1>Timzy Admin</h1>
-      <p>Manage products, images, Instagram videos, sales, and expenses.</p>
+      <p>Super Admin, Shop Staff and Investor access.</p>
 
       <label>Email<input type="email" name="email" required autocomplete="username"></label>
       <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
@@ -40,8 +41,10 @@
         <button data-view="products">Products</button>
         <button data-view="orders">Orders</button>
         <button data-view="sales">Sales</button>
-        <button data-view="expenses">Expenses</button>
-        <button data-view="settings">Settings</button>
+        <button data-view="expenses" data-super-only>Expenses</button>
+        <button data-view="settings" data-super-only>Settings</button>
+        <button data-view="investors" data-super-only>Investor Agreements</button>
+        <button data-view="accounts" data-super-only>User Accounts</button>
       </nav>
 
       <div class="sidebar-footer">
@@ -58,7 +61,7 @@
         </div>
         <div class="top-actions">
           <button id="mobileSidebarBtn" class="icon-control" type="button">☰</button>
-          <button id="quickAddProduct" class="primary-btn" type="button">+ Add Product</button>
+          <button id="quickAddProduct" class="primary-btn" type="button" data-super-only>+ Add Product</button>
         </div>
       </header>
 
@@ -67,7 +70,7 @@
           <article><span>Products</span><strong id="statProducts">0</strong></article>
           <article><span>Published</span><strong id="statPublished">0</strong></article>
           <article><span>Sales</span><strong id="statSales">₦0</strong></article>
-          <article><span>Expenses</span><strong id="statExpenses">₦0</strong></article>
+          <article data-super-only><span>Expenses</span><strong id="statExpenses">₦0</strong></article>
         </div>
 
         <div class="dashboard-grid">
@@ -89,7 +92,7 @@
           <select id="productFilter">
             <option value="All">All categories</option>
           </select>
-          <button id="addProductBtn" class="primary-btn" type="button">+ New Product</button>
+          <button id="addProductBtn" class="primary-btn" type="button" data-super-only>+ New Product</button>
         </div>
 
         <div id="productTable" class="product-table"></div>
@@ -101,14 +104,45 @@
 
       <section id="salesView" class="admin-view" hidden>
         <div class="admin-card">
-          <div class="card-head"><div><span class="eyebrow">Daily Records</span><h2>Sales</h2></div></div>
+          <div class="card-head"><div><span class="eyebrow">Shop Operations</span><h2>Record a Completed Sale</h2></div></div>
+          <p class="role-note">Choose the product, quantity and actual amount paid by the customer. Stock is reduced automatically after a successful server-confirmed entry. A verified stock count and unique receipt number are required. Use the same receipt when retrying an uncertain submission.</p>
           <form id="saleForm" class="record-form">
-            <input name="description" placeholder="Sale description" required>
-            <input name="amount" type="number" min="0" placeholder="Amount" required>
-            <input name="date" type="date" required>
-            <button class="primary-btn" type="submit">Add Sale</button>
+            <label>Product <select name="productId" id="saleProductId" required><option value="">Select verified stock</option></select></label>
+            <label>Quantity <input name="quantity" type="number" step="1" min="1" max="100" value="1" required></label>
+            <label>Actual price per unit (₦) <input name="unitSalePrice" type="number" step="1" min="1" required></label>
+            <label>Receipt / invoice number <input name="receiptCode" maxlength="64" minlength="6" required autocomplete="off" placeholder="E.g. TIMZY-2026-0001" pattern="[A-Za-z0-9][A-Za-z0-9_-]{5,63}"></label>
+            <label>Invoice line number <input name="lineNumber" type="number" min="1" max="99" step="1" value="1" required aria-describedby="invoiceLineHelp"></label>
+            <p id="invoiceLineHelp" class="role-note">For multiple products on one receipt, enter line 1, then line 2, and so on. Repeating the same receipt and line will not double-charge or deduct stock.</p>
+            <label>Customer reference (optional) <input name="customerReference" maxlength="120" autocomplete="off" placeholder="Optional customer code"></label>
+            <button class="primary-btn" type="submit">Record Sale</button>
           </form>
+          <p id="saleStatus" class="form-message" role="status" aria-live="polite"></p>
+          <h3>Recorded Sales</h3>
           <div id="salesList" class="record-list"></div>
+        </div>
+        <div class="admin-card" data-super-only>
+          <h2>Reverse an Incorrect or Refunded Sale</h2>
+          <p class="role-note">Super Admin only. Reversals preserve the original sale, restore stock and cancel unpaid investor entitlements. No money is transferred. Already-paid investor payouts cannot be reversed here.</p>
+          <form id="reverseSaleForm" class="record-form">
+            <label>Recorded sale <select name="saleId" id="reverseSaleId" required><option value="">Select a completed sale</option></select></label>
+            <label>Reason type
+              <select name="kind" required>
+                <option value="entry_error">Incorrect entry (no money movement)</option>
+                <option value="customer_refunded">Customer already refunded</option>
+              </select>
+            </label>
+            <label>Reason <textarea name="reason" minlength="12" maxlength="300" rows="2" required placeholder="Explain the correction"></textarea></label>
+            <label>Customer refund reference (only for confirmed refunds)
+              <input name="refundReference" minlength="5" maxlength="120" autocomplete="off" placeholder="Bank/transfer refund reference">
+            </label>
+            <label class="restock-check">
+              <input type="checkbox" name="restock" value="true">
+              <span>Returned goods physically inspected and resellable: restore stock (refunds only)</span>
+            </label>
+            <p class="role-note">Leave this unticked when goods are damaged, missing or not returned. Incorrect-entry reversals always restore the wrongly deducted stock.</p>
+            <button type="submit" class="danger-btn">Reverse Recorded Sale</button>
+          </form>
+          <p id="reverseSaleStatus" class="form-message" role="status" aria-live="polite"></p>
         </div>
       </section>
 
@@ -141,6 +175,102 @@
           <button class="primary-btn" type="submit">Save Settings</button>
         </form>
       </section>
+
+      <section id="investorsView" class="admin-view" hidden data-super-only>
+        <div class="admin-card">
+          <h2>Investor Product Agreements</h2>
+          <p class="role-note">Investor cost is private. Do not enter the agreed payout into a public product description or price field. New rates apply only to future sales.</p>
+          <form id="agreementForm" class="record-form">
+            <label>Product <select name="productId" id="agreementProduct" required><option value="">Select product</option></select></label>
+            <label>Investor <select name="investorUid" id="agreementInvestor" required><option value="">Select investor</option></select></label>
+            <label>Agreed payout per unit (₦) <input name="payoutPerUnit" type="number" step="1" min="1" required></label>
+            <label>Agreement status <select name="active" required>
+              <option value="true">Active — staff may record sales</option>
+              <option value="false">Paused — block staff sales</option>
+            </select></label>
+            <label>Agreement reference / amendment reason
+              <textarea name="changeReason" rows="2" minlength="12" maxlength="300" required placeholder="E.g. signed consignment agreement TF-CON-001"></textarea>
+              <small>Record the actual negotiated agreement or signed amendment reference. This note is visible to the investor.</small>
+            </label>
+            <button class="primary-btn" type="submit">Record Agreement</button>
+          </form>
+          <p id="agreementStatus" class="form-message" role="status" aria-live="polite"></p>
+          <div id="agreementsList" class="record-list"></div>
+          <h3>Recent Agreement Amendments</h3>
+          <p class="role-note">Historical agreed rates are retained and are visible to their respective investors.</p>
+          <div id="agreementHistoryList" class="record-list"></div>
+        </div>
+        <div class="admin-card">
+          <h2>Confirm an Investor Payout</h2>
+          <p class="role-note">Mark paid only after a real transfer has been verified. This does not send money.</p>
+          <form id="payoutForm" class="record-form">
+            <label>Investor <select name="investorUid" id="payoutInvestor" required><option value="">Select investor</option></select></label>
+            <label>Outstanding sale <select name="saleId" id="payoutSale" required><option value="">Select a due sale</option></select></label>
+            <label>Transfer / payment reference <input name="paymentReference" maxlength="120" required></label>
+            <button class="primary-btn" type="submit">Mark Payout Paid</button>
+          </form>
+          <p id="payoutStatus" class="form-message" role="status" aria-live="polite"></p> 
+        </div>
+        <div class="admin-card">
+          <h2>Investor-Linked Sales Reconciliation</h2>
+          <p class="role-note">Actual receipts and contracted investor payouts for linked products, with gross margin before operating expenses. Super Admin only.</p>
+          <div class="stats-grid">
+            <article><span>Actual Sales</span><strong id="financeRetail">₦0</strong></article>
+            <article><span>Investor Due / Paid</span><strong id="financePayout">₦0</strong></article>
+            <article><span>Gross Margin Before Costs</span><strong id="financeMargin">₦0</strong></article>
+          </div>
+          <div id="financeSalesList" class="record-list"></div>
+        </div>
+      </section>
+
+      <section id="accountsView" class="admin-view" hidden data-super-only>
+        <div class="admin-card">
+          <h2>Create a Staff or Investor Login</h2>
+          <p class="role-note">Each person receives a unique account. The system sends a password-setup email; passwords are never displayed or stored here.</p>
+          <form id="createAccountForm" class="record-form">
+            <label>Full name <input name="displayName" maxlength="100" required></label>
+            <label>Email <input name="email" type="email" autocomplete="off" required></label>
+            <label>Role <select name="role" required><option value="staff">Shop Staff</option><option value="investor">Investor</option></select></label>
+            <button class="primary-btn" type="submit">Create Login &amp; Email Setup Link</button>
+          </form>
+          <p id="accountStatus" class="form-message" role="status" aria-live="polite"></p>
+          <h3>Active and Disabled Accounts</h3>
+          <div id="accountsList" class="record-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="accessDenied" class="auth-screen" hidden>
+    <div class="auth-card">
+      <h1>Access Not Activated</h1>
+      <p id="accessDeniedMessage">This account has not been assigned a role by the Super Admin.</p>
+      <button class="primary-btn" type="button" id="deniedSignOut">Sign Out</button>
+    </div>
+  </div>
+  <div id="investorApp" class="investor-shell" hidden>
+    <header class="investor-header">
+      <a href="../shop.html"><img src="../assets/img/timzy-logo.png" alt="Timzy Fashion" width="44" height="44"> Timzy Fashion</a>
+      <button class="secondary-btn" type="button" id="investorSignOut">Sign Out</button>
+    </header>
+    <main class="investor-main">
+      <span class="eyebrow">Private Investor Portal</span>
+      <h1>My Products &amp; Payouts</h1>
+      <p id="investorIdentity" class="role-note"></p>
+      <p class="role-note">Figures below show your <strong>agreed entitlement</strong>, not the customer selling price or the shop's margin.</p>
+      <div class="stats-grid">
+        <article><span>My Listed Products</span><strong id="investorProductCount">0</strong></article>
+        <article><span>Units Sold</span><strong id="investorUnitsSold">0</strong></article>
+        <article><span>Amount Due</span><strong id="investorAmountDue">₦0</strong></article>
+        <article><span>Amount Paid</span><strong id="investorAmountPaid">₦0</strong></article>
+      </div>
+      <section class="admin-card"><h2>My Products</h2><div id="investorProductsList" class="record-list"></div></section>
+      <section class="admin-card"><h2>My Sales Entitlements</h2><div id="investorSalesList" class="record-list"></div></section>
+      <section class="admin-card"><h2>Agreement Change History</h2>
+        <p class="role-note">See each recorded change to your agreed per-unit payout. Previous sales retain the rate used when they were recorded.</p>
+        <div id="investorHistoryList" class="record-list"></div>
+      </section>
+      <p id="investorError" class="form-message" role="status"></p>
     </main>
   </div>
 
@@ -187,6 +317,7 @@
               </label>
               <label>Colour<input name="color"></label>
               <label>Sizes<input name="sizes" value="Custom"></label>
+              <label>Verified Stock on Hand <input name="stockOnHand" type="number" min="0" step="1" placeholder="Required for recorded sales"><small>Count only physically verified inventory; leave blank for untracked items.</small></label>
               <label>Delivery Estimate<input name="deliveryEstimate"></label>
               <label>Status
                 <select name="status">
@@ -244,7 +375,7 @@
         </div>
 
         <footer class="editor-footer">
-          <button id="deleteProductBtn" class="danger-btn" type="button" hidden>Delete Product</button>
+          <button id="deleteProductBtn" class="danger-btn" type="button" hidden>Archive Product</button>
           <div>
             <button id="cancelProductBtn" class="secondary-btn" type="button">Cancel</button>
             <button class="primary-btn" type="submit">Save Product</button>
@@ -267,9 +398,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-functions-compat.js"></script>
   
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
-  <script src="admin.js?v=8.6"></script>
+  <script src="role-portal.js?v=1"></script>
+  <script src="admin.js?v=8.7"></script>
 </body>
 </html>

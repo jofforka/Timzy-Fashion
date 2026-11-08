@@ -22,7 +22,9 @@
     images: [],
     pendingFiles: [],
     replaceAll: false,
-    view: "dashboard"
+    view: "dashboard",
+    role: "",
+    authEpoch: 0
   };
 
   const money = value => `${cfg.currency || "₦"}${Number(value || 0).toLocaleString()}`;
@@ -81,76 +83,74 @@
     }
   }
 
-  function showApp(user) {
-    $("#adminLogin").hidden = true;
-    $("#adminApp").hidden = false;
-    loadAll();
+  async function showApp(user) {
+    const epoch = ++state.authEpoch;
+    const portal = window.TimzyRolePortal;
+    if (!portal) {
+      $("#loginMessage").textContent = "Role portal is unavailable.";
+      return;
+    }
+    try {
+      const profile = await portal.getProfile(user);
+      if (epoch !== state.authEpoch) return;
+      state.role = profile.role;
+      portal.applyRole(profile.role);
+      $("#adminLogin").hidden = true;
+      $("#accessDenied").hidden = true;
+
+      if (profile.role === "investor") {
+        $("#adminApp").hidden = true;
+        $("#investorApp").hidden = false;
+        await portal.renderInvestor(user, profile);
+        return;
+      }
+      $("#investorApp").hidden = true;
+      $("#adminApp").hidden = false;
+      await loadAll();
+      await portal.operational(state.role, state.products);
+    } catch (error) {
+      if (epoch !== state.authEpoch) return;
+      $("#adminApp").hidden = true;
+      $("#investorApp").hidden = true;
+      $("#adminLogin").hidden = true;
+      $("#accessDenied").hidden = false;
+      $("#accessDeniedMessage").textContent =
+        String(error?.message || "Account not authorized. Contact Super Admin.").slice(0, 250);
+    }
   }
 
   function showLogin() {
+    state.authEpoch += 1;
+    state.role = "";
     $("#adminApp").hidden = true;
+    $("#investorApp").hidden = true;
+    $("#accessDenied").hidden = true;
     $("#adminLogin").hidden = false;
   }
 
   async function loadAll() {
-    await Promise.all([
-      loadProducts(),
-      loadRecords("sales"),
-      loadRecords("expenses"),
-      loadSettings()
-    ]);
+    const reads = [loadProducts(), loadRecords("sales")];
+    if (state.role === "super_admin") {
+      reads.push(loadRecords("expenses"), loadSettings());
+    } else {
+      state.expenses = [];
+      state.settings = {};
+    }
+    await Promise.all(reads);
     renderAll();
+    window.TimzyRolePortal?.refreshSaleOptions(state.products);
+    if (state.role === "super_admin") {
+      window.TimzyRolePortal?.refreshReversalOptions(state.sales);
+    }
   }
+  // Called only after a server-confirmed sale; refreshes stock and ledger.
+  window.TimzyRefreshOperations = loadAll;
 
   async function loadProducts() {
     let snapshot = await fb.db.collection(collections.products).get();
 
-    if (snapshot.empty) {
-      try {
-        const response = await fetch("../data/products.json", { cache: "no-store" });
-        const seedProducts = await response.json();
-
-        if (Array.isArray(seedProducts) && seedProducts.length) {
-          const batches = [];
-          let batch = fb.db.batch();
-          let count = 0;
-
-          for (const raw of seedProducts) {
-            const id = raw.id || slugify(raw.name) || `product-${Date.now()}-${count}`;
-            const images = Array.isArray(raw.images) && raw.images.length
-              ? raw.images
-              : [raw.image1, raw.image2, raw.image3, raw.image4].filter(Boolean);
-
-            const doc = {
-              ...raw,
-              images,
-              image1: images[0] || "",
-              image2: images[1] || "",
-              image3: images[2] || "",
-              image4: images[3] || "",
-              instagramVideoUrl: raw.instagramVideoUrl || raw.videoUrl || "",
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            batch.set(fb.db.collection(collections.products).doc(id), doc);
-            count += 1;
-
-            if (count % 400 === 0) {
-              batches.push(batch.commit());
-              batch = fb.db.batch();
-            }
-          }
-
-          batches.push(batch.commit());
-          await Promise.all(batches);
-          snapshot = await fb.db.collection(collections.products).get();
-          toast("Existing products imported into the admin.");
-        }
-      } catch (error) {
-        console.warn("Initial product import failed:", error);
-      }
-    }
+    // Never seed bundled sample products into production financial inventory.
+    // Super Admin must add verified stock through the product editor.
 
     state.products = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
@@ -187,7 +187,7 @@
   function renderStats() {
     $("#statProducts").textContent = state.products.length;
     $("#statPublished").textContent = state.products.filter(p => String(p.status).toLowerCase() === "published").length;
-    $("#statSales").textContent = money(state.sales.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+    $("#statSales").textContent = money(state.sales.filter(item => item.status !== "reversed").reduce((sum, item) => sum + Number(item.amount || 0), 0));
     $("#statExpenses").textContent = money(state.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
   }
 
@@ -219,7 +219,7 @@
         <img src="${escapeHTML(imageOf(product))}" alt="${escapeHTML(product.name)}" onerror="this.src='../assets/img/hero-senator-grey.jpg'">
         <div>
           <h3>${escapeHTML(product.name || "Untitled Product")}</h3>
-          <p>${escapeHTML(product.sku || product.id)}</p>
+          <p>${escapeHTML(product.sku || product.id)}</p>\n          <small>Verified stock: ${Number.isSafeInteger(product.stockOnHand) ? product.stockOnHand : "Not counted"}</small>
           ${product.instagramVideoUrl ? `<small>Instagram video linked</small>` : ""}
         </div>
         <div class="hide-tablet">
@@ -233,7 +233,7 @@
         <div class="hide-tablet">
           <span class="status-pill">${escapeHTML(product.status || "Published")}</span>
         </div>
-        <div class="row-actions">
+        <div class="row-actions" data-super-only>
           <button type="button" data-edit-product="${escapeHTML(product.id)}">Edit</button>
           <button type="button" data-duplicate-product="${escapeHTML(product.id)}">Duplicate</button>
         </div>
@@ -261,7 +261,7 @@
     $("#recentActivity").innerHTML = rows.map(row => `
       <div class="record-item">
         <div><b>${escapeHTML(row.type)}</b><small>${escapeHTML(row.date || "")}</small></div>
-        <div>${escapeHTML(row.description || "")}</div>
+        <div>${escapeHTML(row.description || "")}${row.status === "reversed" ? " · Reversed" : ""}</div>
         <strong>${money(row.amount)}</strong>
       </div>
     `).join("") || `<p>No activity yet.</p>`;
@@ -273,7 +273,7 @@
     root.innerHTML = state[type].map(row => `
       <div class="record-item">
         <div><b>${escapeHTML(row.date || "")}</b></div>
-        <div>${escapeHTML(row.description || "")}</div>
+        <div>${escapeHTML(row.description || "")}${row.status === "reversed" ? " · Reversed" : ""}</div>
         <strong>${money(row.amount)}</strong>
       </div>
     `).join("") || `<p>No ${type} recorded yet.</p>`;
@@ -288,10 +288,13 @@
   }
 
   function switchView(view) {
+    if (state.role === "investor") return;
+    if (state.role !== "super_admin" && !["dashboard", "products", "sales"].includes(view)) return;
     state.view = view;
     $$(".admin-view").forEach(section => section.hidden = section.id !== `${view}View`);
     $$("[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === view));
-    $("#viewTitle").textContent = view.charAt(0).toUpperCase() + view.slice(1);
+    $("#viewTitle").textContent = view === "investors" ? "Investor Agreements" :
+      view === "accounts" ? "User Accounts" : view.charAt(0).toUpperCase() + view.slice(1);
     $(".sidebar")?.classList.remove("open");
   }
 
@@ -323,11 +326,13 @@
   }
 
   function openNewProduct() {
+    if (state.role !== "super_admin") return toast("Super Admin only.");
     resetEditor();
     $("#productModal").hidden = false;
   }
 
   function openEditProduct(id) {
+    if (state.role !== "super_admin") return toast("Super Admin only.");
     const product = state.products.find(p => p.id === id);
     if (!product) return;
 
@@ -340,7 +345,7 @@
     const form = $("#productForm");
     const fields = [
       "id", "name", "sku", "category", "productType", "price", "salePrice",
-      "fabricType", "materialProductId", "color", "sizes", "deliveryEstimate", "status", "badge",
+      "fabricType", "materialProductId", "color", "sizes", "stockOnHand", "deliveryEstimate", "status", "badge",
       "description", "tags", "instagramVideoUrl"
     ];
     fields.forEach(field => {
@@ -463,6 +468,8 @@
       materialProductId: String(data.materialProductId || "").trim(),
       color: data.color.trim(),
       sizes: data.sizes.trim() || "Custom",
+      ...(String(data.stockOnHand || "").trim() === "" ? {} :
+        { stockOnHand: Number(data.stockOnHand) }),
       deliveryEstimate: data.deliveryEstimate.trim() || "7–14 business days after confirmation",
       status: data.status,
       badge: data.badge,
@@ -477,7 +484,12 @@
 
   async function saveProduct(event) {
     event.preventDefault();
+    if (state.role !== "super_admin") return toast("Super Admin only.");
     const product = formProductData();
+    if (product.stockOnHand !== undefined &&
+        (!Number.isSafeInteger(product.stockOnHand) || product.stockOnHand < 0)) {
+      return toast("Stock must be a non-negative whole number.");
+    }
     if (!product.name || !product.category || product.price < 0) {
       return toast("Complete the required product fields.");
     }
@@ -503,46 +515,86 @@
       ? state.products.find(p => p.id === state.editingId)?.createdAt || firebase.firestore.FieldValue.serverTimestamp()
       : firebase.firestore.FieldValue.serverTimestamp();
 
-    await fb.db.collection(collections.products).doc(productId).set(product, { merge: true });
-    toast(state.editingId ? "Product updated." : "Product created.");
+    // Firestore transactions reject a stale editor rather than overwriting
+    // a sale/stock adjustment or another admin's more recent product changes.
+    const previous = state.editingId
+      ? state.products.find(p => p.id === state.editingId) : null;
+    const ref = fb.db.collection(collections.products).doc(productId);
+    try {
+      await fb.db.runTransaction(async tx => {
+        const live = await tx.get(ref);
+        if (previous) {
+          if (!live.exists) throw new Error("Product was deleted. Reload and review.");
+          const liveData = live.data();
+          const previousStock = Number.isSafeInteger(previous.stockOnHand) ? previous.stockOnHand : null;
+          const liveStock = Number.isSafeInteger(liveData.stockOnHand) ? liveData.stockOnHand : null;
+          if (previousStock !== liveStock ||
+              timestampValue(previous.updatedAt) !== timestampValue(liveData.updatedAt)) {
+            throw new Error("This product changed since you opened it. Reload and review before saving.");
+          }
+          tx.set(ref, product, { merge: true });
+        } else {
+          if (live.exists) throw new Error("A product with this code already exists. Use a unique SKU/name.");
+          tx.set(ref, product);
+        }
+      });
+    } catch (error) {
+      const message = String(error?.message || "Product save failed.");
+      toast(message.slice(0, 180));
+      closeEditor();
+      await loadProducts();
+      renderAll();
+      return;
+    }
+    toast(previous ? "Product updated." : "Product created.");
     closeEditor();
     await loadProducts();
     renderAll();
   }
 
   async function deleteProduct() {
+    if (state.role !== "super_admin") return toast("Super Admin only.");
     if (!state.editingId) return;
     const product = state.products.find(p => p.id === state.editingId);
-    if (!confirm(`Delete "${product?.name || "this product"}"?`)) return;
+    if (!confirm(`Archive "${product?.name || "this product"}"? It will be removed from the public shop, but historical sales and investor agreements will be preserved.`)) return;
 
-    await fb.db.collection(collections.products).doc(state.editingId).delete();
-    toast("Product deleted.");
+    await fb.db.collection(collections.products).doc(state.editingId).update({
+      status: "Draft",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast("Product archived as Draft. Inventory and sales history preserved.");
     closeEditor();
     await loadProducts();
     renderAll();
   }
 
   async function duplicateProduct(id) {
+    if (state.role !== "super_admin") return toast("Super Admin only.");
     const product = state.products.find(p => p.id === id);
     if (!product) return;
-    const copyId = `${id}-copy-${Date.now().toString().slice(-5)}`;
+    // Use Firestore-generated IDs; never copy inventory counts or imply that a
+    // duplicate has independently verified stock or the same investor agreement.
+    const newRef = fb.db.collection(collections.products).doc();
     const copy = {
       ...product,
       name: `${product.name} Copy`,
-      sku: `${product.sku || id}-COPY`,
+      sku: `${product.sku || id}-COPY-${newRef.id.slice(0, 6)}`,
       status: "Draft",
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     delete copy.id;
-    await fb.db.collection(collections.products).doc(copyId).set(copy);
-    toast("Product duplicated.");
+    delete copy.stockOnHand;
+    delete copy.quantity;
+    await newRef.set(copy);
+    toast("Draft duplicated without stock. Verify stock and supplier terms before publishing.");
     await loadProducts();
     renderAll();
   }
 
   async function submitRecord(type, event) {
     event.preventDefault();
+    if (state.role !== "super_admin" || type !== "expenses") return toast("Super Admin only.");
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
     await fb.db.collection(collections[type]).add({
       description: data.description.trim(),
@@ -560,6 +612,7 @@
 
   async function saveSettings(event) {
     event.preventDefault();
+    if (state.role !== "super_admin") return toast("Super Admin only.");
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
     await fb.db.collection(collections.settings).doc("store").set({
       ...data,
@@ -641,7 +694,6 @@
     $("#previewInstagramBtn").addEventListener("click", previewInstagram);
     $("#productSearch").addEventListener("input", renderProducts);
     $("#productFilter").addEventListener("change", renderProducts);
-    $("#saleForm").addEventListener("submit", event => submitRecord("sales", event));
     $("#expenseForm").addEventListener("submit", event => submitRecord("expenses", event));
     $("#settingsForm").addEventListener("submit", saveSettings);
   }

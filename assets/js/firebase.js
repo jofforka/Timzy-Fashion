@@ -62,6 +62,11 @@
       ignoreUndefinedProperties: true
     });
 
+    // HTTPS callable functions are required for protected sales and payouts.
+    // Public pages without the optional Functions SDK continue to load normally.
+    const cloudFunctions = typeof firebase.functions === "function"
+      ? firebase.app().functions("us-central1") : null;
+
     // -------------------------------------------------------
     // Expose Globally
     // -------------------------------------------------------
@@ -69,6 +74,7 @@
       app,
       auth,
       db,
+      functions: cloudFunctions,
 
       login(email, password) {
         return auth.signInWithEmailAndPassword(email, password);
