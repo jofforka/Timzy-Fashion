@@ -85,3 +85,7 @@ button:focus-visible,select:focus-visible,input:focus-visible {
   .role-inventory-row b { font-size: 12px; }
   .record-form { grid-template-columns: 1fr; }
 }
+
+.restock-check { display:flex !important; flex-direction:row; align-items:center; gap:10px; }
+.record-form .restock-check input[type="checkbox"] { flex:none; width:18px; height:18px; min-height:18px; }
+.restock-check span { font-size:12px; line-height:1.5; }
