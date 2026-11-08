@@ -1,32 +1,97 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Sales and expenses are staff-only. Staff must be signed in with Firebase Auth.
-    match /sales/{docId} {
-      allow read, write: if request.auth != null;
+    function signedIn() { return request.auth != null; }
+    function accountPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    function active() {
+      return signedIn() && exists(accountPath())
+        && get(accountPath()).data.active == true;
+    }
+    function role() {
+      return get(accountPath()).data.role;
+    }
+    function superAdmin() { return active() && role() == 'super_admin'; }
+    function staff() { return active() && role() == 'staff'; }
+    function operations() { return superAdmin() || staff(); }
+    function investorOwner(ownerUid) {
+      return active() && role() == 'investor'
+        && request.auth.uid == ownerUid
+        && get(accountPath()).data.investorId == ownerUid;
+    }
+    function cleanPublicProduct() {
+      return !request.resource.data.keys().hasAny([
+        'investorId', 'investorUid', 'investorPayout', 'payoutPerUnit',
+        'agreedPayout', 'costPrice', 'supplierCost', 'grossMargin',
+        'margin', 'profit', 'investorAgreement'
+      ])
+      && (
+        !request.resource.data.keys().hasAny(['stockOnHand']) ||
+        (request.resource.data.stockOnHand is int
+         && request.resource.data.stockOnHand >= 0)
+      );
     }
 
-    match /expenses/{docId} {
-      allow read, write: if request.auth != null;
+    match /users/{uid} {
+      allow get: if (active() && request.auth.uid == uid) || superAdmin();
+      allow list: if superAdmin();
+      // Only privileged server functions / Admin SDK manage identities.
+      allow create, update, delete: if false;
     }
 
-    // Optional legacy collections. Keep staff-only.
-    match /products/{docId} {
+    match /products/{id} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create, update: if superAdmin() && cleanPublicProduct();
+      allow delete: if superAdmin();
     }
 
-    match /orders/{docId} {
-      allow read, write: if request.auth != null;
+    // Store settings can contain credentials, bank details, upload tokens.
+    match /settings/{id} {
+      allow read, write: if superAdmin();
     }
 
-    match /customers/{docId} {
-      allow read, write: if request.auth != null;
+    match /orders/{id} {
+      allow read: if operations();
+      allow write: if false;
     }
 
-    // Block everything else.
+    // Actual retail transactions; not readable by investors.
+    match /sales/{id} {
+      allow read: if operations();
+      allow write: if false;
+    }
+
+    match /expenses/{id} {
+      allow read, write: if superAdmin();
+    }
+
+    // Cost, payout agreement and margin never belong in public /products.
+    match /investorAgreements/{productId} {
+      allow read: if superAdmin();
+      allow write: if false;
+    }
+    match /financeSales/{saleId} {
+      allow read: if superAdmin();
+      allow write: if false;
+    }
+
+    // Server-published investor projections contain only agreed entitlement.
+    match /investorCatalog/{investorUid}/items/{productId} {
+      allow read: if superAdmin() || investorOwner(investorUid);
+      allow write: if false;
+    }
+    match /investorSales/{investorUid}/entries/{saleId} {
+      allow read: if superAdmin() || investorOwner(investorUid);
+      allow write: if false;
+    }
+
+    match /auditEvents/{eventId} {
+      allow read: if superAdmin();
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
