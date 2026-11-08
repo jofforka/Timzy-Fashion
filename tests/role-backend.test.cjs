@@ -89,7 +89,8 @@ const context = vm.createContext({
 });
 vm.runInContext(code, context, { filename: 'functions/index.js' });
 const call = (name, actor, data) => callableExports[name]({ auth: actor ? { uid: actor } : null, data });
-const id = 'sale_abcdef1234567890';
+const receipt = 'TIMZY-2026-0001';
+const id = 'receipt_' + receipt;
 
 function reset() {
   docs.clear();
@@ -103,18 +104,19 @@ function reset() {
 }
 async function main() {
   reset();
-  await assert.rejects(call('recordSale','investor1',{productId:'fabric1',quantity:1,unitSalePrice:15000,requestId:id}),
+  await assert.rejects(call('recordSale','investor1',{productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:receipt}),
     e => e.code === 'permission-denied');
-  await assert.rejects(call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:7000,requestId:id}),
+  await assert.rejects(call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:7000,receiptCode:receipt}),
     e => e.code === 'failed-precondition');
   assert.equal(docs.get('products/fabric1').stockOnHand,3,'Rejected price must not change inventory');
 
-  const recorded = await call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:15000,requestId:id});
+  const recorded = await call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:receipt});
   assert.equal(recorded.amount,15000);
   assert.equal(recorded.remainingStock,2);
   assert.equal(docs.get('products/fabric1').stockOnHand,2);
   assert.equal(docs.get('sales/'+id).amount,15000);
   assert.equal(docs.get('sales/'+id).createdBy,'clerk');
+  assert.equal(docs.get('sales/'+id).receiptCode,receipt);
   const financeLine=docs.get('financeSales/'+id);
   assert.equal(financeLine.actualRetailTotal,15000);
   assert.equal(financeLine.investorTotalDue,8000);
@@ -125,8 +127,16 @@ async function main() {
   assert.ok(!('grossMarginBeforeCosts' in investorLine),'Investor projection cannot contain profit');
   assert.equal(docs.get('investorCatalog/investor1/items/fabric1').unitsSold,1);
 
-  const again = await call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:15000,requestId:id});
+  const again = await call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:receipt});
   assert.equal(again.alreadyRecorded,true);
+  await assert.rejects(
+    call('recordSale','clerk',{productId:'fabric1',quantity:2,unitSalePrice:15000,receiptCode:receipt}),
+    e=>e.code==='already-exists'
+  );
+  await assert.rejects(
+    call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:13000,receiptCode:receipt.toLowerCase()}),
+    e=>e.code==='already-exists'
+  );
   assert.equal(docs.get('products/fabric1').stockOnHand,2,'Duplicate must not decrement stock');
   await assert.rejects(call('markInvestorPayout','clerk',{investorUid:'investor1',saleId:id,paymentReference:'BANK-123'}),
     e=>e.code==='permission-denied');
@@ -146,7 +156,7 @@ async function main() {
 
   reset();
   delete docs.get('products/fabric1').stockOnHand;
-  await assert.rejects(call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:15000,requestId:id}),
+  await assert.rejects(call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:receipt}),
     e=>e.code==='failed-precondition');
   assert.ok(!docs.has('sales/'+id),'Unverified stock cannot be sold via backend');
 
