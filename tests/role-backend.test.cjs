@@ -165,7 +165,7 @@ async function main() {
     e=>e.code==='permission-denied'
   );
   await assert.rejects(
-    call('reverseSale','owner',{saleId:id,kind:'customer_refunded',reason:'The client returned the material.',refundReference:'BANKREF42'}),
+    call('reverseSale','owner',{saleId:id,kind:'customer_refunded',reason:'The client returned the material.',refundReference:'BANKREF42',restock:false}),
     e=>e.code==='failed-precondition'
   );
   await assert.rejects(
@@ -206,6 +206,44 @@ async function main() {
   assert.equal(user.onboarding,'send-password-reset-email');
   assert.equal(docs.get('users/'+user.uid).investorId,user.uid);
   assert.equal(auth.created.at(-1).password,undefined);
+
+  reset();
+  const refunded=await call('recordSale','clerk',{
+    productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:receipt
+  });
+  assert.equal(docs.get('products/fabric1').stockOnHand,2);
+  await assert.rejects(
+    call('reverseSale','owner',{
+      saleId:refunded.id,kind:'customer_refunded',
+      reason:'Customer refunded but goods not returned.',refundReference:'BANK-REFUND-1'
+    }),
+    e=>e.code==='invalid-argument',
+    'Refund corrections must explicitly report the return-to-stock decision'
+  );
+  const loss=await call('reverseSale','owner',{
+    saleId:refunded.id,kind:'customer_refunded',
+    reason:'Customer refunded but the fabric was damaged.',
+    refundReference:'BANK-REFUND-1',restock:false
+  });
+  assert.equal(loss.restocked,false);
+  assert.equal(loss.restoredStock,null);
+  assert.equal(docs.get('products/fabric1').stockOnHand,2,
+    'Damaged or missing goods must never be restocked');
+  assert.equal(docs.get('investorSales/investor1/entries/'+refunded.id).status,'reversed');
+
+  reset();
+  const archived=await call('recordSale','clerk',{
+    productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:receipt
+  });
+  docs.get('products/fabric1').status='Draft';
+  const archivedCorrection=await call('reverseSale','owner',{
+    saleId:archived.id,kind:'entry_error',
+    reason:'The line was not actually sold or delivered.'
+  });
+  assert.equal(archivedCorrection.restocked,true);
+  assert.equal(docs.get('products/fabric1').stockOnHand,3);
+  assert.equal(docs.get('products/fabric1').status,'Draft',
+    'Stock restoration must not republish archived listings');
 
   reset();
   docs.set('sales/old_sale', { amount:3000, description:'Legacy manual sale' });
