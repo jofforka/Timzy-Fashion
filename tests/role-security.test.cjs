@@ -37,6 +37,16 @@ for(const secret of ['payoutPerUnit','agreedPayout','costPrice','margin','profit
 
 assert.ok(server.includes("exports.recordSale = onCall"),'Sales are written server-side');
 assert.ok(server.includes("exports.saveInvestorAgreement = onCall"));
+assert.ok(server.includes("changeReason = textValue(request.data?.changeReason"),
+  'Agreement amendments require a documented reference');
+assert.ok(server.includes("previousPayoutPerUnit"),
+  'Agreement history keeps prior entitlement terms');
+assert.ok(server.includes("agreementVersion:"),
+  'Sales must snapshot immutable investor agreement versions');
+assert.ok(rules.includes("match /investorCatalog/{investorUid}/history/{amendmentId}"),
+  'History must be scoped to the individual investor');
+assert.ok(html.includes('id="investorHistoryList"'),
+  'Investor portal must show its own agreement amendments');
 assert.ok(server.includes("exports.provisionUser = onCall"));
 assert.ok(server.includes("exports.markInvestorPayout = onCall"));
 assert.ok(server.includes("exports.reverseSale = onCall"),'Refund corrections use authenticated backend');
