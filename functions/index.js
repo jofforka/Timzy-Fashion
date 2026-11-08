@@ -136,7 +136,13 @@ exports.recordSale = onCall(OPTIONS, async request => {
   const actor = await profileFor(request, ['super_admin', 'staff']);
   const productId = validId(request.data?.productId, 'Product ID');
   const receipt = receiptCode(request.data?.receiptCode);
-  const id = 'receipt_' + receipt;
+  // One receipt can have multiple product lines. Each line is individually
+  // idempotent across browser retries or multiple cashiers.
+  const lineNumber = request.data?.lineNumber === undefined ? 1 : request.data.lineNumber;
+  if (!Number.isSafeInteger(lineNumber) || lineNumber < 1 || lineNumber > 99) {
+    fail('Invoice line must be a whole number between 1 and 99.');
+  }
+  const id = 'receipt_' + receipt + '_line_' + lineNumber;
   const quantity = amount(request.data?.quantity, 'Quantity');
   if (quantity > 100) fail('Quantity is too large.');
   const unitSalePrice = amount(request.data?.unitSalePrice, 'Actual unit sale price');
@@ -198,7 +204,7 @@ exports.recordSale = onCall(OPTIONS, async request => {
       quantity, unitSalePrice,
       amount: breakdown.amount,
       description: String(p.name || 'Timzy Product').slice(0, 150) + ' × ' + quantity,
-      receiptCode: receipt, customerReference, date: now, createdBy: actor.uid,
+      receiptCode: receipt, lineNumber, customerReference, date: now, createdBy: actor.uid,
       createdAt: FieldValue.serverTimestamp()
     });
 
