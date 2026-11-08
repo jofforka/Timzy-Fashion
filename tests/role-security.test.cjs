@@ -60,6 +60,14 @@ assert.ok(!admin.includes('Existing products imported into the admin.'),
   'Bundled demo items must not be auto-written to production');
 assert.ok(admin.includes('state.role !== "super_admin"'),'Product edits must be role-gated');
 assert.ok(admin.includes('stockOnHand'),'Verified inventory input required');
+assert.ok(admin.includes('await fb.db.runTransaction(async tx =>'),
+  'Product CMS must save with transaction to avoid stock overwrite');
+assert.ok(admin.includes('previousStock !== liveStock'),
+  'Product CMS must detect stock changes since form opened');
+assert.ok(admin.includes('timestampValue(previous.updatedAt) !== timestampValue(liveData.updatedAt)'),
+  'Product CMS must reject concurrent record changes');
+assert.ok(admin.includes('if (live.exists) throw new Error'),
+  'Creating a new product must not overwrite an existing slug');
 assert.ok(portal.includes('firebase')===false || portal.includes('httpsCallable'),
   'Portal must use authenticated callables');
 assert.ok(portal.includes('fb.functions.httpsCallable'),'Mutations go to server');
