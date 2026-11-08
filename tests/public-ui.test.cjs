@@ -19,7 +19,7 @@ for (const file of pages) {
   assert.match(html, /assets\/js\/storefront-ui\.js\?v=1/, file + ': shared navigation JS');
   assert.match(html, /class="site-header"/, file + ': shared header');
   assert.match(html, /class="shop-bag-btn"/, file + ': same basket control');
-  assert.match(html, /class="shop-footer"/, file + ': same footer');
+  assert.match(html, /class="container shop-footer"/, file + ': same footer');
   assert.match(html, /href="shop\.html"/, file + ': shop link');
   assert.match(html, /aria-controls="navLinks"/, file + ': mobile menu semantics');
   assert.equal((html.match(/id="bagCount"/g) || []).length, 1,
