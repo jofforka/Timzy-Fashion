@@ -1,0 +1,28 @@
+name: Timzy shop regression checks
+on:
+  pull_request:
+    paths:
+      - 'shop.html'
+      - 'checkout.html'
+      - 'assets/js/app.js'
+      - 'assets/js/shop-showcase.js'
+      - 'assets/css/shop-showcase.css'
+      - 'assets/js/config.js'
+      - 'data/products.json'
+      - 'tests/shop-showcase.test.cjs'
+      - '.github/workflows/shop-showcase-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  shop-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test shop and checkout
+        run: node tests/shop-showcase.test.cjs
