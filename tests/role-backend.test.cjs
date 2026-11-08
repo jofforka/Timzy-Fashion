@@ -70,7 +70,7 @@ const auth = {
   async deleteUser() {},
   async updateUser() {}
 };
-const exports = {};
+const callableExports = {};
 const context = vm.createContext({
   require(name) {
     if (name === 'firebase-admin/app') return { initializeApp() {} };
@@ -85,10 +85,10 @@ const context = vm.createContext({
     if (name === './lib/finance') return finance;
     throw Error('Unexpected require ' + name);
   },
-  exports, Date, console, Number, String, Boolean, Array, Object, RegExp, Set, Promise
+  exports: callableExports, Date, console, Number, String, Boolean, Array, Object, RegExp, Set, Promise
 });
 vm.runInContext(code, context, { filename: 'functions/index.js' });
-const call = (name, actor, data) => exports[name]({ auth: actor ? { uid: actor } : null, data });
+const call = (name, actor, data) => callableExports[name]({ auth: actor ? { uid: actor } : null, data });
 const id = 'sale_abcdef1234567890';
 
 function reset() {
