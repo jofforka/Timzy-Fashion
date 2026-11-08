@@ -58,6 +58,7 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 
 ## Legacy data cautions
 
+- Product removal uses **Archive (Draft)** rather than deleting historic sales-linked data. Duplicating a product creates a new Draft without cloning physical stock or investor terms; the Super Admin must verify quantity and ownership before publishing.
 - The product editor now saves through a **Firestore transaction**. If a staff sale or another admin's edit changes the product after it was opened, the stale save is rejected and the editor reloads. This prevents silently restoring a sold item's old stock count. If images were uploaded immediately before a rejected save, the media folder may contain unused files that should be reviewed manually.
 - Current bundled `data/products.json` contains **sample/demo** listings and images. The admin no longer automatically imports those into production. A stock value must be verified by Super Admin; the old string `quantity: "Available"` is not a trustworthy inventory count.
 - Old manual `sales` records are descriptive amounts without product-level stock or investor agreement metadata. They remain in the collection but **are not automatically converted into investor liabilities**; they require a reviewed migration with reconciliation and approval.
@@ -69,8 +70,9 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 - An agreement can be paused. **A product with a paused investor agreement cannot be sold by staff or Super Admin as store-owned inventory.** A separate, genuinely Timzy-owned product may be sold normally if no investor agreement exists.
 - Each investor sale stores its contracted payout per unit and agreement version at the time of sale. Changes to a future rate do not recalculate existing dues; a product cannot silently switch ownership from one investor to another. Use separate product SKUs for separate investors, even for identical fabric.
 - Discounts below an investor's agreed payout require a Super Admin role to enter; nothing may silently reduce an investor's contractual entitlement.
-- A **Super Admin-only reversal workflow** now preserves the original transaction, restores verified stock and reverses an **unpaid** investor entitlement. A correction must be categorized as an incorrectly entered sale (no money movement) or an **already completed** customer refund with a payment reference. The system **never transfers refund money**.
+- A **Super Admin-only reversal workflow** now preserves the original transaction, reverses an **unpaid** investor entitlement and restores stock **only for mistaken entries or for physically returned, inspected and resellable goods**. A correction must be categorized as an incorrectly entered sale (no money movement) or an **already completed** customer refund with a payment reference. The system **never transfers refund money**.
 - Investor payouts already marked paid cannot be automatically reversed; they require a separate reviewed recovery/accounting process. Legacy unstructured sales also require a separate reconciliation before they can be corrected.
+- Customer refund reversal defaults to **no restock** unless physically returned and verified. Archived products remain archived even when stock is restored. Investor obligations after damage/returns depend on the signed agreement and require review; the system cannot adjudicate that contract.
 - Current reversal is an all-units correction for a single invoice line; partial returns or exchanges are not yet supported. Do not misrepresent the correction as a payment refund.
 
 ## Production safety checklist
