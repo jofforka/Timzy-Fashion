@@ -120,8 +120,8 @@ assert.equal(nodes['.floating-whatsapp'].href, 'https://wa.me/' + win.TIMZY_CONF
 
 assert.match(shop, /Ready-made &amp; Outfits/);
 assert.match(shop, /Fabrics &amp; Materials/);
-assert.match(shop, /shop-showcase\.css\?v=3/);
-assert.match(shop, /shop-showcase\.js\?v=3/);
+assert.match(shop, /shop-showcase\.css\?v=4/);
+assert.match(shop, /shop-showcase\.js\?v=4/);
 assert.match(shop, /class="shop-bag-btn" data-open-bag/);
 assert.match(shop, /id="products"/);
 assert.doesNotMatch(shop, /Find your next|signature style|showcase-intro-note/,
@@ -182,8 +182,8 @@ assert.equal(purchase.addSelectedItem(first, 'Custom', 100), false);
 assert.ok(app.cart.list().some(item => item.name.includes(' — Custom')));
 assert.ok(app.checkout.message({name:'Example',phone:'0800000000'}).includes(' — Custom'));
 
-assert.match(productHTML, /product-purchase\.js\?v=2/);
-assert.match(productHTML, /product-purchase\.css\?v=2/);
+assert.match(productHTML, /product-purchase\.js\?v=3/);
+assert.match(productHTML, /product-purchase\.css\?v=3/);
 assert.doesNotMatch(productHTML, /muted-section|Care &amp; Finishing|Care & Finishing/,
   'Redundant product details section removed');
 assert.match(productCSS, /product-material-link/);
@@ -199,3 +199,10 @@ assert.match(adminJS, /materialProductId: String\(data\.materialProductId/,
 assert.doesNotMatch(checkoutHTML, /0000000000|BANK NAME/);
 assert.match(checkoutHTML, /Continue to WhatsApp/);
 console.log('PASS: Minimal dual-collection shop, precise material links, cart and checkout.');
+
+
+assert.ok(shop.includes('storefront-preview.js?v=1'), 'Sample script installed in shop');
+assert.ok(productHTML.includes('storefront-preview.js?v=1'), 'Sample script installed in product');
+assert.ok(shop.includes('catalogSampleNotice'), 'Sample disclosure exists');
+assert.ok(read('assets/js/app.js').includes('sampleListing===true'), 'Demo orders cannot be sent');
+assert.ok(read('assets/js/product-purchase.js').includes('sampleListing: p.raw?.sampleListing'), 'Demo cart flag retained');

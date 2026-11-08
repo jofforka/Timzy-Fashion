@@ -43,6 +43,7 @@
         image: app.image(p),
         price: p.price,
         size: choice,
+        sampleListing: p.raw?.sampleListing === true,
         qty
       });
     }
@@ -88,6 +89,13 @@
     const detail = document.querySelector('#productDetails .detail-card');
     const existingActions = detail?.querySelector('.sticky-actions');
     if (!p || !existingActions) return;
+    if (p.raw?.sampleListing === true) {
+      const notice = document.createElement('p');
+      notice.className = 'product-sample-notice';
+      notice.setAttribute('role', 'note');
+      notice.textContent = 'Sample preview for testing. Product photos, price and stock are not verified; you cannot submit this item as a real order.';
+      detail.prepend(notice);
+    }
 
     // The material name links into the matching card in the Materials section.
     // Never describe a related/approximate fabric as the exact fabric used.

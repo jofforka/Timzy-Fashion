@@ -7,18 +7,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css?v=8.5"><link rel="stylesheet" href="assets/css/product-purchase.css?v=2">
+  <link rel="stylesheet" href="assets/css/style.css?v=8.5"><link rel="stylesheet" href="assets/css/storefront-ui.css?v=1"><link rel="stylesheet" href="assets/css/product-purchase.css?v=3">
 </head>
-<body class="page-product">
+<body class="page-product timzy-public">
   <div class="luxury-bg"></div>
-  <header class="site-header">
-    <nav class="container nav">
-      <a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion"><span class="brand-copy"><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a>
-      <button class="nav-toggle" type="button" aria-label="Open menu"><span></span><span></span></button>
-      <div class="nav-links" id="navLinks"><a href="index.html">Home</a><a class="active" href="shop.html">Shop</a><a href="training.html">Training</a><a href="checkout.html">Checkout</a><a href="contact.html">Contact</a></div>
-      <button type="button" class="shop-bag-btn" data-open-bag aria-label="Open shopping bag">Bag <span id="bagCount">0</span></button>
-    </nav>
-  </header>
+  <header class="site-header"><nav class="container nav">
+<a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
+<span class="brand-copy"><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a>
+<button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span></button>
+<div class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="shop.html">Shop</a><a href="training.html">Training</a><a href="contact.html">Contact</a></div>
+<button type="button" class="shop-bag-btn" data-open-bag aria-label="Open shopping bag">Bag <span id="bagCount">0</span></button>
+</nav></header>
   <main>
     <section class="section product-main-section">
       <div class="container">
@@ -30,12 +29,15 @@
   </main>
   
   
-  <footer class="site-footer"><div class="container shop-footer"><span>© <span id="year"></span> Timzy Fashion</span><div><a href="shop.html">Shop</a><a href="contact.html">Contact</a></div></div></footer>
+  <footer class="site-footer"><div class="container shop-footer">
+<span>© <span id="year"></span> Timzy Fashion</span>
+<div><a href="shop.html">Shop</a><a href="contact.html">Contact</a><a href="login.html">Staff Login</a></div>
+</div></footer>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/firebase.js"></script>
-  <script src="assets/js/app.js?v=8.5"></script><script src="assets/js/product-purchase.js?v=2"></script>
+  <script src="assets/js/app.js?v=8.5"></script><script src="assets/js/storefront-ui.js?v=1"></script><script src="assets/js/storefront-preview.js?v=1"></script><script src="assets/js/product-purchase.js?v=3"></script>
 </body>
 </html>

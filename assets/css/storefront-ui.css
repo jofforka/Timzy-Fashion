@@ -1,0 +1,148 @@
+/* Shared public Timzy design language.
+   Same calm type scale, navigation, spacing and actions across all pages.
+   Public-facing only; the dedicated Admin UI keeps its own styling. */
+body.timzy-public {
+  --ui-bg: #101215;
+  --ui-surface: #171a1e;
+  --ui-surface-2: #202429;
+  --ui-line: rgba(255,255,255,.12);
+  --ui-text: #f4f4f1;
+  --ui-muted: #b8bdc4;
+  --ui-accent: #e9c885;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-family: Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+}
+body.timzy-public .luxury-bg { display: none; }
+body.timzy-public .site-header {
+  position: sticky;
+  top: 0;
+  background: #111317;
+  backdrop-filter: none;
+  border-bottom: 1px solid var(--ui-line);
+}
+body.timzy-public .nav { min-height: 58px; gap: 14px; }
+body.timzy-public .brand { gap: 8px; }
+body.timzy-public .brand-logo { width: 39px; height: 39px; padding: 0; border: 0; }
+body.timzy-public .brand-name {
+  font-family: inherit; font-size: 13px; font-weight: 750; letter-spacing: .055em;
+}
+body.timzy-public .brand-sub {
+  font-size: 9px; text-transform: none; letter-spacing: 0; margin-top: 3px;
+  color: var(--ui-muted);
+}
+body.timzy-public .nav-links a {
+  color: var(--ui-muted); font-size: 12px; padding: 7px 10px; border-radius: 7px;
+}
+body.timzy-public .nav-links a:hover,
+body.timzy-public .nav-links a.active {
+  background: none; color: var(--ui-accent);
+}
+body.timzy-public .shop-bag-btn {
+  flex: none; min-height: 36px; padding: 6px 11px; cursor: pointer;
+  border: 1px solid var(--ui-line); border-radius: 9px;
+  background: var(--ui-surface-2); color: var(--ui-text);
+  font-size: 12px; font-weight: 650;
+}
+body.timzy-public .shop-bag-btn span { color: var(--ui-accent); }
+body.timzy-public .floating-bag,
+body.timzy-public .floating-whatsapp { display: none; }
+body.timzy-public .section { padding-top: 34px; padding-bottom: 34px; }
+body.timzy-public .section-xl { padding-top: 42px; padding-bottom: 42px; }
+body.timzy-public .hero-title,
+body.timzy-public .h1 {
+  font-family: inherit;
+  font-size: clamp(26px,4vw,43px);
+  font-weight: 730;
+  line-height: 1.18;
+  letter-spacing: -.026em;
+  margin: 8px 0 11px;
+}
+body.timzy-public h2,
+body.timzy-public .section-head h2,
+body.timzy-public .panel h2 {
+  font-family: inherit;
+  font-size: clamp(18px,2.4vw,26px);
+  font-weight: 670;
+  line-height: 1.25;
+  letter-spacing: -.018em;
+}
+body.timzy-public .hero-text,
+body.timzy-public .lead {
+  font-size: 13px; line-height: 1.65; color: var(--ui-muted); max-width: 630px;
+}
+body.timzy-public .eyebrow {
+  padding: 0; margin: 0; border: 0; border-radius: 0;
+  background: none; letter-spacing: .07em; font-size: 10px;
+  font-weight: 700; color: var(--ui-accent);
+}
+body.timzy-public .panel,
+body.timzy-public .feature-card,
+body.timzy-public .training-card,
+body.timzy-public .contact-card,
+body.timzy-public .checkout-card,
+body.timzy-public .measurement-card,
+body.timzy-public .catalog-note,
+body.timzy-public .look-item {
+  border: 1px solid var(--ui-line); background: var(--ui-surface);
+  box-shadow: none; border-radius: 11px;
+}
+body.timzy-public .btn {
+  min-height: 40px; border-radius: 8px; padding: 10px 14px;
+  box-shadow: none; font-size: 12px; font-weight: 650; line-height: 1.3;
+}
+body.timzy-public .btn-primary {
+  background: var(--ui-accent); border-color: var(--ui-accent); color: #121519;
+}
+body.timzy-public .btn-outline {
+  background: none; border: 1px solid var(--ui-line); color: var(--ui-text);
+}
+body.timzy-public .field,
+body.timzy-public input:not([type="checkbox"]):not([type="radio"]),
+body.timzy-public textarea,
+body.timzy-public select {
+  background: var(--ui-surface-2); border-color: var(--ui-line);
+  color: var(--ui-text); border-radius: 9px; font-size: 13px;
+}
+body.timzy-public .field { min-height: 42px; padding: 10px 11px; }
+body.timzy-public .site-footer {
+  padding: 20px 0 26px; background: #111317;
+  border-top: 1px solid var(--ui-line); color: var(--ui-muted);
+  font-size: 11px;
+}
+body.timzy-public .shop-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+body.timzy-public .shop-footer div { display: flex; gap: 18px; }
+body.timzy-public .shop-footer a { margin: 0; font-size: 11px; color: var(--ui-muted); }
+body.timzy-public .cart-drawer { background: #171a1e; border-left: 1px solid var(--ui-line); }
+body.timzy-public .cart-head h3 { font-family: inherit; font-size: 21px; }
+body.timzy-public .cart-fab { display: none; }
+body.timzy-public .nav-toggle:focus-visible,
+body.timzy-public .shop-bag-btn:focus-visible,
+body.timzy-public a:focus-visible,
+body.timzy-public .btn:focus-visible,
+body.timzy-public button:focus-visible {
+  outline: 2px solid var(--ui-accent); outline-offset: 3px;
+}
+@media(max-width: 620px) {
+  body.timzy-public { font-size: 13px; }
+  body.timzy-public .container { width: calc(100% - 24px); }
+  body.timzy-public .nav { min-height: 54px; gap: 8px; }
+  body.timzy-public .brand-logo { width: 34px; height: 34px; }
+  body.timzy-public .brand-name { font-size: 12px; }
+  body.timzy-public .brand-sub { display: none; }
+  body.timzy-public .nav-toggle { width: 36px; height: 36px; }
+  body.timzy-public .shop-bag-btn { min-height: 33px; padding: 6px 8px; font-size: 11px; }
+  body.timzy-public .section { padding-top: 23px; padding-bottom: 23px; }
+  body.timzy-public .section-xl { padding-top: 28px; padding-bottom: 28px; }
+  body.timzy-public .hero-title,body.timzy-public .h1 { font-size: clamp(23px,7vw,32px); }
+  body.timzy-public h2,body.timzy-public .section-head h2 { font-size: 18px; }
+  body.timzy-public .hero-text,body.timzy-public .lead { font-size: 12px; line-height: 1.6; }
+  body.timzy-public .grid-2,body.timzy-public .grid-3 { gap: 12px; }
+  body.timzy-public .panel { padding: 14px; }
+  body.timzy-public .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.timzy-public * { scroll-behavior: auto; transition-duration: 0s; animation-duration: 0s; }
+}

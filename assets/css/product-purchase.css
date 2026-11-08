@@ -148,3 +148,15 @@
   .page-product .product-purchase { padding: 12px; }
   .page-product .product-purchase-actions .btn { min-height: 43px; }
 }
+
+/* Clear preview disclosure on the example product details. */
+.page-product .product-sample-notice {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #d8d8d8;
+  border: 1px solid rgba(255,255,255,.15);
+  background: #202429;
+  border-radius: 8px;
+}
