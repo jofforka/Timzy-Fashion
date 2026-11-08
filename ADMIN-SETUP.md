@@ -58,6 +58,7 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 
 ## Legacy data cautions
 
+- The product editor now saves through a **Firestore transaction**. If a staff sale or another admin's edit changes the product after it was opened, the stale save is rejected and the editor reloads. This prevents silently restoring a sold item's old stock count. If images were uploaded immediately before a rejected save, the media folder may contain unused files that should be reviewed manually.
 - Current bundled `data/products.json` contains **sample/demo** listings and images. The admin no longer automatically imports those into production. A stock value must be verified by Super Admin; the old string `quantity: "Available"` is not a trustworthy inventory count.
 - Old manual `sales` records are descriptive amounts without product-level stock or investor agreement metadata. They remain in the collection but **are not automatically converted into investor liabilities**; they require a reviewed migration with reconciliation and approval.
 - Public Firebase catalogue reads must be restricted to `Published` and `Out of Stock`. Drafts and hidden products must not be public; legacy records missing `status` need explicit review.
