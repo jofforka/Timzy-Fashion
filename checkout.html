@@ -9,37 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="assets/css/style.css?v=8.5">
+  <link rel="stylesheet" href="assets/css/style.css?v=8.5"><link rel="stylesheet" href="assets/css/storefront-ui.css?v=1">
 </head>
 
-<body class="page-checkout">
+<body class="page-checkout timzy-public">
 
   <div class="luxury-bg"></div>
 
-  <header class="site-header">
-    <nav class="container nav">
-      <a class="brand" href="index.html">
-        <img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
-        <span class="brand-copy">
-          <span class="brand-name">TIMZY FASHION</span>
-          <span class="brand-sub">Dress the Complete Gentleman</span>
-        </span>
-      </a>
-
-      <button class="nav-toggle" type="button" aria-label="Open menu">
-        <span></span>
-        <span></span>
-      </button>
-
-      <div class="nav-links" id="navLinks">
-        <a href="index.html">Home</a>
-        <a href="shop.html">Shop</a>
-        <a href="training.html">Training</a>
-        <a class="active" href="checkout.html">Checkout</a>
-        <a href="contact.html">Contact</a>
-      </div>
-    </nav>
-  </header>
+  <header class="site-header"><nav class="container nav">
+<a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
+<span class="brand-copy"><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a>
+<button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span></button>
+<div class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="shop.html">Shop</a><a href="training.html">Training</a><a href="contact.html">Contact</a></div>
+<button type="button" class="shop-bag-btn" data-open-bag aria-label="Open shopping bag">Bag <span id="bagCount">0</span></button>
+</nav></header>
 
   <main>
 
@@ -277,55 +260,20 @@
 
   </main>
 
-  <button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">
-    👜 <span id="bagCount">0</span>
-  </button>
+  
 
   <a class="floating-whatsapp" href="https://wa.me/2348118103510" target="_blank" aria-label="Chat on WhatsApp">💬</a>
 
-  <footer class="site-footer">
-    <div class="container footer-grid">
-      <div>
-        <a class="brand" href="index.html">
-          <img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion">
-          <span class="brand-copy">
-            <span class="brand-name">TIMZY FASHION</span>
-            <span class="brand-sub">Dress the Complete Gentleman</span>
-          </span>
-        </a>
-        <p>Luxury bespoke fashion, training, and complete styling.</p>
-      </div>
-
-      <div>
-        <h3>Shop</h3>
-        <a href="shop.html">Shop</a>
-        <a href="checkout.html">Checkout</a>
-      </div>
-
-      <div>
-        <h3>Training</h3>
-        <a href="training.html">Programs</a>
-        <a href="training.html#register">Register</a>
-      </div>
-
-      <div>
-        <h3>Contact</h3>
-        <a href="contact.html">Contact</a>
-        <a href="login.html">Staff Login</a>
-      </div>
-    </div>
-
-    <div class="container footer-bottom">
-      <p>© <span id="year"></span> Timzy Fashion</p>
-      <p>Premium fashion platform.</p>
-    </div>
-  </footer>
+  <footer class="site-footer"><div class="container shop-footer">
+<span>© <span id="year"></span> Timzy Fashion</span>
+<div><a href="shop.html">Shop</a><a href="contact.html">Contact</a><a href="login.html">Staff Login</a></div>
+</div></footer>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/firebase.js"></script>
-  <script src="assets/js/app.js?v=8.5"></script>
+  <script src="assets/js/app.js?v=8.5"></script><script src="assets/js/storefront-ui.js?v=1"></script>
 </body>
 </html>
