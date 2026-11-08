@@ -173,13 +173,10 @@
             </div>
 
             <div class="conditional-box upload-box" data-measurement-box="Upload Existing Measurement" hidden>
-              <label class="upload-card">
-                <input type="file" name="measurement_file" accept=".pdf,.jpg,.jpeg,.png,.heic">
-                <span>
-                  <strong>Upload measurement file</strong>
-                  <small>Accepted: PDF, JPG, PNG, HEIC</small>
-                </span>
-              </label>
+              <div class="notice" role="note">
+                <strong>Send your measurements securely on WhatsApp.</strong>
+                <p>After submitting your order, attach your measurement document or image directly in the WhatsApp conversation. Files are not uploaded through this checkout form.</p>
+              </div>
             </div>
 
             <div class="conditional-box visit-box" data-measurement-box="Request Measurement Visit" hidden>
@@ -201,10 +198,10 @@
 
             <div class="choice-grid three">
               <label class="choice-card">
-                <input type="radio" name="payment" value="Pay Now" checked>
+                <input type="radio" name="payment" value="Bank Transfer — Confirm Details" checked>
                 <span>
-                  <strong>Pay Now</strong>
-                  <small>Pay by bank transfer.</small>
+                  <strong>Bank Transfer</strong>
+                  <small>Confirm the official account with Timzy first.</small>
                 </span>
               </label>
 
@@ -225,24 +222,10 @@
               </label>
             </div>
 
-            <div class="conditional-box payment-box" data-payment-box="Pay Now">
+            <div class="conditional-box payment-box" data-payment-box="Bank Transfer — Confirm Details">
               <span class="eyebrow">Bank Transfer</span>
-              <div class="bank-grid">
-                <div>
-                  <small>Bank Name</small>
-                  <strong id="bankName">BANK NAME</strong>
-                </div>
-                <div>
-                  <small>Account Name</small>
-                  <strong id="accountName">TIMZY FASHION</strong>
-                </div>
-                <div>
-                  <small>Account Number</small>
-                  <strong id="accountNumber">0000000000</strong>
-                </div>
-                <button class="btn btn-outline btn-small" type="button" id="copyAccountBtn">Copy Account</button>
-              </div>
-              <p class="payment-note">After payment, complete your order and send the WhatsApp confirmation.</p>
+              <p class="notice" role="status"><strong>For your security:</strong> Bank transfer details are confirmed directly by Timzy Fashion on WhatsApp after you submit your order. Do not send money to an unverified account.</p>
+              <p class="payment-note">Submitting this form does not take payment. It opens WhatsApp with your order details so Timzy can confirm the amount and payment instructions.</p>
             </div>
           </div>
 
