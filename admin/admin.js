@@ -216,7 +216,7 @@
         <img src="${escapeHTML(imageOf(product))}" alt="${escapeHTML(product.name)}" onerror="this.src='../assets/img/hero-senator-grey.jpg'">
         <div>
           <h3>${escapeHTML(product.name || "Untitled Product")}</h3>
-          <p>${escapeHTML(product.sku || product.id)}</p>
+          <p>${escapeHTML(product.sku || product.id)}</p>\n          <small>Verified stock: ${Number.isSafeInteger(product.stockOnHand) ? product.stockOnHand : "Not counted"}</small>
           ${product.instagramVideoUrl ? `<small>Instagram video linked</small>` : ""}
         </div>
         <div class="hide-tablet">
@@ -230,7 +230,7 @@
         <div class="hide-tablet">
           <span class="status-pill">${escapeHTML(product.status || "Published")}</span>
         </div>
-        <div class="row-actions">
+        <div class="row-actions" data-super-only>
           <button type="button" data-edit-product="${escapeHTML(product.id)}">Edit</button>
           <button type="button" data-duplicate-product="${escapeHTML(product.id)}">Duplicate</button>
         </div>
