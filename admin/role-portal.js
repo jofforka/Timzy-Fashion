@@ -20,8 +20,10 @@ async function getProfile(user){
  return p;
 }
 function applyRole(r){
- role=r;document.body.dataset.role=r;
- document.querySelectorAll('[data-super-only]').forEach(el=>{el.hidden=r!=='super_admin';});
+ role=r;
+ // CSS enforces staff-only visibility. Do NOT unset [hidden] on inactive
+ // views: doing so would display all admin panels at once.
+ document.body.dataset.role=r;
 }
 async function renderInvestor(user,profile){
  const uid=user.uid;
