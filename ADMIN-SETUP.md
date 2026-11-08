@@ -38,20 +38,30 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
    node functions/scripts/bootstrap-superadmin.js OWNER_EMAIL_HERE
    ```
    Run only after obtaining a trusted application-default credential via `gcloud auth application-default login` or equivalent authorized service identity. Bootstrap refuses to displace a different existing Super Admin.
-5. Deploy Cloud Functions and rules to the intended project, verifying the command and project ID before execution:
+5. **Before deployment, inspect existing Firestore product records for private investor data.** With the same authorized Admin credentials, run:
+   ```bash
+   GOOGLE_CLOUD_PROJECT=timzy-fashion-os \\
+   TIMZY_AUDIT_CONFIRM=read-only \\
+   node functions/scripts/audit-public-products.js
+   ```
+   The script is read-only. It reports product IDs and sensitive **field names only**, not values. Stop deployment if any legacy public product contains `costPrice`, `payoutPerUnit` or another financial field. Clean data via an explicitly reviewed migration, not by deleting records.
+
+6. Deploy Cloud Functions and rules to the intended project, verifying the command and project ID before execution:
    ```bash
    firebase deploy --project timzy-fashion-os --only functions
    firebase deploy --project timzy-fashion-os --only firestore:rules
    ```
    This changes production privileges. Run this during a maintenance window; existing users without `users/{uid}` roles will be denied access once the rules are deployed.
-6. Verify the **rules themselves** with Firebase Emulator Suite / test accounts, not only the frontend. Confirm: investors cannot query `sales`, `financeSales`, `settings`, `users` of others or another investor's ledger; staff cannot read costs, create accounts or edit stock directly; unauthenticated browsers cannot write `orders` or `sales`; only the Super Admin can edit products and investor terms.
-7. Merge the frontend/admin PR **only after** functions, rules and Super Admin bootstrap are verified. Then log in to `/admin/`, create an individual Staff and Investor account, and send password setup emails. Do not invent shared demo logins. In the Super Admin editor, set **Verified Stock on Hand** on an actual material product, then save an Investor Agreement with the investor's negotiated payout per unit.
-8. Perform end-to-end test with **non-production test accounts and products**, including **multiple sale attempts** and duplicate reference protections. Staff records one sale; stock decreases; investor ledger shows entitlement only; Super Admin shows true sale and margin; payout can only be marked paid by Super Admin after a verified transfer.
+7. Verify the **rules themselves** with Firebase Emulator Suite / test accounts, not only the frontend. Confirm: investors cannot query `sales`, `financeSales`, `settings`, `users` of others or another investor's ledger; staff cannot read costs, create accounts or edit stock directly; unauthenticated browsers cannot write `orders` or `sales`; only the Super Admin can edit products and investor terms.
+8. Merge the frontend/admin PR **only after** functions, rules and Super Admin bootstrap are verified. Then log in to `/admin/`, create an individual Staff and Investor account, and send password setup emails. Do not invent shared demo logins. In the Super Admin editor, set **Verified Stock on Hand** on an actual material product, then save an Investor Agreement with the investor's negotiated payout per unit.
+9. Perform end-to-end test with **non-production test accounts and products**, including **multiple sale attempts** and duplicate reference protections. Staff records one sale; stock decreases; investor ledger shows entitlement only; Super Admin shows true sale and margin; payout can only be marked paid by Super Admin after a verified transfer.
 
 ## Legacy data cautions
 
 - Current bundled `data/products.json` contains **sample/demo** listings and images. The admin no longer automatically imports those into production. A stock value must be verified by Super Admin; the old string `quantity: "Available"` is not a trustworthy inventory count.
 - Old manual `sales` records are descriptive amounts without product-level stock or investor agreement metadata. They remain in the collection but **are not automatically converted into investor liabilities**; they require a reviewed migration with reconciliation and approval.
+- Public Firebase catalogue reads must be restricted to `Published` and `Out of Stock`. Drafts and hidden products must not be public; legacy records missing `status` need explicit review.
+- Bundled JSON fallback records are treated as non-orderable samples if Firestore data is unavailable.
 - The checkout still hands off via WhatsApp; it **does not automatically receive a verified payment event**. Shop staff must record a sale only when payment/completion has actually been confirmed. Every sale requires a **unique receipt/invoice code plus line number**; for multi-product receipts use line 1, line 2 etc. Repeat the same code + line after a network uncertainty, rather than inventing a second receipt.
 - Investor payout `paid` is a ledger state, **not a bank transfer**. A payment reference is required; this app does not send funds.
 - Discounts below an investor's agreed payout require a Super Admin role to enter; nothing may silently reduce an investor's contractual entitlement.
@@ -60,6 +70,7 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 ## Production safety checklist
 
 - [ ] Firebase project and billing verified; backup exported
+- [ ] Read-only product audit has confirmed no sensitive investor terms in existing public documents
 - [ ] Owner Auth user safely bootstrapped to Super Admin
 - [ ] Cloud Functions and Firestore Rules deployed and tested
 - [ ] Old broad authenticated-user access confirmed removed from the **deployed** rules
