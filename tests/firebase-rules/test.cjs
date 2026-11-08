@@ -85,6 +85,8 @@ const rules = fs.readFileSync(path.resolve(__dirname,'../../firestore.rules'),'u
     await assertSucceeds(updateDoc(doc(owner,'products','fabric1'),{stockOnHand:1}));
     await assertFails(updateDoc(doc(owner,'products','fabric1'),{stockOnHand:-1}));
     await assertFails(updateDoc(doc(owner,'products','fabric1'),{payoutPerUnit:8000}));
+    await assertFails(updateDoc(doc(owner,'products','fabric1'),{investorProposedCost:8000}));
+    await assertFails(updateDoc(doc(owner,'products','fabric1'),{debugNotes:'Private pricing memo'}));
 
     console.log('PASS: Firestore emulator enforced role restrictions, public settings secrecy, stock validation and investor isolation.');
   } finally {
