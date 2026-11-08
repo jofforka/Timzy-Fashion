@@ -25,4 +25,7 @@ assert.equal(draft.published,false);
 const missingStatus=auditProduct('old',{name:'Old'});
 assert.equal(missingStatus.needsStatusReview,true);
 assert.ok(FORBIDDEN.includes('payoutPerUnit'));
+assert.deepEqual(auditProduct('unexpected',{name:'Sample',status:'Published',unknownInternalData:4}).sensitiveKeys,
+  ['unknownInternalData']);
+
 console.log('PASS: Read-only public product financial exposure checks.');
