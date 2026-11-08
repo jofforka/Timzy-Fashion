@@ -222,6 +222,16 @@ async function main() {
   assert.ok(!docs.has('sales/'+id),'Unverified stock cannot be sold via backend');
 
   reset();
+  docs.get('investorAgreements/fabric1').active=false;
+  await assert.rejects(
+    call('recordSale','clerk',{productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:receipt}),
+    e=>e.code==='failed-precondition',
+    'Paused investor agreement must not permit zero-payout sales'
+  );
+  assert.equal(docs.get('products/fabric1').stockOnHand,3);
+  assert.ok(!docs.has('sales/'+id),'Paused agreement must not create an unpaid investor sale');
+
+  reset();
   await assert.rejects(call('saveInvestorAgreement','clerk',{productId:'fabric1',investorUid:'investor1',payoutPerUnit:9000}),
     e=>e.code==='permission-denied');
   await assert.rejects(call('saveInvestorAgreement','owner',{productId:'fabric1',investorUid:'investor2',payoutPerUnit:9000}),
