@@ -139,6 +139,9 @@
     await Promise.all(reads);
     renderAll();
     window.TimzyRolePortal?.refreshSaleOptions(state.products);
+    if (state.role === "super_admin") {
+      window.TimzyRolePortal?.refreshReversalOptions(state.sales);
+    }
   }
   // Called only after a server-confirmed sale; refreshes stock and ledger.
   window.TimzyRefreshOperations = loadAll;
@@ -184,7 +187,7 @@
   function renderStats() {
     $("#statProducts").textContent = state.products.length;
     $("#statPublished").textContent = state.products.filter(p => String(p.status).toLowerCase() === "published").length;
-    $("#statSales").textContent = money(state.sales.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+    $("#statSales").textContent = money(state.sales.filter(item => item.status !== "reversed").reduce((sum, item) => sum + Number(item.amount || 0), 0));
     $("#statExpenses").textContent = money(state.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
   }
 
@@ -258,7 +261,7 @@
     $("#recentActivity").innerHTML = rows.map(row => `
       <div class="record-item">
         <div><b>${escapeHTML(row.type)}</b><small>${escapeHTML(row.date || "")}</small></div>
-        <div>${escapeHTML(row.description || "")}</div>
+        <div>${escapeHTML(row.description || "")}${row.status === "reversed" ? " · Reversed" : ""}</div>
         <strong>${money(row.amount)}</strong>
       </div>
     `).join("") || `<p>No activity yet.</p>`;
@@ -270,7 +273,7 @@
     root.innerHTML = state[type].map(row => `
       <div class="record-item">
         <div><b>${escapeHTML(row.date || "")}</b></div>
-        <div>${escapeHTML(row.description || "")}</div>
+        <div>${escapeHTML(row.description || "")}${row.status === "reversed" ? " · Reversed" : ""}</div>
         <strong>${money(row.amount)}</strong>
       </div>
     `).join("") || `<p>No ${type} recorded yet.</p>`;
