@@ -16,7 +16,7 @@ async function main() {
   const email = process.argv[2];
   if (projectId !== 'timzy-fashion-os' ||
       process.env.TIMZY_BOOTSTRAP_CONFIRM !== 'timzy-fashion-os:super_admin' ||
-      typeof email !== 'string' || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      typeof email !== 'string' || !/^[^ @]+@[^ @]+[.][^ @]+$/.test(email)) {
     throw Error('Requires project timzy-fashion-os, explicit confirmation, and an existing Firebase Auth email.');
   }
   initializeApp({ projectId });
