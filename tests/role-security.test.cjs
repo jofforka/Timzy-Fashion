@@ -39,7 +39,11 @@ assert.ok(server.includes("exports.recordSale = onCall"),'Sales are written serv
 assert.ok(server.includes("exports.saveInvestorAgreement = onCall"));
 assert.ok(server.includes("exports.provisionUser = onCall"));
 assert.ok(server.includes("exports.markInvestorPayout = onCall"));
+assert.ok(server.includes("exports.reverseSale = onCall"),'Refund corrections use authenticated backend');
 assert.ok(server.includes('tx.update(productRef'),'Sale updates verified inventory atomically');
+assert.ok(server.includes("status: 'reversed'"),'Reversal retained in audit ledger');
+assert.ok(portal.includes("reverseSale"),'Admin reversal must use the server callable');
+assert.ok(html.includes('id="reverseSaleForm"'),'Super Admin reversal form exists');
 assert.ok(server.includes('tx.create(saleRef'),'Sale records are immutable client-side');
 assert.ok(server.includes('tx.create(financeRef'),'Actual retail and margin saved privately');
 assert.ok(server.includes('publicInvestorLine('),'Investor data is separately projected');
