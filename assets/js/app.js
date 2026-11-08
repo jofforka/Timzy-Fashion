@@ -113,6 +113,7 @@ init(){
     e.preventDefault();
     const d=Object.fromEntries(new FormData(f).entries());
     if(!App.cart.list().length)return toast('Your bag is empty.');
+    if(App.cart.list().some(item=>item.sampleListing===true))return toast('Sample preview: remove sample products before placing a real order.');
     if(!d.name||!d.phone)return toast('Name and phone are required.');
     App.whatsapp.send(App.checkout.message(d));
     toast('Send the WhatsApp message to submit your order.');
@@ -150,7 +151,8 @@ summaryRender(){
   const el=$('#checkoutItems');
   if(!el)return;
   const c=App.cart.list();
-  el.innerHTML=c.length?c.map(x=>`<div class="order-line"><span>${esc(x.name)} × ${x.qty}</span><b>${money(num(x.price)*x.qty)}</b></div>`).join(''):'<p class="notice">Your bag is empty.</p>';
+  el.innerHTML=c.length?c.map(x=>`<div class="order-line"><span>${esc(x.name)} × ${x.qty}${x.sampleListing?' (sample preview)':''}</span><b>${money(num(x.price)*x.qty)}</b></div>`).join(''):'<p class="notice">Your bag is empty.</p>';
+  if(c.some(x=>x.sampleListing))el.insertAdjacentHTML('afterbegin','<p class="notice" role="note">Sample previews are for testing only and cannot be submitted as real orders. Remove them to place an order.</p>');
   const t=$('#checkoutTotal');
   if(t)t.textContent=money(App.cart.total());
 },
