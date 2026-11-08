@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const { initializeTestEnvironment, assertSucceeds, assertFails } = require('@firebase/rules-unit-testing');
-const { collection, doc, getDoc, getDocs, setDoc, updateDoc } = require('firebase/firestore');
+const { collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where } = require('firebase/firestore');
 
 const rules = fs.readFileSync(path.resolve(__dirname,'../../firestore.rules'),'utf8');
 (async()=>{
@@ -27,6 +27,7 @@ const rules = fs.readFileSync(path.resolve(__dirname,'../../firestore.rules'),'u
         });
       }
       await setDoc(doc(db,'products','fabric1'),{name:'Brocade',status:'Published',stockOnHand:2,price:15000});
+      await setDoc(doc(db,'products','draft1'),{name:'Unreleased Fabric',status:'Draft',price:20000});
       await setDoc(doc(db,'sales','sale1'),{amount:15000,productId:'fabric1'});
       await setDoc(doc(db,'financeSales','sale1'),{actualRetailTotal:15000,investorTotalDue:8000,grossMarginBeforeCosts:7000});
       await setDoc(doc(db,'investorAgreements','fabric1'),{investorUid:'investor1',payoutPerUnit:8000});
@@ -45,6 +46,11 @@ const rules = fs.readFileSync(path.resolve(__dirname,'../../firestore.rules'),'u
     const publicDb=test.unauthenticatedContext().firestore();
 
     await assertSucceeds(getDoc(doc(publicDb,'products','fabric1')));
+    await assertFails(getDoc(doc(publicDb,'products','draft1')));
+    await assertFails(getDocs(collection(publicDb,'products')));
+    await assertSucceeds(getDocs(query(collection(publicDb,'products'),where('status','in',['Published','Out of Stock']))));
+    await assertSucceeds(getDocs(collection(clerk,'products')));
+
     await assertFails(getDoc(doc(publicDb,'settings','store')));
     await assertFails(setDoc(doc(publicDb,'sales','fraud'),{amount:9999}));
     await assertSucceeds(getDoc(doc(owner,'settings','store')));
