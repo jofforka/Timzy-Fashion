@@ -29,10 +29,14 @@ function amount(value, name, canBeZero = false) {
   try { return canBeZero ? asNonNegativeInt(value, name) : asPositiveInt(value, name); }
   catch { fail(name + ' must be a whole number of naira.'); }
 }
-function requestId(value) {
-  const id = textValue(value, 'Transaction reference', 16, 80);
-  if (!/^[A-Za-z0-9_-]+$/.test(id)) fail('Invalid transaction reference.');
-  return id;
+function receiptCode(value) {
+  // The same real-world receipt must always use the same Firestore sale ID.
+  // A fresh random browser ID on each retry could double-count stock and payouts.
+  const code = textValue(value, 'Receipt / invoice number', 6, 64).toUpperCase();
+  if (!/^[A-Z0-9][A-Z0-9_-]{5,63}$/.test(code)) {
+    fail('Receipt number must be 6–64 characters (letters, digits, underscore or hyphen).');
+  }
+  return code;
 }
 async function profileFor(request, allowed) {
   if (!request.auth?.uid) fail('Sign in to continue.', 'unauthenticated');
@@ -131,7 +135,8 @@ exports.saveInvestorAgreement = onCall(OPTIONS, async request => {
 exports.recordSale = onCall(OPTIONS, async request => {
   const actor = await profileFor(request, ['super_admin', 'staff']);
   const productId = validId(request.data?.productId, 'Product ID');
-  const id = requestId(request.data?.requestId);
+  const receipt = receiptCode(request.data?.receiptCode);
+  const id = 'receipt_' + receipt;
   const quantity = amount(request.data?.quantity, 'Quantity');
   if (quantity > 100) fail('Quantity is too large.');
   const unitSalePrice = amount(request.data?.unitSalePrice, 'Actual unit sale price');
@@ -148,7 +153,14 @@ exports.recordSale = onCall(OPTIONS, async request => {
     const [existing, product, agreement] = await Promise.all([
       tx.get(saleRef), tx.get(productRef), tx.get(agreementRef)
     ]);
-    if (existing.exists) return { id, alreadyRecorded: true };
+    if (existing.exists) {
+      const prior = existing.data();
+      if (prior.productId !== productId || prior.quantity !== quantity ||
+          prior.unitSalePrice !== unitSalePrice) {
+        fail('This receipt number has already been used for a different sale.', 'already-exists');
+      }
+      return { id, alreadyRecorded: true };
+    }
     if (!product.exists) fail('Product not found.', 'not-found');
     const p = product.data();
     if (!['published', 'available'].includes(String(p.status || '').toLowerCase())) {
@@ -186,7 +198,7 @@ exports.recordSale = onCall(OPTIONS, async request => {
       quantity, unitSalePrice,
       amount: breakdown.amount,
       description: String(p.name || 'Timzy Product').slice(0, 150) + ' × ' + quantity,
-      customerReference, date: now, createdBy: actor.uid,
+      receiptCode: receipt, customerReference, date: now, createdBy: actor.uid,
       createdAt: FieldValue.serverTimestamp()
     });
 
