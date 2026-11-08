@@ -1,0 +1,71 @@
+/* Timzy Fashion — focused product purchase options */
+.page-product .product-main-section { padding-top: 18px; }
+.page-product .product-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold2);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  text-decoration: none;
+}
+.page-product .product-return:hover { text-decoration: underline; text-underline-offset: 4px; }
+.page-product .detail-card h1 { font-size: clamp(28px, 4.6vw, 46px); }
+.page-product .detail-card .lead { font-size: 15px; line-height: 1.6; }
+.page-product .product-purchase {
+  display: grid;
+  gap: 13px;
+  margin: 20px 0;
+  padding: 18px;
+  background: rgba(244,217,139,.035);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+.page-product .product-purchase h2 {
+  font-size: 18px;
+  line-height: 1.25;
+  margin: 0 0 1px;
+  font-family: var(--serif);
+}
+.page-product .product-choice-label { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.page-product .product-choice-label .field { min-height: 45px; padding: 10px 12px; font-size: 15px; }
+.page-product .product-choice-fixed {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 10px 13px; border: 1px solid var(--line2); border-radius: 11px;
+  font-size: 12px; color: var(--muted);
+}
+.page-product .product-choice-fixed strong { color: var(--text); font-size: 14px; }
+.page-product .product-choice-hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin: -6px 0 1px; }
+.page-product .product-purchase-actions { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap: 9px; }
+.page-product .product-purchase-actions .btn {
+  min-height: 44px; width: 100%; padding: 9px; border-radius: 11px;
+  font-size: 12px; line-height: 1.35;
+}
+.page-product .product-purchase-status { font-size: 12px; color: var(--gold2); line-height: 1.5; margin: 0; }
+.page-product .product-purchase-status:empty { display: none; }
+.page-product .product-purchase select:focus-visible,
+.page-product .product-purchase input:focus-visible,
+.page-product .product-purchase button:focus-visible,
+.page-product .product-return:focus-visible { outline: 3px solid var(--gold2); outline-offset: 2px; }
+@media (max-width: 620px) {
+  .page-product .product-main-section { padding: 12px 0 25px; }
+  .page-product .product-return { margin-bottom: 10px; font-size: 12px; }
+  .page-product #productDetails { gap: 16px; }
+  .page-product .gallery-main { border-radius: 13px; aspect-ratio: 4/5; }
+  .page-product .thumbs { gap: 7px; margin-top: 8px; }
+  .page-product .thumb { width: 53px; height: 68px; border-radius: 8px; }
+  .page-product .detail-card h1 { font-size: 26px; margin: 9px 0; }
+  .page-product .detail-card .lead { font-size: 13px; line-height: 1.55; }
+  .page-product .detail-list { margin: 12px 0; }
+  .page-product .detail-row { padding: 8px 0; font-size: 12px; }
+  .page-product .product-purchase { padding: 13px; margin: 15px 0; border-radius: 13px; gap: 11px; }
+  .page-product .product-purchase h2 { font-size: 17px; }
+  .page-product .product-choice-label .field { min-height: 42px; }
+  .page-product .product-purchase-actions { gap: 7px; }
+  .page-product .product-purchase-actions .btn { font-size: 11px; padding: 7px; }
+  .page-product .floating-bag, .page-product .floating-whatsapp { bottom: 16px; }
+}
+@media (max-width: 340px) {
+  .page-product .product-purchase-actions { grid-template-columns: 1fr; }
+}
