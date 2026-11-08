@@ -232,13 +232,66 @@ async function main() {
   assert.ok(!docs.has('sales/'+id),'Paused agreement must not create an unpaid investor sale');
 
   reset();
-  await assert.rejects(call('saveInvestorAgreement','clerk',{productId:'fabric1',investorUid:'investor1',payoutPerUnit:9000}),
+  const originalAgreement={
+    productId:'fabric1',investorUid:'investor1',payoutPerUnit:9000,
+    changeReason:'Documented signed amendment TF-001'
+  };
+  await assert.rejects(call('saveInvestorAgreement','clerk',originalAgreement),
     e=>e.code==='permission-denied');
-  await assert.rejects(call('saveInvestorAgreement','owner',{productId:'fabric1',investorUid:'investor2',payoutPerUnit:9000}),
-    e=>e.code==='failed-precondition');
-  const ok=await call('saveInvestorAgreement','owner',{productId:'fabric1',investorUid:'investor1',payoutPerUnit:9000});
+  await assert.rejects(call('saveInvestorAgreement','owner',{
+    ...originalAgreement,investorUid:'investor2'
+  }),e=>e.code==='failed-precondition');
+  await assert.rejects(call('saveInvestorAgreement','owner',{
+    ...originalAgreement,payoutPerUnit:0
+  }),e=>e.code==='invalid-argument');
+  await assert.rejects(call('saveInvestorAgreement','owner',{
+    ...originalAgreement,changeReason:''
+  }),e=>e.code==='invalid-argument');
+  const ok=await call('saveInvestorAgreement','owner',originalAgreement);
   assert.equal(ok.payoutPerUnit,9000);
   assert.equal(docs.get('investorCatalog/investor1/items/fabric1').payoutPerUnit,9000);
-  process.stdout.write('PASS: Role backend, stock transaction, true retail sale, investor projection, payout and identity controls.\n');
+  assert.equal(docs.get('investorAgreements/fabric1').version,2,
+    'Existing agreement without version is treated as original version 1');
+  const firstHistory=[...docs].filter(([key])=>key.startsWith('investorCatalog/investor1/history/'));
+  assert.equal(firstHistory.length,1,'Amending existing contract must create a history record');
+  assert.equal(firstHistory[0][1].previousPayoutPerUnit,8000);
+  assert.equal(firstHistory[0][1].payoutPerUnit,9000);
+  assert.equal(firstHistory[0][1].version,2);
+
+  await call('saveInvestorAgreement','owner',originalAgreement);
+  assert.equal([...docs].filter(([key])=>key.startsWith('investorCatalog/investor1/history/')).length,1,
+    'Saving identical terms must not create fictitious new versions');
+
+  const repriced=await call('recordSale','clerk',{
+    productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:'TIMZY-REPRICE-1'
+  });
+  assert.equal(docs.get('financeSales/'+repriced.id).payoutPerUnit,9000);
+  assert.equal(docs.get('financeSales/'+repriced.id).agreementVersion,2);
+  assert.equal(docs.get('investorSales/investor1/entries/'+repriced.id).payoutPerUnit,9000);
+
+  await call('saveInvestorAgreement','owner',{
+    ...originalAgreement,payoutPerUnit:9500,changeReason:'Second signed rate amendment TF-002'
+  });
+  assert.equal(docs.get('investorAgreements/fabric1').version,3);
+  assert.equal(docs.get('financeSales/'+repriced.id).payoutPerUnit,9000,
+    'Existing sale must not be repriced by a later agreement amendment');
+  const next=await call('recordSale','clerk',{
+    productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:'TIMZY-REPRICE-2'
+  });
+  assert.equal(docs.get('investorSales/investor1/entries/'+next.id).payoutPerUnit,9500);
+  assert.equal(docs.get('investorSales/investor1/entries/'+next.id).agreementVersion,3);
+
+  await call('saveInvestorAgreement','owner',{
+    ...originalAgreement,active:false,payoutPerUnit:9500,
+    changeReason:'Agreement paused by recorded investor request'
+  });
+  assert.equal(docs.get('investorCatalog/investor1/items/fabric1').active,false);
+  assert.equal(docs.get('investorAgreements/fabric1').version,4);
+  await assert.rejects(call('recordSale','clerk',{
+    productId:'fabric1',quantity:1,unitSalePrice:15000,receiptCode:'TIMZY-REPRICE-3'
+  }),e=>e.code==='failed-precondition');
+  assert.equal(docs.get('products/fabric1').stockOnHand,1,
+    'Paused agreement blocks the new sale and leaves inventory untouched');
+  process.stdout.write('PASS: Role backend, stock, reversals, investor contract versions, private payout and identity controls.\n');
 }
 main().catch(err=>{console.error(err);process.exitCode=1;});
