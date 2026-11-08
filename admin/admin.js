@@ -295,6 +295,18 @@
     $(".sidebar")?.classList.remove("open");
   }
 
+  function populateMaterialOptions(selected = "") {
+    const select = $("#productForm")?.elements?.materialProductId;
+    if (!select) return;
+    const fabrics = state.products.filter(p =>
+      /^(fabrics?|materials?)$/i.test(String(p.category || "")) &&
+      !["draft", "hidden", "deleted"].includes(String(p.status || "").toLowerCase())
+    );
+    select.innerHTML = '<option value="">Not linked yet</option>' +
+      fabrics.map(p => `<option value="${escapeHTML(p.id)}">${escapeHTML(p.name)} · ${escapeHTML(p.color || "Colour unspecified")}</option>`).join("");
+    select.value = selected;
+  }
+
   function resetEditor() {
     state.editingId = null;
     state.images = [];
@@ -303,6 +315,7 @@
     $("#productForm").reset();
     $("#productForm").elements.status.value = "Published";
     $("#productForm").elements.sizes.value = "Custom";
+    populateMaterialOptions();
     $("#productModalTitle").textContent = "Add Product";
     $("#deleteProductBtn").hidden = true;
     $("#uploadProgress").hidden = true;
@@ -327,7 +340,7 @@
     const form = $("#productForm");
     const fields = [
       "id", "name", "sku", "category", "productType", "price", "salePrice",
-      "fabricType", "color", "sizes", "deliveryEstimate", "status", "badge",
+      "fabricType", "materialProductId", "color", "sizes", "deliveryEstimate", "status", "badge",
       "description", "tags", "instagramVideoUrl"
     ];
     fields.forEach(field => {
@@ -447,6 +460,7 @@
       price: Number(data.price || 0),
       salePrice: Number(data.salePrice || 0),
       fabricType: data.fabricType.trim(),
+      materialProductId: String(data.materialProductId || "").trim(),
       color: data.color.trim(),
       sizes: data.sizes.trim() || "Custom",
       deliveryEstimate: data.deliveryEstimate.trim() || "7–14 business days after confirmation",
@@ -466,6 +480,14 @@
     const product = formProductData();
     if (!product.name || !product.category || product.price < 0) {
       return toast("Complete the required product fields.");
+    }
+
+    if (product.materialProductId) {
+      const match = state.products.find(p => p.id === product.materialProductId);
+      if (!match || !/^(fabrics?|materials?)$/i.test(String(match.category || "")) ||
+          ["draft", "hidden", "deleted"].includes(String(match.status || "").toLowerCase())) {
+        return toast("Choose a published material product before linking this outfit.");
+      }
     }
 
     const productId = state.editingId || slugify(product.name) || `product-${Date.now()}`;
