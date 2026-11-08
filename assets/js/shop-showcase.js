@@ -36,8 +36,11 @@
     const name = esc(p.name);
     const url = app.url(p);
     const image = esc(app.image(p));
-    const tag = outfits(p) && /custom sewing/i.test(String(p.productType || ''))
-      ? '<span class="showcase-card__badge">Made to measure</span>' : '';
+    const preview = p.raw?.sampleListing === true;
+    const tag = preview
+      ? '<span class="showcase-card__badge">Sample preview</span>'
+      : outfits(p) && /custom sewing/i.test(String(p.productType || ''))
+        ? '<span class="showcase-card__badge">Made to measure</span>' : '';
     return `<article class="showcase-card" data-product-id="${esc(p.id)}" tabindex="-1">
       <a class="showcase-card__media" href="${url}" aria-label="View ${name}">
         <img src="${image}" alt="${name}" loading="lazy" decoding="async"
