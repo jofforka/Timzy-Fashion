@@ -1,47 +1,41 @@
-<!doctype html><html lang="en"><head><title>Shop | Timzy Fashion</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=8.5"><link rel="stylesheet" href="assets/css/shop-showcase.css?v=2"></head><body class="page-shop"><a class="showcase-skip-link" href="#main-content">Skip to collection</a><div class="luxury-bg"></div><header class="site-header"><nav class="container nav"><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion"><span><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a><button class="nav-toggle" type="button" aria-label="Open menu"><span></span><span></span></button><div class="nav-links"><a href="index.html">Home</a><a href="shop.html">Shop</a><a href="training.html">Training</a><a href="contact.html">Contact</a></div></nav></header><main id="main-content">
-  <section class="catalog-hero section">
-    <div class="container showcase-intro">
-      <span class="eyebrow">THE TIMZY EDIT &nbsp; / &nbsp; FASHION COLLECTION</span>
-      <h1>Find your <em>signature style.</em></h1>
-      <p class="hero-text">Explore Senator wear, Agbada, fabrics and accessories. Select a look to see full details.</p>
-      <div class="showcase-intro-note">
-        <span>Distinctive Nigerian style</span>
-        <span>Made-to-measure options</span>
-        <span>Delivery across Nigeria</span>
-      </div>
+<!doctype html><html lang="en"><head><title>Shop | Timzy Fashion</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=8.5"><link rel="stylesheet" href="assets/css/shop-showcase.css?v=3"></head><body class="page-shop"><a class="showcase-skip-link" href="#main-content">Skip to collection</a><div class="luxury-bg"></div><header class="site-header"><nav class="container nav"><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion"><span><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Dress the Complete Gentleman</span></span></a><button class="nav-toggle" type="button" aria-label="Open menu"><span></span><span></span></button><div class="nav-links"><a href="index.html">Home</a><a href="shop.html">Shop</a><a href="training.html">Training</a><a href="contact.html">Contact</a></div></nav></header><main id="main-content">
+  <section class="shop-minimal container" aria-labelledby="shop-heading">
+    <header class="shop-heading">
+      <h1 id="shop-heading">The Collection</h1>
+      <p>Find your next look, or choose the fabric to make it yours.</p>
+    </header>
+    <nav class="shop-sections" id="chips" aria-label="Shop collections">
+      <button class="shop-section-tab active" type="button" data-category="Outfits" aria-pressed="true">
+        <span>Ready-made &amp; Outfits</span>
+        <small>Clothing &amp; accessories</small>
+      </button>
+      <button class="shop-section-tab" type="button" data-category="Materials" aria-pressed="false">
+        <span>Fabrics &amp; Materials</span>
+        <small>Choose your fabric</small>
+      </button>
+    </nav>
+    <div class="shop-controls">
+      <label class="showcase-sr-only" for="search">Search products</label>
+      <input id="search" class="field" type="search" autocomplete="off" placeholder="Search this collection" aria-label="Search this collection">
+      <label class="showcase-sr-only" for="sortProducts">Sort products</label>
+      <select id="sortProducts" class="field" aria-label="Sort products">
+        <option value="featured">Featured</option>
+        <option value="newest">Newest</option>
+        <option value="price-low">Price: low to high</option>
+        <option value="price-high">Price: high to low</option>
+        <option value="name">Name: A to Z</option>
+      </select>
+    </div>
+    <div class="shop-result-line">
+      <h2 id="sectionTitle">Ready-made &amp; Outfits</h2>
+      <span id="productCount" role="status" aria-live="polite">Loading products…</span>
+    </div>
+    <div class="product-grid showcase-grid" id="productGrid">
+      <div class="empty" role="status">Loading collection…</div>
     </div>
   </section>
-
-  <section class="section showcase-section" id="products" aria-labelledby="shop-title">
-    <div class="container">
-      <div class="showcase-toolbar-header">
-        <div>
-          <span class="eyebrow">SHOP THE COLLECTION</span>
-          <h2 id="shop-title">Discover the collection.</h2>
-        </div>
-        <p id="productCount" role="status" aria-live="polite">Loading products...</p>
-      </div>
-      <div class="catalog-controls showcase-controls">
-        <label class="showcase-sr-only" for="search">Search Timzy products</label>
-        <input class="field" id="search" type="search" autocomplete="off" placeholder="Search styles...">
-        <label class="showcase-sr-only" for="sortProducts">Sort products</label>
-        <select class="field" id="sortProducts" aria-label="Sort products">
-          <option value="featured">Featured first</option>
-          <option value="newest">Newest</option>
-          <option value="price-low">Price: Low to high</option>
-          <option value="price-high">Price: High to low</option>
-          <option value="name">Name: A to Z</option>
-        </select>
-      </div>
-      <div class="toolbar showcase-categories" id="chips" role="group" aria-label="Filter by collection"></div>
-      <div class="product-grid showcase-grid" id="productGrid">
-        <div class="empty" role="status">Loading the Timzy collection...</div>
-      </div>
-      <p class="showcase-bottom-note">Select any item or <strong>Buy Now</strong> to see the larger photos, size options and full details. Confirm your selections before proceeding to checkout.</p>
-    </div>
-  </section>
-</main><button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">👜 <span id="bagCount">0</span></button><a class="floating-whatsapp" href="https://wa.me/2348114599250" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">💬</a><footer class="site-footer"><div class="container footer-grid"><div><a class="brand" href="index.html"><img class="brand-logo" src="assets/img/timzy-logo.png" alt="Timzy Fashion"><span><span class="brand-name">TIMZY FASHION</span><span class="brand-sub">Premium fashion platform</span></span></a><p>Luxury bespoke fashion, training, and complete styling.</p></div><div><h3>Shop</h3><a href="shop.html">Shop</a><a href="checkout.html">Checkout</a></div><div><h3>Training</h3><a href="training.html">Programs</a><a href="training.html#register">Register</a></div><div><h3>Contact</h3><a href="contact.html">Contact</a><a href="login.html">Staff Login</a></div></div><div class="container footer-bottom"><p>© <span id="year"></span> Timzy Fashion</p><p>Premium fashion platform.</p></div></footer><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+</main><button class="floating-bag" type="button" data-open-bag aria-label="Open shopping bag">👜 <span id="bagCount">0</span></button><a class="floating-whatsapp" href="https://wa.me/2348114599250" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">💬</a><footer class="site-footer"><div class="container shop-footer"><span>© <span id="year"></span> Timzy Fashion</span><div><a href="contact.html">Contact</a><a href="login.html">Staff Login</a></div></div></footer><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="assets/js/config.js"></script>
-<script src="assets/js/firebase.js"></script><script src="assets/js/app.js?v=8.5"></script><script src="assets/js/shop-showcase.js?v=2"></script></body></html>
+<script src="assets/js/firebase.js"></script><script src="assets/js/app.js?v=8.5"></script><script src="assets/js/shop-showcase.js?v=3"></script></body></html>
