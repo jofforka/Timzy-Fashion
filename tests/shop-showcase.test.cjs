@@ -1,6 +1,5 @@
 /* node tests/shop-showcase.test.cjs
- * Offline regression checks for catalogue, filters, Buy Now and safe checkout messaging.
- * Node built-ins only. No Firebase credentials or external services needed.
+ * Mobile two-column catalogue and product-first buying regression tests.
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -11,8 +10,10 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const products = JSON.parse(read('data/products.json'));
 const shop = read('shop.html');
+const productPage = read('product.html');
 const checkout = read('checkout.html');
 const css = read('assets/css/shop-showcase.css');
+const productCss = read('assets/css/product-purchase.css');
 
 const listeners = {};
 const store = {};
@@ -27,9 +28,7 @@ const document = {
     classList: { contains(value) { return value === 'page-shop'; } },
     insertAdjacentHTML() {}
   },
-  addEventListener(event, callback) {
-    (listeners[event] ||= []).push(callback);
-  },
+  addEventListener(event, callback) { (listeners[event] ||= []).push(callback); },
   querySelector(selector) { return nodes[selector] || null; },
   querySelectorAll() { return []; }
 };
@@ -50,56 +49,78 @@ vm.runInContext(read('assets/js/app.js'), context, { filename: 'app.js' });
 vm.runInContext(read('assets/js/shop-showcase.js'), context, { filename: 'shop-showcase.js' });
 
 const app = window.Timzy;
-assert.ok(app, 'Store application must initialize');
+assert.ok(app, 'Timzy app initializes');
 app.products = app.normalize(products);
-assert.equal(app.products.length, products.length, 'All published fallback products remain available');
-assert.equal(app.products[0].price, 185000, 'Catalogue prices are unchanged');
+assert.equal(app.products.length, 35, 'All published product records retained');
+assert.equal(app.products[0].price, 185000, 'Product prices unchanged');
 
 const first = app.products[0];
-const sample = app.card(first);
-assert.match(sample, /showcase-card__media/, 'Cards show portrait images');
-assert.match(sample, /data-buy-now=/, 'Cards include Buy Now');
-assert.match(sample, /data-add-bag=/, 'Cards include Add to Bag');
-assert.match(sample, /₦185,000/, 'Prices display in naira');
-assert.match(sample, /product.html\?id=/, 'Product details remain accessible');
+const card = app.card(first);
+assert.match(card, /showcase-card__media/, 'Card has photo');
+assert.match(card, /showcase-card__buy/, 'Card has Buy Now');
+assert.match(card, /₦185,000/, 'Card has Naira price');
+assert.match(card, /product.html\?id=/, 'Card navigates to product detail');
+assert.doesNotMatch(card, /data-buy-now=|data-add-bag=/, 'Card cannot bypass variant selection');
+const detailHref = app.url(first);
+assert.ok(card.includes('href="' + detailHref + '"'), 'Photo, title and Buy Now open the correct product');
+assert.equal(app.cart.count(), 0, 'Browsing the collection does not add items to basket');
 
 const injected = app.card({ ...first, name: '<script>bad()</script>', id: 'x"><img src=x>' });
 assert.doesNotMatch(injected, /<script>/, 'Product names must be escaped');
-assert.doesNotMatch(injected, /data-buy-now="x"><img/, 'IDs must not escape HTML attributes');
+assert.doesNotMatch(injected, /data-product-id="x"><img/, 'Product IDs must be escaped');
 
 app.catalog.chips();
-assert.match(nodes['#chips'].innerHTML, /aria-pressed="true"/, 'Current filter is announced');
+assert.match(nodes['#chips'].innerHTML, /aria-pressed="true"/, 'Selected category announced');
 app.activeCategory = 'Agbada';
-assert.ok(app.catalog.filtered().every(item => item.category === 'Agbada'), 'Category filter works');
+assert.ok(app.catalog.filtered().every(p => p.category === 'Agbada'), 'Category filter');
 app.activeCategory = 'All';
 app.search = 'hausa royal senator';
-assert.ok(app.catalog.filtered().some(item => item.id === first.id), 'Search works');
+assert.ok(app.catalog.filtered().some(p => p.id === first.id), 'Search filter');
 app.search = '';
 app.sort = 'price-low';
 const sorted = app.catalog.filtered();
-assert.ok(sorted.every((item, index) => !index || Number(sorted[index - 1].price) <= Number(item.price)), 'Price sorting works');
+assert.ok(sorted.every((p, i) => !i || Number(sorted[i - 1].price) <= Number(p.price)), 'Price sort');
 
-app.bindGlobalActions();
-const click = (selector, field, id) => {
-  const target = { closest(requested) { return requested === selector ? { dataset: { [field]: id } } : null; } };
-  for (const listener of listeners.click || []) {
-    listener({ target, preventDefault() {}, stopPropagation() {} });
-  }
-};
-click('[data-add-bag]', 'addBag', first.id);
-assert.equal(app.cart.count(), 1, 'Add to Bag increments basket');
-click('[data-buy-now]', 'buyNow', first.id);
-assert.equal(app.cart.count(), 2, 'Buy Now puts product in basket');
-assert.equal(window.location.href, 'checkout.html', 'Buy Now goes to checkout');
-assert.equal(nodes['.floating-whatsapp'].href, 'https://wa.me/' + window.TIMZY_CONFIG.whatsappNumber, 'Contact link uses central config');
-assert.equal(nodes['.floating-whatsapp'].rel, 'noopener noreferrer');
+assert.equal(nodes['.floating-whatsapp'].href, 'https://wa.me/' + window.TIMZY_CONFIG.whatsappNumber);
+assert.match(shop, /shop-showcase\.css\?v=2/, 'Shop v2 stylesheet');
+assert.match(shop, /shop-showcase\.js\?v=2/, 'Shop v2 script');
+assert.match(shop, /showcase-skip-link/, 'Keyboard skip link');
+const mobile = css.slice(css.lastIndexOf('@media (max-width: 620px)'));
+assert.match(mobile, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+  'Two product cards per line at mobile widths');
+const veryNarrow = css.slice(css.lastIndexOf('@media (max-width: 350px)'));
+assert.match(veryNarrow, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+  'Two product cards per line on narrow phones');
 
-assert.match(shop, /shop-showcase\.css\?v=1/, 'Shop loads its scoped CSS');
-assert.match(shop, /shop-showcase\.js\?v=1/, 'Shop loads its scoped script');
-assert.match(shop, /showcase-skip-link/, 'Keyboard users can skip the navigation');
-assert.match(css, /max-width:\s*620px/, 'Mobile layout rules exist');
-assert.doesNotMatch(checkout, /0000000000|BANK NAME/, 'Fake transfer details must not appear');
-assert.match(checkout, /Files are not uploaded through this checkout form/, 'Measurement upload expectations are clear');
-assert.match(checkout, /Do not send money to an unverified account/, 'Bank transfer instructions are explicit');
+assert.match(productPage, /product-purchase\.js\?v=1/, 'Product purchase script linked');
+assert.match(productPage, /product-purchase\.css\?v=1/, 'Product purchase styles linked');
+assert.match(productPage, /Back to collection/, 'Return to shop link');
+assert.match(productCss, /product-purchase-actions/, 'Product purchase buttons styled');
 
-console.log('PASS: Timzy shop showcase, catalogue, basket and checkout regression checks.');
+document.body.classList.contains = value => value === 'page-product';
+vm.runInContext(read('assets/js/product-purchase.js'), context, { filename: 'product-purchase.js' });
+const purchase = window.TimzyPurchase;
+assert.ok(purchase, 'Product purchase flow initializes');
+assert.equal(JSON.stringify(purchase.sizeOptions('M, L, XL, XXL')),
+  JSON.stringify(['M', 'L', 'XL', 'XXL']), 'Ready-made size selector');
+assert.equal(purchase.sizeOptions('40–46').length, 7, 'Shoe size range selector');
+assert.equal(purchase.sizeOptions('Custom')[0], 'Custom', 'Custom tailoring selection');
+
+assert.equal(purchase.addSelectedItem(first, 'Custom', 2), true, 'Selected product added');
+assert.equal(app.cart.count(), 2, 'Quantity retained');
+assert.equal(purchase.addSelectedItem(first, 'Custom', 1), true, 'Same variant combines quantities');
+assert.equal(app.cart.count(), 3);
+assert.equal(purchase.addSelectedItem(first, '', 1), false, 'Size required');
+assert.equal(purchase.addSelectedItem(first, 'Custom', 0), false, 'Quantity must be positive');
+assert.equal(purchase.addSelectedItem(first, 'Custom', 100), false, 'Quantity bounded');
+const readyMade = app.products.find(p => String(p.sizes).includes('M, L'));
+assert.ok(readyMade && purchase.addSelectedItem(readyMade, 'L', 1), 'Ready-made size can be added');
+assert.ok(app.cart.list().some(x => x.name.includes(' — L')), 'Selection preserved for checkout');
+assert.ok(app.checkout.message({ name: 'Example', phone: '0800000000' }).includes(' — L'),
+  'Order message includes selected size');
+
+assert.doesNotMatch(checkout, /0000000000|BANK NAME/, 'No dummy bank account in checkout');
+assert.match(checkout, /Files are not uploaded through this checkout form/, 'File handling is accurate');
+assert.match(checkout, /Continue to WhatsApp/, 'Checkout accurately describes order handoff');
+
+console.log('PASS: Two-column mobile shop, details-first shopping, sizes, cart and checkout.');
