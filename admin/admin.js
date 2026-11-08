@@ -515,8 +515,38 @@
       ? state.products.find(p => p.id === state.editingId)?.createdAt || firebase.firestore.FieldValue.serverTimestamp()
       : firebase.firestore.FieldValue.serverTimestamp();
 
-    await fb.db.collection(collections.products).doc(productId).set(product, { merge: true });
-    toast(state.editingId ? "Product updated." : "Product created.");
+    // Firestore transactions reject a stale editor rather than overwriting
+    // a sale/stock adjustment or another admin's more recent product changes.
+    const previous = state.editingId
+      ? state.products.find(p => p.id === state.editingId) : null;
+    const ref = fb.db.collection(collections.products).doc(productId);
+    try {
+      await fb.db.runTransaction(async tx => {
+        const live = await tx.get(ref);
+        if (previous) {
+          if (!live.exists) throw new Error("Product was deleted. Reload and review.");
+          const liveData = live.data();
+          const previousStock = Number.isSafeInteger(previous.stockOnHand) ? previous.stockOnHand : null;
+          const liveStock = Number.isSafeInteger(liveData.stockOnHand) ? liveData.stockOnHand : null;
+          if (previousStock !== liveStock ||
+              timestampValue(previous.updatedAt) !== timestampValue(liveData.updatedAt)) {
+            throw new Error("This product changed since you opened it. Reload and review before saving.");
+          }
+          tx.set(ref, product, { merge: true });
+        } else {
+          if (live.exists) throw new Error("A product with this code already exists. Use a unique SKU/name.");
+          tx.set(ref, product);
+        }
+      });
+    } catch (error) {
+      const message = String(error?.message || "Product save failed.");
+      toast(message.slice(0, 180));
+      closeEditor();
+      await loadProducts();
+      renderAll();
+      return;
+    }
+    toast(previous ? "Product updated." : "Product created.");
     closeEditor();
     await loadProducts();
     renderAll();
