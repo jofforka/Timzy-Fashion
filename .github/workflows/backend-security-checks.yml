@@ -1,0 +1,43 @@
+name: Timzy backend roles and finance safety
+on:
+  pull_request:
+    paths:
+      - 'firestore.rules'
+      - 'firestore-rules-v5.rules'
+      - 'firebase.json'
+      - 'functions/**'
+      - 'admin/index.html'
+      - 'admin/admin.js'
+      - 'admin/role-portal.js'
+      - 'admin/role-portal.css'
+      - 'assets/js/firebase.js'
+      - 'assets/js/app.js'
+      - 'assets/js/product-purchase.js'
+      - 'assets/js/shop-showcase.js'
+      - 'tests/role-backend.test.cjs'
+      - 'tests/role-security.test.cjs'
+      - '.github/workflows/backend-security-checks.yml'
+permissions:
+  contents: read
+jobs:
+  backend-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax checks
+        run: |
+          node --check functions/index.js
+          node --check functions/lib/finance.js
+          node --check functions/scripts/bootstrap-superadmin.js
+          node --check admin/admin.js
+          node --check admin/role-portal.js
+          node --check assets/js/firebase.js
+      - name: Finance calculations and callable integration
+        run: |
+          node --test functions/tests/finance.test.cjs
+          node tests/role-backend.test.cjs
+          node tests/role-security.test.cjs
