@@ -111,6 +111,8 @@
             <label>Quantity <input name="quantity" type="number" step="1" min="1" max="100" value="1" required></label>
             <label>Actual price per unit (₦) <input name="unitSalePrice" type="number" step="1" min="1" required></label>
             <label>Receipt / invoice number <input name="receiptCode" maxlength="64" minlength="6" required autocomplete="off" placeholder="E.g. TIMZY-2026-0001" pattern="[A-Za-z0-9][A-Za-z0-9_-]{5,63}"></label>
+            <label>Invoice line number <input name="lineNumber" type="number" min="1" max="99" step="1" value="1" required aria-describedby="invoiceLineHelp"></label>
+            <p id="invoiceLineHelp" class="role-note">For multiple products on one receipt, enter line 1, then line 2, and so on. Repeating the same receipt and line will not double-charge or deduct stock.</p>
             <label>Customer reference (optional) <input name="customerReference" maxlength="120" autocomplete="off" placeholder="Optional customer code"></label>
             <button class="primary-btn" type="submit">Record Sale</button>
           </form>
