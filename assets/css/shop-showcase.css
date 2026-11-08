@@ -265,3 +265,17 @@
   .page-shop .showcase-card, .page-shop .showcase-card__media img { transition: none; }
   .page-shop .showcase-card:hover, .page-shop .showcase-card:focus-within { transform: none; }
 }
+
+/* Keyboard users can skip the navigation and jump into the catalogue. */
+.page-shop .showcase-skip-link {
+  position: fixed;
+  left: 14px;
+  top: -100px;
+  z-index: 1000;
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: #f6dfa5;
+  color: #201408;
+  font-weight: 800;
+}
+.page-shop .showcase-skip-link:focus { top: 10px; }

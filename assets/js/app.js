@@ -115,7 +115,7 @@ init(){
     if(!App.cart.list().length)return toast('Your bag is empty.');
     if(!d.name||!d.phone)return toast('Name and phone are required.');
     App.whatsapp.send(App.checkout.message(d));
-    toast('Order created. WhatsApp will open.');
+    toast('Send the WhatsApp message to submit your order.');
   });
 
   $('#clearCartBtn')?.addEventListener('click',()=>{
