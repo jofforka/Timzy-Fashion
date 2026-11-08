@@ -345,6 +345,10 @@ exports.markInvestorPayout = onCall(OPTIONS, async request => {
       fail('Investor sale not found.', 'not-found');
     }
     if (finance.data().status === 'paid') fail('Payout already marked paid.', 'already-exists');
+    if (finance.data().status !== 'due' || entry.data().status !== 'due') {
+      fail('Only an outstanding, non-reversed investor entitlement may be marked paid.',
+        'failed-precondition');
+    }
     const paid = {
       status: 'paid', paidAt: FieldValue.serverTimestamp(),
       paymentReference: reference, paidBy: actor.uid
