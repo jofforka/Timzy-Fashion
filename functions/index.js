@@ -178,7 +178,13 @@ exports.recordSale = onCall(OPTIONS, async request => {
       fail('Insufficient verified stock. Ask Super Admin to set the correct stock quantity.', 'failed-precondition');
     }
 
-    const a = agreement.exists && agreement.data().active ? agreement.data() : null;
+    // Once an item belongs to an investor, the entitlement must never be
+    // silently bypassed. Pausing the agreement pauses checkout of the item.
+    if (agreement.exists && agreement.data().active !== true) {
+      fail('Investor agreement is paused. Super Admin must resolve the terms before selling.',
+        'failed-precondition');
+    }
+    const a = agreement.exists ? agreement.data() : null;
     let investorCatalogRef;
     let catalog;
     if (a) {
