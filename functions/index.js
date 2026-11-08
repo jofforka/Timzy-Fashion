@@ -287,6 +287,12 @@ exports.reverseSale = onCall(OPTIONS, async request => {
   const reference = kind === 'customer_refunded'
     ? textValue(request.data?.refundReference, 'Customer refund reference', 5, 120)
     : null;
+  // Entry mistakes never moved actual stock; refunds only restock physically
+  // returned, inspected and saleable goods on explicit Super Admin confirmation.
+  const restock = kind === 'entry_error' ? true : request.data?.restock === true;
+  if (kind === 'customer_refunded' && typeof request.data?.restock !== 'boolean') {
+    fail('Confirm whether the refunded goods were physically returned and are resellable.');
+  }
   const saleRef = db.collection('sales').doc(saleId);
   const financeRef = db.collection('financeSales').doc(saleId);
   const outcome = await db.runTransaction(async tx => {
@@ -306,13 +312,17 @@ exports.reverseSale = onCall(OPTIONS, async request => {
     }
 
     const productRef = db.collection('products').doc(sale.productId);
-    const productDoc = await tx.get(productRef);
-    if (!productDoc.exists || !Number.isSafeInteger(productDoc.data().stockOnHand)) {
-      fail('Cannot restore unverified or missing inventory.', 'failed-precondition');
-    }
-    const restored = productDoc.data().stockOnHand + sale.quantity;
-    if (!Number.isSafeInteger(restored) || restored > 1000000000) {
-      fail('Inventory correction exceeds supported quantity.', 'failed-precondition');
+    let productDoc;
+    let restored = null;
+    if (restock) {
+      productDoc = await tx.get(productRef);
+      if (!productDoc.exists || !Number.isSafeInteger(productDoc.data().stockOnHand)) {
+        fail('Cannot restore unverified or missing inventory.', 'failed-precondition');
+      }
+      restored = productDoc.data().stockOnHand + sale.quantity;
+      if (!Number.isSafeInteger(restored) || restored > 1000000000) {
+        fail('Inventory correction exceeds supported quantity.', 'failed-precondition');
+      }
     }
 
     let investorRef;
@@ -332,13 +342,18 @@ exports.reverseSale = onCall(OPTIONS, async request => {
       }
     }
 
-    tx.update(productRef, {
-      stockOnHand: restored,
-      status: 'Published',
-      updatedAt: FieldValue.serverTimestamp()
-    });
+    if (restock) {
+      const priorStatus = productDoc.data().status;
+      tx.update(productRef, {
+        stockOnHand: restored,
+        // Never silently republish an archived/draft product.
+        status: priorStatus === 'Out of Stock' ? 'Published' : priorStatus,
+        updatedAt: FieldValue.serverTimestamp()
+      });
+    }
     tx.update(saleRef, {
       status: 'reversed', reversalKind: kind, reversalReason: reason,
+      restocked: restock,
       ...(reference ? { refundReference: reference } : {}),
       reversedBy: actor.uid, reversedAt: FieldValue.serverTimestamp()
     });
@@ -357,9 +372,9 @@ exports.reverseSale = onCall(OPTIONS, async request => {
     }
     tx.create(db.collection('auditEvents').doc(), {
       action: 'sale_reversed', saleId, productId: sale.productId,
-      reason, kind, actorUid: actor.uid, createdAt: FieldValue.serverTimestamp()
+      reason, kind, restocked: restock, actorUid: actor.uid, createdAt: FieldValue.serverTimestamp()
     });
-    return { saleId, status: 'reversed', restoredStock: restored,
+    return { saleId, status: 'reversed', restocked: restock, restoredStock: restored,
       investorEntitlementCancelled: financeDoc.exists };
   });
   return outcome;
