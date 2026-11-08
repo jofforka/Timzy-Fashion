@@ -63,7 +63,11 @@ async function dueSales(){
 }
 async function refreshAdminOptions(){
  if(role!=='super_admin')return;
- const [u,a]=await Promise.all([fb.db.collection('users').get(),fb.db.collection('investorAgreements').get()]);
+ const [u,a,financial]=await Promise.all([
+  fb.db.collection('users').get(),
+  fb.db.collection('investorAgreements').get(),
+  fb.db.collection('financeSales').get()
+ ]);
  users=u.docs.map(d=>({id:d.id,...d.data()}));
  const investors=users.filter(x=>x.role==='investor'&&x.active===true);
  options('#agreementInvestor',investors,'Select investor',x=>x.displayName||x.email||x.id);
@@ -74,6 +78,16 @@ async function refreshAdminOptions(){
   const x=d.data(),owner=users.find(u=>u.id===x.investorUid),p=products.find(y=>y.id===x.productId);
   return `<div class="role-inventory-row"><div><strong>${esc(p?.name||x.productId)}</strong><small>${esc(owner?.displayName||owner?.email||x.investorUid)} · ${x.active?'Active':'Inactive'}</small></div><b>${money(x.payoutPerUnit)}/unit</b></div>`;
  }).join('')||'<p>No investor agreements yet.</p>';
+ const records=financial.docs.map(doc=>({id:doc.id,...doc.data()}));
+ status('#financeRetail',money(records.reduce((n,x)=>n+Number(x.actualRetailTotal||0),0)));
+ status('#financePayout',money(records.reduce((n,x)=>n+Number(x.investorTotalDue||0),0)));
+ status('#financeMargin',money(records.reduce((n,x)=>n+Number(x.grossMarginBeforeCosts||0),0)));
+ $('#financeSalesList').innerHTML=records.map(x=>{
+  const product=products.find(p=>p.id===x.productId);
+  return `<div class="role-inventory-row"><div><strong>${esc(product?.name||x.productId)}</strong>
+    <small>${Number(x.quantity||0)} unit(s) · Sold for ${money(x.actualRetailTotal)} · Investor payout ${money(x.investorTotalDue)} · ${esc(x.status||'due')}</small></div>
+    <b>Margin ${money(x.grossMarginBeforeCosts)}</b></div>`;
+ }).join('')||'<p>No investor-linked sales yet.</p>';
  await dueSales();
 }
 async function operational(r,rows){applyRole(r);refreshSaleOptions(rows);if(r==='super_admin')await refreshAdminOptions();}
