@@ -33,13 +33,14 @@ async function renderInvestor(user,profile){
    fb.db.collection('investorSales').doc(uid).collection('entries').get()
  ]);
  const items=c.docs.map(d=>d.data()),entries=s.docs.map(d=>d.data());
+ const validEntries=entries.filter(x=>x.status!=='reversed');
  status('#investorProductCount',String(items.length));
- status('#investorUnitsSold',String(entries.reduce((n,x)=>n+Number(x.units||0),0)));
- status('#investorAmountDue',money(entries.filter(x=>x.status!=='paid').reduce((n,x)=>n+Number(x.totalDue||0),0)));
- status('#investorAmountPaid',money(entries.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.totalDue||0),0)));
+ status('#investorUnitsSold',String(validEntries.reduce((n,x)=>n+Number(x.units||0),0)));
+ status('#investorAmountDue',money(validEntries.filter(x=>x.status==='due').reduce((n,x)=>n+Number(x.totalDue||0),0)));
+ status('#investorAmountPaid',money(validEntries.filter(x=>x.status==='paid').reduce((n,x)=>n+Number(x.totalDue||0),0)));
  $('#investorProductsList').innerHTML=items.map(x=>`<div class="role-inventory-row"><div><strong>${esc(x.productName)}</strong><small>${esc(x.colour||'')} · Agreed payout per unit · ${x.active?'Active':'Inactive'}</small></div><b>${money(x.payoutPerUnit)}</b></div>`).join('')||'<p>No products assigned yet.</p>';
  entries.sort((a,b)=>String(b.soldAt||'').localeCompare(String(a.soldAt||'')));
- $('#investorSalesList').innerHTML=entries.map(x=>`<div class="role-inventory-row"><div><strong>${esc(x.productName)}</strong><small>${esc(x.soldAt||'')} · ${Number(x.units||0)} unit(s) × ${money(x.payoutPerUnit)} · ${x.status==='paid'?'Paid':'Amount due'}</small></div><b>${money(x.totalDue)}</b></div>`).join('')||'<p>No payouts recorded yet.</p>';
+ $('#investorSalesList').innerHTML=entries.map(x=>`<div class="role-inventory-row"><div><strong>${esc(x.productName)}</strong><small>${esc(x.soldAt||'')} · ${Number(x.units||0)} unit(s) × ${money(x.payoutPerUnit)} · ${x.status==='paid'?'Paid':x.status==='reversed'?'Reversed / no payout due':'Amount due'}</small></div><b>${money(x.totalDue)}</b></div>`).join('')||'<p>No payouts recorded yet.</p>';
  status('#investorError','');
 }
 function options(id,rows,placeholder,label){
@@ -79,9 +80,10 @@ async function refreshAdminOptions(){
   return `<div class="role-inventory-row"><div><strong>${esc(p?.name||x.productId)}</strong><small>${esc(owner?.displayName||owner?.email||x.investorUid)} · ${x.active?'Active':'Inactive'}</small></div><b>${money(x.payoutPerUnit)}/unit</b></div>`;
  }).join('')||'<p>No investor agreements yet.</p>';
  const records=financial.docs.map(doc=>({id:doc.id,...doc.data()}));
- status('#financeRetail',money(records.reduce((n,x)=>n+Number(x.actualRetailTotal||0),0)));
- status('#financePayout',money(records.reduce((n,x)=>n+Number(x.investorTotalDue||0),0)));
- status('#financeMargin',money(records.reduce((n,x)=>n+Number(x.grossMarginBeforeCosts||0),0)));
+ const posted=records.filter(x=>x.status!=='reversed');
+ status('#financeRetail',money(posted.reduce((n,x)=>n+Number(x.actualRetailTotal||0),0)));
+ status('#financePayout',money(posted.reduce((n,x)=>n+Number(x.investorTotalDue||0),0)));
+ status('#financeMargin',money(posted.reduce((n,x)=>n+Number(x.grossMarginBeforeCosts||0),0)));
  $('#financeSalesList').innerHTML=records.map(x=>{
   const product=products.find(p=>p.id===x.productId);
   return `<div class="role-inventory-row"><div><strong>${esc(product?.name||x.productId)}</strong>
@@ -89,6 +91,12 @@ async function refreshAdminOptions(){
     <b>Margin ${money(x.grossMarginBeforeCosts)}</b></div>`;
  }).join('')||'<p>No investor-linked sales yet.</p>';
  await dueSales();
+}
+function refreshReversalOptions(rows){
+ if(role!=='super_admin')return;
+ options('#reverseSaleId',rows.filter(x=>x.receiptCode && x.status!=='reversed'),
+   'Select a completed sale',x=>
+   x.receiptCode+' · '+(x.productName||x.description||x.productId||'Product')+' · '+money(x.amount));
 }
 async function operational(r,rows){applyRole(r);refreshSaleOptions(rows);if(r==='super_admin')await refreshAdminOptions();}
 function bindForm(formId,selector,fn){
@@ -131,6 +139,24 @@ function bind(){
   status('#payoutStatus','Payout marked paid. No funds were transferred by this action.');
   form.reset();await refreshAdminOptions();
  });
+ bindForm('#reverseSaleForm','#reverseSaleStatus',async(d,form)=>{
+  if(role!=='super_admin')throw Error('Super Admin only.');
+  if(d.kind==='customer_refunded' && (!d.refundReference || d.refundReference.trim().length<5)){
+    throw Error('Enter the reference of the refund already completed.');
+  }
+  const confirmText=d.kind==='entry_error'
+    ? 'Confirm this was an incorrect sale entry and no customer refund is required?'
+    : 'Confirm the customer was ALREADY refunded outside this system? No money will be sent.';
+  if(!window.confirm(confirmText))throw Error('Reversal cancelled.');
+  const result=await invoke('reverseSale',{
+    saleId:d.saleId, kind:d.kind, reason:d.reason, refundReference:d.refundReference||''
+  });
+  form.reset();
+  if(window.TimzyRefreshOperations)await window.TimzyRefreshOperations();
+  await refreshAdminOptions();
+  status('#reverseSaleStatus','Reversal recorded; verified stock restored to '+result.restoredStock+
+    '. The original sale remains available for audit.');
+ },'#reverseSaleStatus');
  $('#payoutInvestor')?.addEventListener('change',()=>dueSales().catch(e=>status('#payoutStatus',error(e))));
  $('#accountsList')?.addEventListener('click',async e=>{
   const button=e.target.closest('[data-toggle-uid]');if(!button||role!=='super_admin')return;
@@ -143,5 +169,5 @@ function bind(){
  $('#deniedSignOut')?.addEventListener('click',()=>fb?.auth?.signOut());
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
-window.TimzyRolePortal={getProfile,applyRole,operational,renderInvestor,refreshSaleOptions,refreshAdminOptions};
+window.TimzyRolePortal={getProfile,applyRole,operational,renderInvestor,refreshSaleOptions,refreshReversalOptions,refreshAdminOptions};
 })();
