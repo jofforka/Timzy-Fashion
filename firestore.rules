@@ -42,7 +42,10 @@ service cloud.firestore {
     }
 
     match /products/{id} {
-      allow read: if true;
+      // Only published stock is public. Staff and Super Admin can see the
+      // operational product catalog; drafts are never readable anonymously.
+      allow read: if operations()
+        || resource.data.status in ['Published', 'Out of Stock'];
       allow create, update: if superAdmin() && cleanPublicProduct();
       allow delete: if superAdmin();
     }
