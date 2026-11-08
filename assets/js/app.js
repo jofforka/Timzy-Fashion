@@ -42,7 +42,10 @@ async loadProducts(){
 
   if(fb?.db){
     try{
-      const snapshot=await fb.db.collection(collectionName).get();
+      // Firestore rules are not filters. Public queries must explicitly
+      // constrain status so draft product data cannot be fetched.
+      const snapshot=await fb.db.collection(collectionName)
+        .where('status','in',['Published','Out of Stock']).get();
       const firestoreProducts=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
 
       if(firestoreProducts.length){
@@ -59,8 +62,13 @@ async loadProducts(){
     const response=await fetch(C().productDataUrl,{cache:"no-store"});
     if(!response.ok)throw new Error(response.status);
     const data=await response.json();
-    App.products=App.normalize(Array.isArray(data)?data:[]);
-    console.log(`Loaded ${App.products.length} products from products.json fallback.`);
+    // Bundled JSON is demonstration data, not verified live inventory.
+    // Every fallback product is marked non-orderable until approved in CMS.
+    App.products=App.normalize(Array.isArray(data)
+      ? data.map(p=>({...p,sampleListing:true})) : []);
+    const disclosure=$('#catalogSampleNotice');
+    if(disclosure)disclosure.hidden=false;
+    console.log(`Loaded ${App.products.length} sample products from products.json fallback.`);
   }catch(error){
     console.error(error);
     const grid=$("#productGrid");
