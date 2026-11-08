@@ -8,7 +8,7 @@
 
   // Keep the floating contact action aligned with the configured store account.
   const contact = document.querySelector('.floating-whatsapp');
-  const contactNumber = String(window.TIMZY_CONFIG?.whatsappNumber || '').replace(/\\D/g, '');
+  const contactNumber = String(window.TIMZY_CONFIG?.whatsappNumber || '').replace(/[^0-9]/g, '');
   if (contact && contactNumber) {
     contact.href = 'https://wa.me/' + contactNumber;
     contact.rel = 'noopener noreferrer';
