@@ -76,6 +76,9 @@ const rules = fs.readFileSync(path.resolve(__dirname,'../../firestore.rules'),'u
     await assertSucceeds(getDoc(doc(investor,'investorCatalog','investor1','items','fabric1')));
     await assertSucceeds(getDoc(doc(investor,'investorSales','investor1','entries','sale1')));
     await assertSucceeds(getDoc(doc(investor,'investorCatalog','investor1','history','amendment1')));
+    await assertSucceeds(getDocs(collection(investor,'investorCatalog','investor1','history')));
+    await assertFails(getDocs(collection(otherInvestor,'investorCatalog','investor1','history')));
+    await assertFails(getDoc(doc(clerk,'investorCatalog','investor1','history','amendment1')));
     await assertSucceeds(getDoc(doc(owner,'investorCatalog','investor1','history','amendment1')));
     await assertFails(getDoc(doc(otherInvestor,'investorCatalog','investor1','history','amendment1')));
     await assertFails(getDoc(doc(publicDb,'investorCatalog','investor1','history','amendment1')));
