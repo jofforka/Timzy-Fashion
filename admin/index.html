@@ -105,12 +105,13 @@
       <section id="salesView" class="admin-view" hidden>
         <div class="admin-card">
           <div class="card-head"><div><span class="eyebrow">Shop Operations</span><h2>Record a Completed Sale</h2></div></div>
-          <p class="role-note">Choose the product, quantity and actual amount paid by the customer. Stock is reduced automatically after a successful server-confirmed entry. A verified stock count is required.</p>
+          <p class="role-note">Choose the product, quantity and actual amount paid by the customer. Stock is reduced automatically after a successful server-confirmed entry. A verified stock count and unique receipt number are required. Use the same receipt when retrying an uncertain submission.</p>
           <form id="saleForm" class="record-form">
             <label>Product <select name="productId" id="saleProductId" required><option value="">Select verified stock</option></select></label>
             <label>Quantity <input name="quantity" type="number" step="1" min="1" max="100" value="1" required></label>
             <label>Actual price per unit (₦) <input name="unitSalePrice" type="number" step="1" min="1" required></label>
-            <label>Customer reference (optional) <input name="customerReference" maxlength="120" autocomplete="off" placeholder="Receipt or customer code"></label>
+            <label>Receipt / invoice number <input name="receiptCode" maxlength="64" minlength="6" required autocomplete="off" placeholder="E.g. TIMZY-2026-0001" pattern="[A-Za-z0-9][A-Za-z0-9_-]{5,63}"></label>
+            <label>Customer reference (optional) <input name="customerReference" maxlength="120" autocomplete="off" placeholder="Optional customer code"></label>
             <button class="primary-btn" type="submit">Record Sale</button>
           </form>
           <p id="saleStatus" class="form-message" role="status" aria-live="polite"></p>
