@@ -76,9 +76,11 @@
     return rows;
   };
 
-  const previousInit = app.catalog.init.bind(app.catalog);
   app.catalog.init = () => {
-    previousInit();
+    if (!document.querySelector('#productGrid')) return;
+    app.catalog.chips();
+    app.catalog.bind();
+    app.catalog.render();
     const title = document.querySelector('#sectionTitle');
     const heading = () => {
       if (title) title.textContent = app.activeCategory === 'Materials' ? 'Fabrics & Materials' : 'Ready-made & Outfits';
