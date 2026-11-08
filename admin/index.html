@@ -178,11 +178,22 @@
           <form id="agreementForm" class="record-form">
             <label>Product <select name="productId" id="agreementProduct" required><option value="">Select product</option></select></label>
             <label>Investor <select name="investorUid" id="agreementInvestor" required><option value="">Select investor</option></select></label>
-            <label>Agreed payout per unit (₦) <input name="payoutPerUnit" type="number" step="1" min="0" required></label>
-            <button class="primary-btn" type="submit">Save Agreement</button>
+            <label>Agreed payout per unit (₦) <input name="payoutPerUnit" type="number" step="1" min="1" required></label>
+            <label>Agreement status <select name="active" required>
+              <option value="true">Active — staff may record sales</option>
+              <option value="false">Paused — block staff sales</option>
+            </select></label>
+            <label>Agreement reference / amendment reason
+              <textarea name="changeReason" rows="2" minlength="12" maxlength="300" required placeholder="E.g. signed consignment agreement TF-CON-001"></textarea>
+              <small>Record the actual negotiated agreement or signed amendment reference. This note is visible to the investor.</small>
+            </label>
+            <button class="primary-btn" type="submit">Record Agreement</button>
           </form>
           <p id="agreementStatus" class="form-message" role="status" aria-live="polite"></p>
           <div id="agreementsList" class="record-list"></div>
+          <h3>Recent Agreement Amendments</h3>
+          <p class="role-note">Historical agreed rates are retained and are visible to their respective investors.</p>
+          <div id="agreementHistoryList" class="record-list"></div>
         </div>
         <div class="admin-card">
           <h2>Confirm an Investor Payout</h2>
@@ -250,6 +261,10 @@
       </div>
       <section class="admin-card"><h2>My Products</h2><div id="investorProductsList" class="record-list"></div></section>
       <section class="admin-card"><h2>My Sales Entitlements</h2><div id="investorSalesList" class="record-list"></div></section>
+      <section class="admin-card"><h2>Agreement Change History</h2>
+        <p class="role-note">See each recorded change to your agreed per-unit payout. Previous sales retain the rate used when they were recorded.</p>
+        <div id="investorHistoryList" class="record-list"></div>
+      </section>
       <p id="investorError" class="form-message" role="status"></p>
     </main>
   </div>
