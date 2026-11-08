@@ -52,7 +52,7 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 
 - Current bundled `data/products.json` contains **sample/demo** listings and images. The admin no longer automatically imports those into production. A stock value must be verified by Super Admin; the old string `quantity: "Available"` is not a trustworthy inventory count.
 - Old manual `sales` records are descriptive amounts without product-level stock or investor agreement metadata. They remain in the collection but **are not automatically converted into investor liabilities**; they require a reviewed migration with reconciliation and approval.
-- The checkout still hands off via WhatsApp; it **does not automatically receive a verified payment event**. Shop staff must record a sale only when payment/completion has actually been confirmed.
+- The checkout still hands off via WhatsApp; it **does not automatically receive a verified payment event**. Shop staff must record a sale only when payment/completion has actually been confirmed. Every sale requires a **unique receipt/invoice code plus line number**; for multi-product receipts use line 1, line 2 etc. Repeat the same code + line after a network uncertainty, rather than inventing a second receipt.
 - Investor payout `paid` is a ledger state, **not a bank transfer**. A payment reference is required; this app does not send funds.
 - Discounts below an investor's agreed payout require a Super Admin role to enter; nothing may silently reduce an investor's contractual entitlement.
 - There is currently no automatic refunds/reversals workflow. Return/refund adjustments must be implemented as audited counter-transactions, not by deleting historical sales.
