@@ -188,6 +188,12 @@ async function main() {
   assert.equal(docs.get('investorSales/investor1/entries/'+id).status,'paid',
     'Previously settled transaction is unchanged');
   await assert.rejects(
+    call('markInvestorPayout','owner',{investorUid:'investor1',saleId:id2,paymentReference:'INVALIDPAY-456'}),
+    e=>e.code==='failed-precondition'
+  );
+  assert.equal(docs.get('investorSales/investor1/entries/'+id2).status,'reversed',
+    'Reversed investor entitlement may never be changed to paid');
+  await assert.rejects(
     call('reverseSale','owner',{saleId:id2,kind:'entry_error',reason:'This second line was mistakenly recorded.'}),
     e=>e.code==='already-exists'
   );
