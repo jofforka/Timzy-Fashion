@@ -171,7 +171,17 @@
             <label>Transfer / payment reference <input name="paymentReference" maxlength="120" required></label>
             <button class="primary-btn" type="submit">Mark Payout Paid</button>
           </form>
-          <p id="payoutStatus" class="form-message" role="status" aria-live="polite"></p>
+          <p id="payoutStatus" class="form-message" role="status" aria-live="polite"></p> 
+        </div>
+        <div class="admin-card">
+          <h2>Private Finance Reconciliation</h2>
+          <p class="role-note">Actual receipts, investor commitments and gross margin before operating expenses. Super Admin only.</p>
+          <div class="stats-grid">
+            <article><span>Actual Sales</span><strong id="financeRetail">₦0</strong></article>
+            <article><span>Investor Due / Paid</span><strong id="financePayout">₦0</strong></article>
+            <article><span>Gross Margin Before Costs</span><strong id="financeMargin">₦0</strong></article>
+          </div>
+          <div id="financeSalesList" class="record-list"></div>
         </div>
       </section>
 
