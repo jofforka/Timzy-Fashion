@@ -155,6 +155,44 @@ async function main() {
   }),e=>e.code==='invalid-argument');
   await assert.rejects(call('markInvestorPayout','owner',{investorUid:'investor1',saleId:id,paymentReference:'BANK-123'}),
     e=>e.code==='already-exists');
+  const id2='receipt_'+receipt+'_line_2';
+  await assert.rejects(
+    call('reverseSale','clerk',{saleId:id2,kind:'entry_error',reason:'The sale was entered twice.'}),
+    e=>e.code==='permission-denied'
+  );
+  await assert.rejects(
+    call('reverseSale','investor1',{saleId:id2,kind:'entry_error',reason:'The sale was entered twice.'}),
+    e=>e.code==='permission-denied'
+  );
+  await assert.rejects(
+    call('reverseSale','owner',{saleId:id,kind:'customer_refunded',reason:'The client returned the material.',refundReference:'BANKREF42'}),
+    e=>e.code==='failed-precondition'
+  );
+  await assert.rejects(
+    call('reverseSale','owner',{saleId:id2,kind:'customer_refunded',reason:'The client returned the material.'}),
+    e=>e.code==='invalid-argument'
+  );
+  const correction=await call('reverseSale','owner',{
+    saleId:id2,kind:'entry_error',reason:'This second line was mistakenly recorded.'
+  });
+  assert.equal(correction.status,'reversed');
+  assert.equal(correction.restoredStock,2);
+  assert.equal(correction.investorEntitlementCancelled,true);
+  assert.equal(docs.get('products/fabric1').stockOnHand,2,'Reversal returns physical stock');
+  assert.equal(docs.get('sales/'+id2).status,'reversed','Sale remains intact with reversed status');
+  assert.equal(docs.get('sales/'+id2).amount,17000,'Original retail amount is retained for audit');
+  assert.equal(docs.get('financeSales/'+id2).status,'reversed','Financial obligation is reversed');
+  assert.equal(docs.get('investorSales/investor1/entries/'+id2).status,'reversed');
+  assert.equal(docs.get('investorCatalog/investor1/items/fabric1').unitsSold,1,
+    'Reversal cancels only the unpaid units and leaves paid units unchanged');
+  assert.equal(docs.get('investorSales/investor1/entries/'+id).status,'paid',
+    'Previously settled transaction is unchanged');
+  await assert.rejects(
+    call('reverseSale','owner',{saleId:id2,kind:'entry_error',reason:'This second line was mistakenly recorded.'}),
+    e=>e.code==='already-exists'
+  );
+  assert.equal(docs.get('products/fabric1').stockOnHand,2,
+    'Duplicate reversal must never restore stock twice');
 
   await assert.rejects(call('provisionUser','clerk',{role:'investor',email:'example@demo.com',displayName:'Investor'}),
     e=>e.code==='permission-denied');
@@ -162,6 +200,14 @@ async function main() {
   assert.equal(user.onboarding,'send-password-reset-email');
   assert.equal(docs.get('users/'+user.uid).investorId,user.uid);
   assert.equal(auth.created.at(-1).password,undefined);
+
+  reset();
+  docs.set('sales/old_sale', { amount:3000, description:'Legacy manual sale' });
+  await assert.rejects(
+    call('reverseSale','owner',{saleId:'old_sale',kind:'entry_error',
+      reason:'Old sale needs a manual account review.'}),
+    e=>e.code==='failed-precondition'
+  );
 
   reset();
   delete docs.get('products/fabric1').stockOnHand;
