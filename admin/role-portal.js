@@ -91,11 +91,6 @@ async function refreshAdminOptions(){
  await dueSales();
 }
 async function operational(r,rows){applyRole(r);refreshSaleOptions(rows);if(r==='super_admin')await refreshAdminOptions();}
-function freshId(){
- if(!window.crypto?.getRandomValues)throw Error('Secure browser required.');
- const bytes=new Uint8Array(20);window.crypto.getRandomValues(bytes);
- return 'sale_'+Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('');
-}
 function bindForm(formId,selector,fn){
  const form=$(formId);if(!form)return;
  form.addEventListener('submit',async e=>{
@@ -109,7 +104,7 @@ function bindForm(formId,selector,fn){
 function bind(){
  bindForm('#saleForm','#saleStatus',async(d,form)=>{
   if(!['staff','super_admin'].includes(role))throw Error('Not authorized.');
-  const result=await invoke('recordSale',{requestId:freshId(),productId:d.productId,quantity:Number(d.quantity),unitSalePrice:Number(d.unitSalePrice),customerReference:d.customerReference||''});
+  const result=await invoke('recordSale',{receiptCode:d.receiptCode,productId:d.productId,quantity:Number(d.quantity),unitSalePrice:Number(d.unitSalePrice),customerReference:d.customerReference||''});
   form.reset();status('#saleStatus',result.alreadyRecorded?'Already recorded':'Sale recorded and inventory updated.');
   if(window.TimzyRefreshOperations)await window.TimzyRefreshOperations();
  });
