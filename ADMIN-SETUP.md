@@ -65,7 +65,9 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 - The checkout still hands off via WhatsApp; it **does not automatically receive a verified payment event**. Shop staff must record a sale only when payment/completion has actually been confirmed. Every sale requires a **unique receipt/invoice code plus line number**; for multi-product receipts use line 1, line 2 etc. Repeat the same code + line after a network uncertainty, rather than inventing a second receipt.
 - Investor payout `paid` is a ledger state, **not a bank transfer**. A payment reference is required; this app does not send funds.
 - Discounts below an investor's agreed payout require a Super Admin role to enter; nothing may silently reduce an investor's contractual entitlement.
-- There is currently no automatic refunds/reversals workflow. Return/refund adjustments must be implemented as audited counter-transactions, not by deleting historical sales.
+- A **Super Admin-only reversal workflow** now preserves the original transaction, restores verified stock and reverses an **unpaid** investor entitlement. A correction must be categorized as an incorrectly entered sale (no money movement) or an **already completed** customer refund with a payment reference. The system **never transfers refund money**.
+- Investor payouts already marked paid cannot be automatically reversed; they require a separate reviewed recovery/accounting process. Legacy unstructured sales also require a separate reconciliation before they can be corrected.
+- Current reversal is an all-units correction for a single invoice line; partial returns or exchanges are not yet supported. Do not misrepresent the correction as a payment refund.
 
 ## Production safety checklist
 
@@ -80,6 +82,7 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 - [ ] Exact investor agreement verified and entitlement calculated
 - [ ] Margin visible to Super Admin; absent from investor documents and UI
 - [ ] Payment reference and confirmation tested
+- [ ] Sale reversal tested for entry error, confirmed refund, double-reversal protection and paid-investor rejection
 - [ ] Frontend PR merged after secure backend rollout; real device QA completed
 
 This project uses Firebase and a GitHub Pages static frontend. **Do not replace it with a separate unconnected backend or store investor payout rates in the public `products` collection.**
