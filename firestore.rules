@@ -25,7 +25,11 @@ service cloud.firestore {
       return !request.resource.data.keys().hasAny([
         'investorId', 'investorUid', 'investorPayout', 'payoutPerUnit',
         'agreedPayout', 'costPrice', 'supplierCost', 'grossMargin',
-        'margin', 'profit', 'investorAgreement'
+        'margin', 'profit', 'investorAgreement',
+        'wholesalePrice', 'purchasePrice', 'supplierPrice',
+        'unitCost', 'cost', 'internalCost', 'investorRate',
+        'investorPayoutPerUnit', 'investorEmail',
+        'investorAgreementId', 'settlementBankAccount'
       ])
       && (
         !request.resource.data.keys().hasAny(['stockOnHand']) ||
