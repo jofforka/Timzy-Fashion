@@ -185,13 +185,16 @@ function bind(){
     : 'Confirm the customer was ALREADY refunded outside this system? No money will be sent.';
   if(!window.confirm(confirmText))throw Error('Reversal cancelled.');
   const result=await invoke('reverseSale',{
-    saleId:d.saleId, kind:d.kind, reason:d.reason, refundReference:d.refundReference||''
+    saleId:d.saleId, kind:d.kind, reason:d.reason, refundReference:d.refundReference||'',
+    restock:d.kind==='entry_error'||d.restock==='true'
   });
   form.reset();
   if(window.TimzyRefreshOperations)await window.TimzyRefreshOperations();
   await refreshAdminOptions();
-  status('#reverseSaleStatus','Reversal recorded; verified stock restored to '+result.restoredStock+
-    '. The original sale remains available for audit.');
+  status('#reverseSaleStatus','Reversal recorded. '+
+    (result.restocked?'Verified stock restored to '+result.restoredStock+'. ':
+      'No stock returned to saleable inventory. ')+
+    'Original transaction preserved for audit.');
  },'#reverseSaleStatus');
  $('#agreementProduct')?.addEventListener('change',event=>{
   const a=agreements.find(x=>x.productId===event.target.value);
