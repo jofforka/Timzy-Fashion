@@ -34,6 +34,10 @@ const rules = fs.readFileSync(path.resolve(__dirname,'../../firestore.rules'),'u
       await setDoc(doc(db,'investorCatalog','investor1','items','fabric1'),{productName:'Brocade',payoutPerUnit:8000});
       await setDoc(doc(db,'investorSales','investor1','entries','sale1'),{productName:'Brocade',totalDue:8000});
       await setDoc(doc(db,'investorSales','investor2','entries','sale2'),{productName:'Other material',totalDue:3000});
+      await setDoc(doc(db,'investorCatalog','investor1','history','amendment1'),{
+        productId:'fabric1',version:2,previousPayoutPerUnit:8000,payoutPerUnit:9000,
+        changeReason:'Signed amendment in shop'
+      });
       await setDoc(doc(db,'settings','store'),{googleDriveUploadToken:'PRIVATE_TOKEN'});
       await setDoc(doc(db,'expenses','exp1'),{amount:100});
     });
@@ -71,6 +75,13 @@ const rules = fs.readFileSync(path.resolve(__dirname,'../../firestore.rules'),'u
 
     await assertSucceeds(getDoc(doc(investor,'investorCatalog','investor1','items','fabric1')));
     await assertSucceeds(getDoc(doc(investor,'investorSales','investor1','entries','sale1')));
+    await assertSucceeds(getDoc(doc(investor,'investorCatalog','investor1','history','amendment1')));
+    await assertSucceeds(getDoc(doc(owner,'investorCatalog','investor1','history','amendment1')));
+    await assertFails(getDoc(doc(otherInvestor,'investorCatalog','investor1','history','amendment1')));
+    await assertFails(getDoc(doc(publicDb,'investorCatalog','investor1','history','amendment1')));
+    await assertFails(setDoc(doc(investor,'investorCatalog','investor1','history','forged'),{
+      version:3,payoutPerUnit:1
+    }));
     await assertSucceeds(getDoc(doc(investor,'users','investor1')));
     await assertFails(getDoc(doc(investor,'users','owner')));
     await assertFails(getDoc(doc(investor,'financeSales','sale1')));
