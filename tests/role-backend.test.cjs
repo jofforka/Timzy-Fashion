@@ -90,7 +90,7 @@ const context = vm.createContext({
 vm.runInContext(code, context, { filename: 'functions/index.js' });
 const call = (name, actor, data) => callableExports[name]({ auth: actor ? { uid: actor } : null, data });
 const receipt = 'TIMZY-2026-0001';
-const id = 'receipt_' + receipt;
+const id = 'receipt_' + receipt + '_line_1';
 
 function reset() {
   docs.clear();
@@ -144,6 +144,15 @@ async function main() {
   assert.equal(paid.status,'paid');
   assert.equal(docs.get('investorSales/investor1/entries/'+id).status,'paid');
   assert.equal(docs.get('financeSales/'+id).status,'paid');
+  const line2 = await call('recordSale','clerk',{
+    productId:'fabric1',quantity:1,unitSalePrice:17000,receiptCode:receipt,lineNumber:2
+  });
+  assert.equal(line2.id,'receipt_'+receipt+'_line_2');
+  assert.equal(docs.get('products/fabric1').stockOnHand,1,
+    'A second product line on the same invoice reduces one additional unit');
+  await assert.rejects(call('recordSale','clerk',{
+    productId:'fabric1',quantity:1,unitSalePrice:17000,receiptCode:receipt,lineNumber:100
+  }),e=>e.code==='invalid-argument');
   await assert.rejects(call('markInvestorPayout','owner',{investorUid:'investor1',saleId:id,paymentReference:'BANK-123'}),
     e=>e.code==='already-exists');
 
