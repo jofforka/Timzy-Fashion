@@ -179,6 +179,12 @@
               <label>Price<input name="price" type="number" min="0" required></label>
               <label>Sale Price<input name="salePrice" type="number" min="0"></label>
               <label>Fabric / Material<input name="fabricType"></label>
+              <label>Linked material listing (optional)
+                <select name="materialProductId" id="materialProductId">
+                  <option value="">Not linked yet</option>
+                </select>
+                <small>Choose the exact published fabric product used for this outfit. Leave empty until verified.</small>
+              </label>
               <label>Colour<input name="color"></label>
               <label>Sizes<input name="sizes" value="Custom"></label>
               <label>Delivery Estimate<input name="deliveryEstimate"></label>
@@ -264,6 +270,6 @@
   
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
-  <script src="admin.js?v=8.5"></script>
+  <script src="admin.js?v=8.6"></script>
 </body>
 </html>
