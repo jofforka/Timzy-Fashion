@@ -50,6 +50,16 @@ assert.ok(html.includes('id="investorHistoryList"'),
 assert.ok(server.includes("exports.provisionUser = onCall"));
 assert.ok(server.includes("exports.markInvestorPayout = onCall"));
 assert.ok(server.includes("exports.reverseSale = onCall"),'Refund corrections use authenticated backend');
+assert.ok(server.includes("const restock = kind === 'entry_error' ? true"),
+  'Refunds must never silently restore unreturned inventory');
+assert.ok(server.includes("status: priorStatus === 'Out of Stock' ? 'Published' : priorStatus"),
+  'Reversal must preserve archived product status');
+assert.ok(admin.includes('delete copy.stockOnHand'),
+  'Duplicating a product must not clone stock');
+assert.ok(admin.includes('status: "Draft"'),
+  'Archived product must remain in database rather than deleted');
+assert.ok(html.includes('name="restock"'),
+  'Super Admin must confirm physical return when refunding');
 assert.ok(server.includes('tx.update(productRef'),'Sale updates verified inventory atomically');
 assert.ok(server.includes("status: 'reversed'"),'Reversal retained in audit ledger');
 assert.ok(portal.includes("reverseSale"),'Admin reversal must use the server callable');
