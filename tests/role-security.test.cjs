@@ -46,6 +46,9 @@ assert.ok(server.includes('publicInvestorLine('),'Investor data is separately pr
 assert.ok(server.includes("getAuth().createUser({ email, displayName, disabled: false })"),
   'Accounts are provisioned without hardcoded passwords');
 assert.ok(server.includes("unitSalePrice"),'Actual transaction price retained');
+assert.ok(server.includes('receiptCode(request.data?.receiptCode)'), 'Server derives receipt identity from receipt number');
+assert.ok(server.includes("const id = 'receipt_' + receipt"), 'Receipt ID prevents duplicate sales from new client requests');
+assert.ok(html.includes('name="receiptCode"'), 'POS requires business receipt number');
 
 assert.ok(admin.includes('portal.getProfile(user)'),'Login must resolve authorized role');
 assert.ok(admin.includes('profile.role === "investor"'),'Investors use separate UI');
