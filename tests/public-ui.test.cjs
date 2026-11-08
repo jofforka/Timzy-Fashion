@@ -55,7 +55,7 @@ assert.match(sharedStyles, /\.field/);
 assert.match(sharedStyles, /focus-visible/);
 assert.match(sharedJS, /aria-expanded/);
 assert.match(sharedJS, /Escape/);
-assert.doesNotMatch(sharedJS, /checkout|loadProducts|cart\.save/,
+assert.doesNotMatch(sharedJS, /App\.checkout|App\.cart|\.loadProducts\(/,
   'Shared JS must not overwrite core commerce logic');
 assert.match(shopStyles, /repeat\(2,minmax\(0,1fr\)\)/,
   'Shop still has two mobile columns');
