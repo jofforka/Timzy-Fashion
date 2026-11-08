@@ -42,6 +42,12 @@ jobs:
           node --test functions/tests/finance.test.cjs
           node tests/role-backend.test.cjs
           node tests/role-security.test.cjs
+      - name: Install real Firebase callable dependencies
+        run: npm install --prefix functions --no-audit --no-fund
+      - name: Load callable exports with actual Firebase SDK
+        run: |
+          node -e "const a = require('./functions/index.js'); const names = ['recordSale','provisionUser','setAccountActive','saveInvestorAgreement','markInvestorPayout']; for (const name of names) { if (typeof a[name] !== 'function') process.exit(1) }; console.log('PASS: Real Firebase callable exports loaded.')"
+
 
   firestore-rules-emulator:
     runs-on: ubuntu-latest
