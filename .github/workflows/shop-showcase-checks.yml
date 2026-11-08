@@ -6,6 +6,7 @@ on:
       - 'checkout.html'
       - 'assets/js/app.js'
       - 'assets/js/shop-showcase.js'
+      - 'assets/js/storefront-preview.js'
       - 'product.html'
       - 'assets/js/product-purchase.js'
       - 'assets/css/product-purchase.css'
@@ -15,6 +16,7 @@ on:
       - 'assets/js/config.js'
       - 'data/products.json'
       - 'tests/shop-showcase.test.cjs'
+      - 'tests/storefront-preview.test.cjs'
       - '.github/workflows/shop-showcase-checks.yml'
 
 permissions:
@@ -30,4 +32,6 @@ jobs:
         with:
           node-version: '22'
       - name: Test shop and checkout
-        run: node tests/shop-showcase.test.cjs
+        run: |
+          node tests/shop-showcase.test.cjs
+          node tests/storefront-preview.test.cjs
