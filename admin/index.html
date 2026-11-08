@@ -135,6 +135,11 @@
             <label>Customer refund reference (only for confirmed refunds)
               <input name="refundReference" minlength="5" maxlength="120" autocomplete="off" placeholder="Bank/transfer refund reference">
             </label>
+            <label class="restock-check">
+              <input type="checkbox" name="restock" value="true">
+              <span>Returned goods physically inspected and resellable: restore stock (refunds only)</span>
+            </label>
+            <p class="role-note">Leave this unticked when goods are damaged, missing or not returned. Incorrect-entry reversals always restore the wrongly deducted stock.</p>
             <button type="submit" class="danger-btn">Reverse Recorded Sale</button>
           </form>
           <p id="reverseSaleStatus" class="form-message" role="status" aria-live="polite"></p>
