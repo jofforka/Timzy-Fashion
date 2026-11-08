@@ -120,6 +120,25 @@
           <h3>Recorded Sales</h3>
           <div id="salesList" class="record-list"></div>
         </div>
+        <div class="admin-card" data-super-only>
+          <h2>Reverse an Incorrect or Refunded Sale</h2>
+          <p class="role-note">Super Admin only. Reversals preserve the original sale, restore stock and cancel unpaid investor entitlements. No money is transferred. Already-paid investor payouts cannot be reversed here.</p>
+          <form id="reverseSaleForm" class="record-form">
+            <label>Recorded sale <select name="saleId" id="reverseSaleId" required><option value="">Select a completed sale</option></select></label>
+            <label>Reason type
+              <select name="kind" required>
+                <option value="entry_error">Incorrect entry (no money movement)</option>
+                <option value="customer_refunded">Customer already refunded</option>
+              </select>
+            </label>
+            <label>Reason <textarea name="reason" minlength="12" maxlength="300" rows="2" required placeholder="Explain the correction"></textarea></label>
+            <label>Customer refund reference (only for confirmed refunds)
+              <input name="refundReference" minlength="5" maxlength="120" autocomplete="off" placeholder="Bank/transfer refund reference">
+            </label>
+            <button type="submit" class="danger-btn">Reverse Recorded Sale</button>
+          </form>
+          <p id="reverseSaleStatus" class="form-message" role="status" aria-live="polite"></p>
+        </div>
       </section>
 
       <section id="expensesView" class="admin-view" hidden>
