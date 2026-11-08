@@ -90,8 +90,11 @@ exports.saveInvestorAgreement = onCall(OPTIONS, async request => {
   const actor = await profileFor(request, ['super_admin']);
   const productId = validId(request.data?.productId, 'Product ID');
   const investorUid = validId(request.data?.investorUid, 'Investor account');
-  const payoutPerUnit = amount(request.data?.payoutPerUnit, 'Agreed payout', true);
+  const payoutPerUnit = amount(request.data?.payoutPerUnit, 'Agreed payout');
   const active = request.data?.active !== false;
+  // Reference the documented investor agreement or written amendment.
+  // This note is visible to the investor but never contains the retail margin.
+  const changeReason = textValue(request.data?.changeReason, 'Agreement reference / reason', 12, 300);
   const productRef = db.collection('products').doc(productId);
   const investorRef = db.collection('users').doc(investorUid);
   const agreementRef = db.collection('investorAgreements').doc(productId);
@@ -111,8 +114,27 @@ exports.saveInvestorAgreement = onCall(OPTIONS, async request => {
     }
     const p = product.data();
     if (p.status === 'Draft' || p.status === 'Deleted') fail('Draft products cannot be assigned.');
+    const previous = prior.exists ? prior.data() : null;
+    const changed = !previous || previous.payoutPerUnit !== payoutPerUnit || previous.active !== active;
+    if (!changed) return;
+    // Preserve a distinct amendment record for every actual change.
+    const oldVersion = previous
+      ? (Number.isSafeInteger(previous.version) && previous.version > 0 ? previous.version : 1)
+      : 0;
+    const version = oldVersion + 1;
+    const amendmentRef = db.doc('investorCatalog/' + investorUid + '/history/' +
+      db.collection('auditEvents').doc().id);
+    const previousPayoutPerUnit = previous ? previous.payoutPerUnit : null;
+    const previousActive = previous ? previous.active : null;
+    const change = {
+      productId,
+      productName: String(p.name || 'Timzy Product').slice(0, 150),
+      version, previousPayoutPerUnit, payoutPerUnit,
+      previousActive, active,
+      changeReason, changedAt: FieldValue.serverTimestamp()
+    };
     tx.set(agreementRef, {
-      productId, investorUid, payoutPerUnit, active,
+      productId, investorUid, payoutPerUnit, active, version,
       updatedAt: FieldValue.serverTimestamp(), updatedBy: actor.uid
     }, { merge: true });
     tx.set(catalogRef, {
@@ -120,12 +142,15 @@ exports.saveInvestorAgreement = onCall(OPTIONS, async request => {
       productName: String(p.name || 'Timzy Product').slice(0, 150),
       image: String((Array.isArray(p.images) && p.images[0]) || p.image1 || '').slice(0, 1000),
       colour: String(p.color || 'As shown').slice(0, 80),
-      payoutPerUnit, active,
+      payoutPerUnit, active, version,
       unitsSold: catalog.exists ? Number(catalog.data().unitsSold || 0) : 0,
       updatedAt: FieldValue.serverTimestamp()
     }, { merge: true });
+    tx.create(amendmentRef, change);
     tx.create(db.collection('auditEvents').doc(), {
-      action: 'agreement_saved', actorUid: actor.uid, productId, investorUid,
+      action: 'agreement_amended', actorUid: actor.uid, productId, investorUid,
+      version, previousPayoutPerUnit, payoutPerUnit,
+      previousActive, active, changeReason,
       createdAt: FieldValue.serverTimestamp()
     });
   });
@@ -217,6 +242,8 @@ exports.recordSale = onCall(OPTIONS, async request => {
     if (a) {
       tx.create(financeRef, {
         id, productId, investorUid: a.investorUid, quantity,
+        agreementVersion: Number.isSafeInteger(a.version) ? a.version : 1,
+        payoutPerUnit: breakdown.unitInvestorPayout,
         actualRetailTotal: breakdown.amount,
         investorTotalDue: breakdown.investorTotalDue,
         grossMarginBeforeCosts: breakdown.grossMarginBeforeCosts,
@@ -230,6 +257,7 @@ exports.recordSale = onCall(OPTIONS, async request => {
           investorTotalDue: breakdown.investorTotalDue,
           soldAt: now, status: 'due'
         }),
+        agreementVersion: Number.isSafeInteger(a.version) ? a.version : 1,
         createdAt: FieldValue.serverTimestamp()
       });
       tx.update(investorCatalogRef, {
