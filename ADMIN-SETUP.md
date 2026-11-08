@@ -65,6 +65,9 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 - Bundled JSON fallback records are treated as non-orderable samples if Firestore data is unavailable.
 - The checkout still hands off via WhatsApp; it **does not automatically receive a verified payment event**. Shop staff must record a sale only when payment/completion has actually been confirmed. Every sale requires a **unique receipt/invoice code plus line number**; for multi-product receipts use line 1, line 2 etc. Repeat the same code + line after a network uncertainty, rather than inventing a second receipt.
 - Investor payout `paid` is a ledger state, **not a bank transfer**. A payment reference is required; this app does not send funds.
+- Investor agreements now retain **immutable, version-numbered amendments**. The Super Admin must enter the written agreement reference/reason when creating or changing a payout rate or pausing the agreement; each historical rate is visible to that investor. The system cannot verify signatures or consent automatically—verify the agreed terms outside the platform before recording an amendment.
+- An agreement can be paused. **A product with a paused investor agreement cannot be sold by staff or Super Admin as store-owned inventory.** A separate, genuinely Timzy-owned product may be sold normally if no investor agreement exists.
+- Each investor sale stores its contracted payout per unit and agreement version at the time of sale. Changes to a future rate do not recalculate existing dues; a product cannot silently switch ownership from one investor to another. Use separate product SKUs for separate investors, even for identical fabric.
 - Discounts below an investor's agreed payout require a Super Admin role to enter; nothing may silently reduce an investor's contractual entitlement.
 - A **Super Admin-only reversal workflow** now preserves the original transaction, restores verified stock and reverses an **unpaid** investor entitlement. A correction must be categorized as an incorrectly entered sale (no money movement) or an **already completed** customer refund with a payment reference. The system **never transfers refund money**.
 - Investor payouts already marked paid cannot be automatically reversed; they require a separate reviewed recovery/accounting process. Legacy unstructured sales also require a separate reconciliation before they can be corrected.
@@ -81,6 +84,8 @@ The repository currently uses GitHub Pages for static hosting and Firebase for i
 - [ ] Investor account created, verified and tested against other investor data
 - [ ] Real product stock entered, a sale recorded and quantity decremented
 - [ ] Exact investor agreement verified and entitlement calculated
+- [ ] Agreement version and history confirmed visible to correct investor; no cross-investor reads
+- [ ] Paused investor agreement tested: no sales, no inventory deduction, no missing investor entitlement
 - [ ] Margin visible to Super Admin; absent from investor documents and UI
 - [ ] Payment reference and confirmation tested
 - [ ] Sale reversal tested for entry error, confirmed refund, double-reversal protection and paid-investor rejection
