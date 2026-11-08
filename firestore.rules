@@ -103,6 +103,11 @@ service cloud.firestore {
       allow read: if superAdmin() || investorOwner(investorUid);
       allow write: if false;
     }
+    // An investor can inspect immutable amendments to their own agreed terms.
+    match /investorCatalog/{investorUid}/history/{amendmentId} {
+      allow read: if superAdmin() || investorOwner(investorUid);
+      allow write: if false;
+    }
 
     match /auditEvents/{eventId} {
       allow read: if superAdmin();
