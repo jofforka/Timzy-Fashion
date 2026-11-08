@@ -33,6 +33,8 @@ jobs:
         run: |
           node --check functions/index.js
           node --check functions/lib/finance.js
+          node --check functions/lib/catalog-audit.js
+          node --check functions/scripts/audit-public-products.js
           node --check functions/scripts/bootstrap-superadmin.js
           node --check admin/admin.js
           node --check admin/role-portal.js
@@ -40,6 +42,7 @@ jobs:
       - name: Finance calculations and callable integration
         run: |
           node --test functions/tests/finance.test.cjs
+          node --test functions/tests/catalog-audit.test.cjs
           node tests/role-backend.test.cjs
           node tests/role-security.test.cjs
       - name: Install real Firebase callable dependencies
