@@ -277,3 +277,14 @@
 @media (prefers-reduced-motion: reduce) {
   .page-shop * { scroll-behavior: auto; transition: none; }
 }
+
+/* When Firebase has no outfit/material catalogue, previews are labelled. */
+.page-shop .catalog-sample-notice {
+  margin: 10px 0 14px; padding: 9px 11px;
+  border: 1px solid var(--gallery-line);
+  border-radius: 7px;
+  color: var(--gallery-muted);
+  background: var(--gallery-surface);
+  font-size: 11px; line-height: 1.5;
+}
+.page-shop .catalog-sample-notice[hidden] { display: none; }
