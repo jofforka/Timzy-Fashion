@@ -556,10 +556,13 @@
     if (state.role !== "super_admin") return toast("Super Admin only.");
     if (!state.editingId) return;
     const product = state.products.find(p => p.id === state.editingId);
-    if (!confirm(`Delete "${product?.name || "this product"}"?`)) return;
+    if (!confirm(`Archive "${product?.name || "this product"}"? It will be removed from the public shop, but historical sales and investor agreements will be preserved.`)) return;
 
-    await fb.db.collection(collections.products).doc(state.editingId).delete();
-    toast("Product deleted.");
+    await fb.db.collection(collections.products).doc(state.editingId).update({
+      status: "Draft",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast("Product archived as Draft. Inventory and sales history preserved.");
     closeEditor();
     await loadProducts();
     renderAll();
@@ -569,18 +572,22 @@
     if (state.role !== "super_admin") return toast("Super Admin only.");
     const product = state.products.find(p => p.id === id);
     if (!product) return;
-    const copyId = `${id}-copy-${Date.now().toString().slice(-5)}`;
+    // Use Firestore-generated IDs; never copy inventory counts or imply that a
+    // duplicate has independently verified stock or the same investor agreement.
+    const newRef = fb.db.collection(collections.products).doc();
     const copy = {
       ...product,
       name: `${product.name} Copy`,
-      sku: `${product.sku || id}-COPY`,
+      sku: `${product.sku || id}-COPY-${newRef.id.slice(0, 6)}`,
       status: "Draft",
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     delete copy.id;
-    await fb.db.collection(collections.products).doc(copyId).set(copy);
-    toast("Product duplicated.");
+    delete copy.stockOnHand;
+    delete copy.quantity;
+    await newRef.set(copy);
+    toast("Draft duplicated without stock. Verify stock and supplier terms before publishing.");
     await loadProducts();
     renderAll();
   }
