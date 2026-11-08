@@ -200,8 +200,9 @@ assert.doesNotMatch(checkoutHTML, /0000000000|BANK NAME/);
 assert.match(checkoutHTML, /Continue to WhatsApp/);
 console.log('PASS: Minimal dual-collection shop, precise material links, cart and checkout.');
 
-assert.match(shop, /storefront-preview\\.js\\?v=1/, 'Sample script installed in shop');
-assert.match(productHTML, /storefront-preview\\.js\\?v=1/, 'Sample script installed in product');
-assert.match(shop, /catalogSampleNotice/, 'Sample disclosure exists');
-assert.match(read('assets/js/app.js'), /sampleListing===true/, 'Demo orders cannot be sent');
-assert.match(read('assets/js/product-purchase.js'), /sampleListing: p\\.raw\\?\\.sampleListing/, 'Demo cart flag retained');
+
+assert.ok(shop.includes('storefront-preview.js?v=1'), 'Sample script installed in shop');
+assert.ok(productHTML.includes('storefront-preview.js?v=1'), 'Sample script installed in product');
+assert.ok(shop.includes('catalogSampleNotice'), 'Sample disclosure exists');
+assert.ok(read('assets/js/app.js').includes('sampleListing===true'), 'Demo orders cannot be sent');
+assert.ok(read('assets/js/product-purchase.js').includes('sampleListing: p.raw?.sampleListing'), 'Demo cart flag retained');
