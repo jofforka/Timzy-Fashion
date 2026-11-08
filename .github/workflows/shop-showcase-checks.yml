@@ -7,6 +7,15 @@ on:
       - 'assets/js/app.js'
       - 'assets/js/shop-showcase.js'
       - 'assets/js/storefront-preview.js'
+      - 'assets/js/storefront-ui.js'
+      - 'assets/css/storefront-ui.css'
+      - 'index.html'
+      - 'catalog.html'
+      - 'build-your-look.html'
+      - 'build-your-style.html'
+      - 'training.html'
+      - 'contact.html'
+      - 'login.html'
       - 'product.html'
       - 'assets/js/product-purchase.js'
       - 'assets/css/product-purchase.css'
@@ -17,6 +26,7 @@ on:
       - 'data/products.json'
       - 'tests/shop-showcase.test.cjs'
       - 'tests/storefront-preview.test.cjs'
+      - 'tests/public-ui.test.cjs'
       - '.github/workflows/shop-showcase-checks.yml'
 
 permissions:
@@ -35,3 +45,4 @@ jobs:
         run: |
           node tests/shop-showcase.test.cjs
           node tests/storefront-preview.test.cjs
+          node tests/public-ui.test.cjs
