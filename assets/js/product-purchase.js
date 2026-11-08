@@ -50,6 +50,28 @@
     return true;
   }
 
+  const isMaterial = p => /^(fabrics?|materials?)$/i.test(String(p?.category || ''));
+
+  // Only a verified product-to-material ID is an exact match.
+  // A shared fabric family (Brocade/Aso Oke) is offered as related, not identical.
+  function resolveMaterial(p, products = app.products) {
+    const fabrics = products.filter(isMaterial);
+    const id = String(p?.materialProductId || p?.raw?.materialProductId || '').trim();
+    if (id) {
+      const exact = fabrics.find(f => String(f.id) === id);
+      return exact ? { product: exact, exact: true } : null;
+    }
+    const fabricText = String(p?.fabricType || '').toLowerCase();
+    for (const family of ['brocade', 'aso oke']) {
+      if (!fabricText.includes(family)) continue;
+      const related = fabrics.find(f =>
+        String(f.fabricType || '').toLowerCase() === family ||
+        String(f.name || '').toLowerCase().includes(family));
+      if (related) return { product: related, exact: false };
+    }
+    return null;
+  }
+
   const originalInit = app.product.init.bind(app.product);
   app.product.init = () => {
     const requestedId = new URLSearchParams(location.search).get('id');
@@ -66,6 +88,59 @@
     const detail = document.querySelector('#productDetails .detail-card');
     const existingActions = detail?.querySelector('.sticky-actions');
     if (!p || !existingActions) return;
+
+    // The material name links into the matching card in the Materials section.
+    // Never describe a related/approximate fabric as the exact fabric used.
+    const fabricRow = Array.from(detail.querySelectorAll('.detail-row'))
+      .find(row => row.firstElementChild?.textContent?.trim() === 'Fabric');
+    const colourRow = Array.from(detail.querySelectorAll('.detail-row'))
+      .find(row => row.firstElementChild?.textContent?.trim() === 'Colour');
+    const matchedMaterial = !isMaterial(p) ? resolveMaterial(p) : null;
+    if (colourRow && fabricRow) fabricRow.before(colourRow);
+    if (fabricRow) {
+      fabricRow.firstElementChild.textContent = 'Material';
+      const value = fabricRow.querySelector('b');
+      if (value && matchedMaterial) {
+        const link = document.createElement('a');
+        link.className = 'product-material-link';
+        link.href = 'shop.html?section=materials&product=' +
+          encodeURIComponent(matchedMaterial.product.id) + '#products';
+        link.textContent = p.fabricType || matchedMaterial.product.name;
+        link.title = matchedMaterial.exact ? 'View this fabric listing' :
+          'Explore a related fabric; colour and specifications may differ';
+        value.replaceChildren(link);
+        if (!matchedMaterial.exact) {
+          const hint = document.createElement('small');
+          hint.className = 'product-material-hint';
+          hint.textContent = 'Related fabric · confirm exact match';
+          value.appendChild(hint);
+        }
+      } else if (value && !isMaterial(p)) {
+        const link = document.createElement('a');
+        link.className = 'product-material-browse';
+        link.href = 'shop.html?section=materials#products';
+        link.textContent = 'Browse available materials';
+        value.appendChild(link);
+      }
+    }
+
+    // Keep useful accessories available, but out of the main shopping journey.
+    const extras = detail.querySelector('.product-inline-tools');
+    if (extras) {
+      extras.querySelector('.inline-measurements')?.remove();
+      const disclosure = document.createElement('details');
+      disclosure.className = 'product-optional-extras';
+      const summary = document.createElement('summary');
+      summary.textContent = 'Matching accessories (optional)';
+      disclosure.appendChild(summary);
+      extras.before(disclosure);
+      disclosure.appendChild(extras);
+    }
+    detail.querySelector('.mini-price-note')?.remove();
+    if (isMaterial(p)) {
+      const back = document.querySelector('.product-return');
+      if (back) { back.href = 'shop.html?section=materials#products'; back.textContent = '← Back to materials'; }
+    }
 
     const options = sizeOptions(p.sizes);
     const oneOption = options.length === 1;
@@ -134,5 +209,5 @@
     form.querySelector('[data-purchase-action="bag"]')?.addEventListener('click', () => process('bag'));
   };
 
-  window.TimzyPurchase = { sizeOptions, addSelectedItem };
+  window.TimzyPurchase = { sizeOptions, addSelectedItem, resolveMaterial };
 })();
