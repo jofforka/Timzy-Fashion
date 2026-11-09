@@ -206,3 +206,19 @@ assert.ok(productHTML.includes('storefront-preview.js?v=1'), 'Sample script inst
 assert.ok(shop.includes('catalogSampleNotice'), 'Sample disclosure exists');
 assert.ok(read('assets/js/app.js').includes('sampleListing===true'), 'Demo orders cannot be sent');
 assert.ok(read('assets/js/product-purchase.js').includes('sampleListing: p.raw?.sampleListing'), 'Demo cart flag retained');
+
+// Values produced by the real admin selector must reach the matching shop tab.
+const placement = require('../admin/product-placement.js');
+app.products = app.normalize([
+  {id:'placed-fabric',name:'Placed Fabric',price:1000,status:'Published',...placement.normalize('materials','Senator','Ready-Made')},
+  {id:'placed-outfit',name:'Placed Outfit',price:1000,status:'Published',...placement.normalize('outfits','Agbada','Ready-Made')},
+  {id:'placed-custom',name:'Placed Custom',price:1000,status:'Published',...placement.normalize('outfits','Senator','Custom Sewing')},
+  {id:'placed-accessory',name:'Placed Watch',price:1000,status:'Published',...placement.normalize('accessories','Watches','Custom Sewing')}
+]);
+app.search='';app.activeCategory='Materials';
+assert.deepEqual(Array.from(app.catalog.filtered(),p=>p.id),['placed-fabric']);
+app.activeCategory='Outfits';
+assert.deepEqual(Array.from(app.catalog.filtered(),p=>p.id).sort(),['placed-custom','placed-outfit']);
+assert.equal(placement.sectionOf({category:'Fabrics'}),'materials');
+assert.equal(placement.sectionOf({category:'Senator',productType:'Custom Sewing'}),'outfits');
+console.log('PASS: Admin section choices feed the correct storefront tabs without changing the public data schema.');

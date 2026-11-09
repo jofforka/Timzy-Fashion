@@ -21,6 +21,8 @@ on:
       - 'assets/css/product-purchase.css'
       - 'admin/index.html'
       - 'admin/admin.js'
+      - 'admin/product-placement.js'
+      - 'admin/admin.css'
       - 'assets/css/shop-showcase.css'
       - 'assets/js/config.js'
       - 'data/products.json'
