@@ -583,6 +583,17 @@
   }
 
   function bindEvents() {
+    $("#resetPasswordBtn").addEventListener("click", async () => {
+      if (!requireFirebase()) return;
+      const email = $("#adminLoginForm").elements.email;
+      if (!email.value.trim() || !email.reportValidity()) return;
+      try {
+        await fb.auth.sendPasswordResetEmail(email.value.trim());
+        $("#loginMessage").textContent = "If this email has an account, a password setup link has been requested. Check your inbox and spam folder.";
+      } catch {
+        $("#loginMessage").textContent = "Could not request a password link. Check your connection and try again later.";
+      }
+    });
     $("#adminLoginForm").addEventListener("submit", async event => {
       event.preventDefault();
       if (!requireFirebase()) return;

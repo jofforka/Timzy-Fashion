@@ -3,11 +3,11 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const owner='sCkXSrVIlHNGBoufFtirvLBvaTi1';
-const nodes=new Map(), reads=[];
+const nodes=new Map(), reads=[], passwordRequests=[];
 function node(id){
  if(!nodes.has(id))nodes.set(id,{hidden:false,value:'',textContent:'',innerHTML:'',dataset:{},options:[],
   elements:new Proxy({}, {get:(o,k)=>o[k]??(o[k]={value:''})}),
-  classList:{add(){},remove(){},toggle(){}},addEventListener(){},reset(){},replaceChildren(){this.innerHTML='';},querySelectorAll(){return [];}});
+  classList:{add(){},remove(){},toggle(){}},listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},reset(){},replaceChildren(){this.innerHTML='';},querySelectorAll(){return [];}});
  return nodes.get(id);
 }
 let init,authChange,settingsRelease;
@@ -26,7 +26,7 @@ function ref(path,filters=[]){return{
   return{docs:[]};
  }
 };}
-context.window.TIMZY_FIREBASE={auth:{onAuthStateChanged:cb=>authChange=cb,setPersistence(){},signOut:async()=>{}},db:{collection:name=>ref(name)}};
+context.window.TIMZY_FIREBASE={auth:{onAuthStateChanged:cb=>authChange=cb,setPersistence(){},signOut:async()=>{},sendPasswordResetEmail:async email=>passwordRequests.push(email)},db:{collection:name=>ref(name)}};
 vm.createContext(context);
 for(const file of ['admin/admin.js','admin/spark-roles.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
 init();
@@ -53,5 +53,10 @@ const flush=()=>new Promise(resolve=>setImmediate(resolve));
  assert.equal(node('#portfolioItems').innerHTML,'','Previous investor data cleared');
  await authChange({uid:'forged-role'}); await flush();
  assert.equal(context.window.TimzyAdmin.state.role,null,'An admin role in an editable profile never bootstraps the owner');
+ assert.equal(passwordRequests.length,0,'No password email is automatically sent');
+ const email=node('#adminLoginForm').elements.email;
+ email.value=' investor@example.com ';email.reportValidity=()=>true;
+ await node('#resetPasswordBtn').listeners.click();
+ assert.deepEqual(passwordRequests,['investor@example.com'],'Password link requested only on explicit button click');
  console.log('PASS: Actual portal routing, scoped queries, disabled accounts and delayed-response isolation.');
 })().catch(e=>{console.error(e);process.exitCode=1});

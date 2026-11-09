@@ -65,6 +65,10 @@ Historical local-storage demo dashboards redirect to the real admin.
    passwords or put credentials in source. Copy each actual Auth UID into the
    owner's Account Permissions form; select Staff or Investor and Active. Account
    Permissions grants shop rights but does not create a login or send email.
+   The login page's Set or reset my password button requests a Firebase password
+   link only after the person enters an email and clicks it. Account import may
+   create a new email identity without a password; the person sets their own
+   password through this flow. No generated/shared password is required.
    Use Investor Products to choose the investor and genuine product and save the
    agreed price/reference. The first requested investor identity is managed
    privately during rollout; do not commit personal account details.
