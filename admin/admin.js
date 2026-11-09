@@ -14,6 +14,9 @@
   };
 
   const state = {
+    role: null,
+    uid: null,
+    session: 0,
     products: [],
     sales: [],
     expenses: [],
@@ -86,26 +89,44 @@
   function showApp(user) {
     $("#adminLogin").hidden = true;
     $("#adminApp").hidden = false;
-    loadAll().catch(() => toast("Could not load admin records. Check your connection and owner access."));
+    document.body.dataset.role = state.role;
+    document.querySelectorAll('[data-admin-only]').forEach(el => el.hidden = state.role !== 'admin');
+    document.querySelectorAll('[data-operations-only]').forEach(el => el.hidden = state.role === 'investor');
+    document.querySelectorAll('[data-investor-only]').forEach(el => el.hidden = state.role !== 'investor');
+    $("#currentRole").textContent = state.role === 'admin' ? 'Super Admin' : state.role === 'staff' ? 'Shop Staff' : 'Investor';
+    switchView(state.role === 'investor' ? 'portfolio' : 'dashboard');
+    if (state.role !== 'investor') loadAll().catch(() => toast("Could not load records. Check your connection and account access."));
   }
 
   function showLogin() {
     $("#adminApp").hidden = true;
     $("#adminLogin").hidden = false;
+    state.role = null;
+    state.uid = null;
+    state.products = []; state.sales = []; state.expenses = []; state.settings = {};
+    $("#productModal").hidden = true;
+    $("#productForm").reset(); $("#settingsForm").reset();
+    for (const id of ['statProducts','statPublished','statSales','statExpenses']) document.getElementById(id).textContent = '0';
+    for (const id of ['productTable','latestProducts','recentActivity','salesList','expensesList','portfolioItems','accountList','allocationList']) {
+      const el = document.getElementById(id); if (el) el.replaceChildren();
+    }
   }
 
   async function loadAll() {
+    const session = state.session;
     await Promise.all([
       loadProducts(),
       loadRecords("sales"),
-      loadRecords("expenses"),
-      loadSettings()
+      ...(state.role === 'admin' ? [loadRecords("expenses"), loadSettings()] : [])
     ]);
-    renderAll();
+    if (session === state.session) renderAll();
   }
 
   async function loadProducts() {
-    let snapshot = await fb.db.collection(collections.products).get();
+    const session = state.session;
+    const source = fb.db.collection(collections.products);
+    const snapshot = await (state.role === 'admin' ? source : source.where('status','in',['Published','Out of Stock'])).get();
+    if (session !== state.session) return;
 
     // An empty live catalogue stays empty; bundled examples are never imported.
 
@@ -115,18 +136,26 @@
   }
 
   async function loadRecords(type) {
+    const session = state.session;
     const collection = collections[type];
+    const source = fb.db.collection(collection);
+    const records = state.role === 'staff' ? source.where('createdBy','==',state.uid) : source;
     try {
-      const snapshot = await fb.db.collection(collection).orderBy("date", "desc").limit(100).get();
+      const snapshot = await records.orderBy("date", "desc").limit(100).get();
+      if (session !== state.session) return;
       state[type] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch {
-      const snapshot = await fb.db.collection(collection).limit(100).get();
+      if (session !== state.session) return;
+      const snapshot = await records.limit(100).get();
+      if (session !== state.session) return;
       state[type] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
   }
 
   async function loadSettings() {
+    const session = state.session;
     const doc = await fb.db.collection(collections.settings).doc("store").get();
+    if (session !== state.session) return;
     state.settings = doc.exists ? doc.data() : {};
   }
 
@@ -144,6 +173,7 @@
   function renderStats() {
     $("#statProducts").textContent = state.products.length;
     $("#statPublished").textContent = state.products.filter(p => String(p.status).toLowerCase() === "published").length;
+    $("#salesStatLabel").textContent = state.role === 'staff' ? 'Your recorded sales (up to 100 records)' : 'Recorded sales (up to 100 records)';
     $("#statSales").textContent = money(state.sales.reduce((sum, item) => sum + Number(item.amount || 0), 0));
     $("#statExpenses").textContent = money(state.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
   }
@@ -190,7 +220,7 @@
         <div class="hide-tablet">
           <span class="status-pill">${escapeHTML(product.status || "Published")}</span>
         </div>
-        <div class="row-actions">
+        <div class="row-actions" ${state.role !== "admin" ? "hidden" : ""}>
           <button type="button" data-edit-product="${escapeHTML(product.id)}">Edit</button>
           <button type="button" data-duplicate-product="${escapeHTML(product.id)}">Duplicate</button>
         </div>
@@ -245,7 +275,10 @@
   }
 
   function switchView(view) {
+    const allowed = state.role === 'admin' ? ['dashboard','products','orders','sales','expenses','settings','accounts','allocations'] : state.role === 'staff' ? ['dashboard','products','orders','sales'] : ['portfolio'];
+    if (!allowed.includes(view)) return;
     state.view = view;
+    if (view === 'accounts' || view === 'allocations') window.TimzyRoles?.loadAccounts().catch(error => toast(error.message));
     $$(".admin-view").forEach(section => section.hidden = section.id !== `${view}View`);
     $$("[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === view));
     $("#viewTitle").textContent = view.charAt(0).toUpperCase() + view.slice(1);
@@ -280,11 +313,13 @@
   }
 
   function openNewProduct() {
+    if (state.role !== "admin") return;
     resetEditor();
     $("#productModal").hidden = false;
   }
 
   function openEditProduct(id) {
+    if (state.role !== "admin") return;
     const product = state.products.find(p => p.id === id);
     if (!product) return;
 
@@ -433,6 +468,7 @@
   }
 
   async function saveProduct(event) {
+    if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
     const product = formProductData();
     if (!product.name || !product.category || !Number.isFinite(product.price) || product.price < 0) {
@@ -468,6 +504,7 @@
   }
 
   async function deleteProduct() {
+    if (state.role !== "admin") return;
     if (!state.editingId) return;
     const product = state.products.find(p => p.id === state.editingId);
     if (!confirm(`Archive "${product?.name || "this product"}" as a draft?`)) return;
@@ -480,6 +517,7 @@
   }
 
   async function duplicateProduct(id) {
+    if (state.role !== "admin") return;
     const product = state.products.find(p => p.id === id);
     if (!product) return;
     const copyId = `${id}-copy-${Date.now().toString().slice(-5)}`;
@@ -502,6 +540,7 @@
 
   async function submitRecord(type, event) {
     event.preventDefault();
+    if (!['admin','staff'].includes(state.role) || (type === 'expenses' && state.role !== 'admin')) return;
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
     if (!data.description.trim() || !Number.isFinite(Number(data.amount)) || Number(data.amount) <= 0 || Number(data.amount) > 1000000000) {
       return toast("Enter a description and a positive amount up to ₦1,000,000,000.");
@@ -511,6 +550,7 @@
       description: data.description.trim(),
       amount: Number(data.amount || 0),
       date: data.date,
+      createdBy: state.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     form.reset();
@@ -523,6 +563,7 @@
   }
 
   async function saveSettings(event) {
+    if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
     await fb.db.collection(collections.settings).doc("store").set({
@@ -622,17 +663,32 @@
 
     if (!requireFirebase()) return;
 
-    fb.auth.onAuthStateChanged(user => {
-      if (user?.uid === OWNER_UID) showApp(user);
-      else {
-        showLogin();
-        if (user) {
-          $("#loginMessage").textContent = "This account does not have shop owner access.";
-          fb.auth.signOut();
+    // All portals use the same authenticated identity; UI visibility is not authorization.
+    fb.auth.onAuthStateChanged(async user => {
+      const session = ++state.session;
+      showLogin();
+      if (!user) return;
+      state.uid = user.uid;
+      try {
+        if (user.uid === OWNER_UID) state.role = 'admin';
+        else {
+          const profile = await fb.db.collection('access').doc(user.uid).get();
+          if (session !== state.session) return;
+          const data = profile.exists ? profile.data() : {};
+          if (data.active !== true || !['staff','investor'].includes(data.role)) throw Error('Your account has not been granted active shop access. Contact the administrator.');
+          state.role = data.role;
         }
+        if (session !== state.session) return;
+        showApp(user);
+        if (state.role === 'investor') await window.TimzyRoles.loadPortfolio(user.uid);
+      } catch (error) {
+        if (session !== state.session) return;
+        showLogin();
+        $('#loginMessage').textContent = error.message;
       }
     });
   }
 
+  window.TimzyAdmin = {state, escapeHTML, money, toast, imageOf};
   document.addEventListener("DOMContentLoaded", init);
 })();

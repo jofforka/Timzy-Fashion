@@ -1,4 +1,4 @@
-name: Spark owner security
+name: Spark three-role security
 on:
   pull_request:
     paths:
@@ -7,6 +7,7 @@ on:
       - 'assets/js/admin.js'
       - 'assets/js/app.js'
       - 'tests/spark-rules/**'
+      - 'tests/role-portals.test.cjs'
       - '.github/workflows/spark-security.yml'
 permissions:
   contents: read
@@ -24,4 +25,5 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm install --prefix tests/spark-rules --no-audit --no-fund
+      - run: node --check admin/admin.js && node --check admin/spark-roles.js && node tests/role-portals.test.cjs
       - run: tests/spark-rules/node_modules/.bin/firebase emulators:exec --project demo-timzy-spark --only firestore "node tests/spark-rules/test.cjs"

@@ -16,9 +16,9 @@
   <div id="adminLogin" class="auth-screen">
     <form id="adminLoginForm" class="auth-card">
       <img src="../assets/img/timzy-logo.png" alt="Timzy Fashion">
-      <span class="eyebrow">Shop Owner Access</span>
+      <span class="eyebrow">Admin, Staff &amp; Investor Access</span>
       <h1>Timzy Admin</h1>
-      <p>Owner-only product management and manual sales and expense records.</p>
+      <p>Sign in to view the products and records permitted for your account.</p>
 
       <label>Email<input type="email" name="email" required autocomplete="username"></label>
       <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
@@ -32,16 +32,19 @@
     <aside class="sidebar">
       <a class="admin-brand" href="../index.html">
         <img src="../assets/img/timzy-logo.png" alt="Timzy Fashion">
-        <span><b>TIMZY FASHION</b><small>Shop Owner</small></span>
+        <span><b>TIMZY FASHION</b><small id="currentRole">Timzy Portal</small></span>
       </a>
 
       <nav class="side-nav">
-        <button class="active" data-view="dashboard">Dashboard</button>
-        <button data-view="products">Products</button>
-        <button data-view="orders">Orders</button>
-        <button data-view="sales">Sales</button>
-        <button data-view="expenses">Expenses</button>
-        <button data-view="settings">Settings</button>
+        <button class="active" data-view="dashboard" data-operations-only>Dashboard</button>
+        <button data-view="products" data-operations-only>Products</button>
+        <button data-view="orders" data-operations-only>Orders</button>
+        <button data-view="sales" data-operations-only>Sales</button>
+        <button data-view="expenses" data-admin-only>Expenses</button>
+        <button data-view="settings" data-admin-only>Settings</button>
+        <button data-view="accounts" data-admin-only>Account Permissions</button>
+        <button data-view="allocations" data-admin-only>Investor Products</button>
+        <button data-view="portfolio" data-investor-only hidden>My Products</button>
       </nav>
 
       <div class="sidebar-footer">
@@ -58,22 +61,22 @@
         </div>
         <div class="top-actions">
           <button id="mobileSidebarBtn" class="icon-control" type="button">☰</button>
-          <button id="quickAddProduct" class="primary-btn" type="button">+ Add Product</button>
+          <button id="quickAddProduct" data-admin-only class="primary-btn" type="button">+ Add Product</button>
         </div>
       </header>
 
       <section id="dashboardView" class="admin-view">
-        <p class="admin-card">Orders are confirmed over WhatsApp. Record completed sales and expenses manually; these entries do not change stock or calculate investor payouts. Keep investor agreements and payouts in your separate records.</p>
+        <p class="admin-card">Orders are confirmed over WhatsApp. Record completed sales and expenses manually; these entries do not change stock or calculate investor payouts. Investor product assignments show current agreed prices only. Track payouts separately.</p>
         <div class="stats-grid">
           <article><span>Products</span><strong id="statProducts">0</strong></article>
           <article><span>Published</span><strong id="statPublished">0</strong></article>
-          <article><span>Sales</span><strong id="statSales">₦0</strong></article>
-          <article><span>Expenses</span><strong id="statExpenses">₦0</strong></article>
+          <article><span id="salesStatLabel">Recorded sales (up to 100 records)</span><strong id="statSales">₦0</strong></article>
+          <article data-admin-only><span>Expenses</span><strong id="statExpenses">₦0</strong></article>
         </div>
 
         <div class="dashboard-grid">
           <section class="admin-card">
-            <div class="card-head"><div><span class="eyebrow">Recent</span><h2>Latest Products</h2></div><button data-view="products">Manage</button></div>
+            <div class="card-head"><div><span class="eyebrow">Recent</span><h2>Latest Products</h2></div><button data-view="products" data-operations-only>Manage</button></div>
             <div id="latestProducts" class="compact-list"></div>
           </section>
 
@@ -90,7 +93,7 @@
           <select id="productFilter">
             <option value="All">All categories</option>
           </select>
-          <button id="addProductBtn" class="primary-btn" type="button">+ New Product</button>
+          <button id="addProductBtn" data-admin-only class="primary-btn" type="button">+ New Product</button>
         </div>
 
         <div id="productTable" class="product-table"></div>
@@ -142,6 +145,46 @@
           <button class="primary-btn" type="submit">Save Settings</button>
         </form>
       </section>
+      <section id="accountsView" class="admin-view" hidden>
+        <div class="admin-card">
+          <h2>Account permissions</h2>
+          <p>Create each person's email/password account in Firebase Authentication first. Copy their User UID below. This grants shop permissions; it does not create a login or send a password. Never share passwords.</p>
+          <form id="accessForm" class="form-grid">
+            <label>Firebase User UID<input name="uid" required maxlength="128" pattern="[A-Za-z0-9_-]+"></label>
+            <label>Name / account label<input name="label" required maxlength="100"></label>
+            <label>Access<select name="role"><option value="staff">Shop Staff</option><option value="investor">Investor</option></select></label>
+            <label>Status<select name="active"><option value="true">Active</option><option value="false">Disabled</option></select></label>
+            <button type="submit" class="primary-btn">Save Permissions</button>
+          </form>
+          <p id="accessMessage" role="status"></p>
+          <div id="accountList" class="record-list"></div>
+        </div>
+      </section>
+      <section id="allocationsView" class="admin-view" hidden>
+        <div class="admin-card">
+          <h2>Investor products and agreed prices</h2>
+          <p>Assign a product and its current agreed unit price to an investor. This does not record sales, calculate investor earnings, or transfer money. Confirm agreed terms before saving. Retail prices and business margins are excluded from these private records.</p>
+          <form id="allocationForm" class="form-grid">
+            <label>Investor<select id="allocationInvestor" name="uid" required><option value="">Choose an investor</option></select></label>
+            <label>Product<select id="allocationProduct" name="productId" required><option value="">Choose a product</option></select></label>
+            <label>Agreed unit price (₦)<input name="agreedPrice" type="number" min="0" max="1000000000" step="0.01" required></label>
+            <label>Agreement reference / reason<input name="reference" required maxlength="500"></label>
+            <button type="submit" class="primary-btn">Save Investor Product</button>
+          </form>
+          <p id="allocationMessage" role="status"></p>
+          <div id="allocationList" class="record-list"></div>
+        </div>
+      </section>
+      <section id="portfolioView" class="admin-view" hidden>
+        <div class="admin-card">
+          <h2>My products</h2>
+          <p>Your assigned products and current agreed price per unit. These prices do not represent completed sales, amounts paid, or balances due.</p>
+          <button id="refreshPortfolio" class="secondary-btn" type="button">Refresh My Products</button>
+          <p id="portfolioMessage" role="status"></p>
+          <div id="portfolioItems" class="compact-list"></div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -271,6 +314,7 @@
   
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
-  <script src="admin.js?v=spark1"></script>
+  <script src="admin.js?v=spark2"></script>
+  <script src="spark-roles.js?v=1"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 # Timzy on the free Spark plan
 
 The public storefront and WhatsApp enquiry checkout remain on GitHub Pages.
-Firebase Email/Password Auth and Firestore support one owner admin without
+Firebase Email/Password Auth and Firestore support admin, staff and investor accounts without
 Cloud Functions or a billing upgrade. Free quotas still apply.
 
 Owner: existing Firebase Auth account admin@timzyfashion.com. Its immutable
@@ -9,15 +9,40 @@ UID is checked in both the admin UI and rules; an email match or a writable
 legacy role document never grants access. Changing the owner requires a
 reviewed rules and frontend update. No passwords are stored in source.
 
-The owner manages products, private settings, and append-only manual sales
-and expense records. Product removal archives as Draft. Bundled JSON examples
-are never auto-imported and cannot become real WhatsApp orders. Only Published
-and Out of Stock listings are publicly readable. Staff/investor portals,
-automatic stock deduction, investor entitlements, payouts and account
-provisioning from PR #9 are deliberately not activated.
+The owner manages products, private settings, manual sales/expenses, account
+permissions, and private investor product assignments. Staff can browse published
+products and enter/read only their own manual sales. Staff cannot edit products,
+read expenses, settings, investor agreed prices or the owner's sales. Investors
+can read only their assigned product name/image, agreed unit price and agreement
+reference. The investor portal never queries retail sales, expenses or settings.
+Public advertised shop prices are still public; private realized sales stay protected.
 
-Sales and expenses do not move money or inventory. Keep separate reconciled
-investor agreements and payout records. Update product availability manually.
+Permissions live in `access/{firebaseAuthUid}` with role `staff` or `investor`,
+an `active` boolean and a non-sensitive account label. Only the fixed owner can
+write them; users can only read their own permission profile. Legacy email-keyed
+`users` documents and custom role claims grant no privileges. The owner can
+disable access or switch role; rules enforce the change even if a stale browser
+still shows old controls. Data is cleared on sign-out and delayed responses are
+discarded after account switches.
+
+Investor records live at `investorCatalog/{uid}/items/{productId}`. An explicit
+field allowlist excludes retail price, profit, margin, private accounts and
+unrelated investor IDs. Admin writes the current agreed unit price and reference
+after verifying the agreement outside the app. This is a current product list,
+not a historical entitlement ledger, payout statement or consent signature.
+Removing an assignment only removes it from that investor's view; it does not
+cancel an agreement or payment obligation.
+
+Product removal archives as Draft. Bundled examples are never auto-imported and
+cannot become real WhatsApp orders. Only Published and Out of Stock listings are
+publicly readable. Automatic stock deductions, investor earnings/payout automation
+and Cloud Functions from PR #9 remain inactive.
+
+Sales and expenses are append-only manual records tagged with the authenticated
+creator UID. Staff cannot impersonate another creator or alter existing receipts.
+These records do not move money or inventory. The dashboard shows up to 100 sales
+records, not an unlimited all-time accounting balance. Keep separate reconciled
+investor sales and payout records. Update product availability manually.
 WhatsApp enquiries are not saved as database orders or verified payments.
 Historical local-storage demo dashboards redirect to the real admin.
 
@@ -35,8 +60,17 @@ Historical local-storage demo dashboards redirect to the real admin.
    and requires no live profile write. All unspecified collections remain denied.
 5. Merge/publish the matching frontend. During rollout old unfiltered public
    queries will fall back to non-orderable examples until the new query loads.
-6. Verify owner sign-in, product create/edit/archive, manual entries and denied
-   non-owner access. Check the shop and WhatsApp flow on mobile. Do not create
+6. In Firebase Authentication, create individual email/password accounts or use
+   existing ones. Use Firebase's password setup/reset workflow; never invent shared
+   passwords or put credentials in source. Copy each actual Auth UID into the
+   owner's Account Permissions form; select Staff or Investor and Active. Account
+   Permissions grants shop rights but does not create a login or send email.
+   Use Investor Products to choose the investor and genuine product and save the
+   agreed price/reference. The first requested investor identity is managed
+   privately during rollout; do not commit personal account details.
+7. Verify owner, staff and two separate investor identities, product create/edit/
+   archive, own sales and denied cross-account reads. Check mobile shop/WhatsApp.
+   Unassigned or disabled accounts must be denied. Do not create
    financial test records or change real stock without explicit approval.
 
 Settings were publicly readable under the previous deployed rules. Any real
@@ -50,6 +84,8 @@ automatically publish those details.
 ## Verification
 
 Run `node tests/shop-showcase.test.cjs`, `node tests/storefront-preview.test.cjs`
-and `node tests/public-ui.test.cjs`. The Spark owner security workflow installs
+and `node tests/public-ui.test.cjs`, plus `node tests/role-portals.test.cjs`.
+The Spark three-role security workflow installs
 isolated test dependencies and runs real Firestore Rules Emulator assertions
-for anonymous access, owner, staff, forged roles and email impersonation.
+for anonymous access, owner, staff, two investors, forged roles, creator spoofing,
+email impersonation, disabled accounts and private investor field validation.
