@@ -36,11 +36,14 @@
     const name = esc(p.name);
     const url = app.url(p);
     const image = esc(app.image(p));
+    const soldOut = String(p.status || '').toLowerCase() === 'out of stock' ||
+      (Number.isSafeInteger(p.stockOnHand) && p.stockOnHand === 0);
     const preview = p.raw?.sampleListing === true;
     const tag = preview
       ? '<span class="showcase-card__badge">Sample preview</span>'
-      : outfits(p) && /custom sewing/i.test(String(p.productType || ''))
-        ? '<span class="showcase-card__badge">Made to measure</span>' : '';
+      : soldOut ? '<span class="showcase-card__badge">Sold out</span>'
+        : outfits(p) && /custom sewing/i.test(String(p.productType || ''))
+          ? '<span class="showcase-card__badge">Made to measure</span>' : '';
     return `<article class="showcase-card" data-product-id="${esc(p.id)}" tabindex="-1">
       <a class="showcase-card__media" href="${url}" aria-label="View ${name}">
         <img src="${image}" alt="${name}" loading="lazy" decoding="async"
@@ -50,7 +53,7 @@
       <div class="showcase-card__body">
         <h3 class="showcase-card__title"><a href="${url}">${name}</a></h3>
         <strong class="showcase-card__price">${money(p.price)}</strong>
-        <a class="showcase-card__buy" href="${url}" aria-label="View ${name} and buy">View &amp; Buy <span aria-hidden="true">→</span></a>
+        <a class="showcase-card__buy" href="${url}" aria-label="View ${name} and buy">${soldOut ? "View Details" : "View &amp; Buy"} <span aria-hidden="true">→</span></a>
       </div>
     </article>`;
   };

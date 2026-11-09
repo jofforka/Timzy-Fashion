@@ -81,10 +81,12 @@
     }
   }
 
+  const OWNER_UID = "sCkXSrVIlHNGBoufFtirvLBvaTi1";
+
   function showApp(user) {
     $("#adminLogin").hidden = true;
     $("#adminApp").hidden = false;
-    loadAll();
+    loadAll().catch(() => toast("Could not load admin records. Check your connection and owner access."));
   }
 
   function showLogin() {
@@ -105,52 +107,7 @@
   async function loadProducts() {
     let snapshot = await fb.db.collection(collections.products).get();
 
-    if (snapshot.empty) {
-      try {
-        const response = await fetch("../data/products.json", { cache: "no-store" });
-        const seedProducts = await response.json();
-
-        if (Array.isArray(seedProducts) && seedProducts.length) {
-          const batches = [];
-          let batch = fb.db.batch();
-          let count = 0;
-
-          for (const raw of seedProducts) {
-            const id = raw.id || slugify(raw.name) || `product-${Date.now()}-${count}`;
-            const images = Array.isArray(raw.images) && raw.images.length
-              ? raw.images
-              : [raw.image1, raw.image2, raw.image3, raw.image4].filter(Boolean);
-
-            const doc = {
-              ...raw,
-              images,
-              image1: images[0] || "",
-              image2: images[1] || "",
-              image3: images[2] || "",
-              image4: images[3] || "",
-              instagramVideoUrl: raw.instagramVideoUrl || raw.videoUrl || "",
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            batch.set(fb.db.collection(collections.products).doc(id), doc);
-            count += 1;
-
-            if (count % 400 === 0) {
-              batches.push(batch.commit());
-              batch = fb.db.batch();
-            }
-          }
-
-          batches.push(batch.commit());
-          await Promise.all(batches);
-          snapshot = await fb.db.collection(collections.products).get();
-          toast("Existing products imported into the admin.");
-        }
-      } catch (error) {
-        console.warn("Initial product import failed:", error);
-      }
-    }
+    // An empty live catalogue stays empty; bundled examples are never imported.
 
     state.products = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
@@ -478,7 +435,7 @@
   async function saveProduct(event) {
     event.preventDefault();
     const product = formProductData();
-    if (!product.name || !product.category || product.price < 0) {
+    if (!product.name || !product.category || !Number.isFinite(product.price) || product.price < 0) {
       return toast("Complete the required product fields.");
     }
 
@@ -513,10 +470,10 @@
   async function deleteProduct() {
     if (!state.editingId) return;
     const product = state.products.find(p => p.id === state.editingId);
-    if (!confirm(`Delete "${product?.name || "this product"}"?`)) return;
+    if (!confirm(`Archive "${product?.name || "this product"}" as a draft?`)) return;
 
-    await fb.db.collection(collections.products).doc(state.editingId).delete();
-    toast("Product deleted.");
+    await fb.db.collection(collections.products).doc(state.editingId).update({status: "Draft", updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    toast("Product archived as a draft.");
     closeEditor();
     await loadProducts();
     renderAll();
@@ -535,6 +492,8 @@
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     delete copy.id;
+    delete copy.stockOnHand;
+    copy.quantity = "Verify availability before publishing";
     await fb.db.collection(collections.products).doc(copyId).set(copy);
     toast("Product duplicated.");
     await loadProducts();
@@ -544,13 +503,18 @@
   async function submitRecord(type, event) {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+    if (!data.description.trim() || !Number.isFinite(Number(data.amount)) || Number(data.amount) <= 0 || Number(data.amount) > 1000000000) {
+      return toast("Enter a description and a positive amount up to ₦1,000,000,000.");
+    }
+    const form = event.currentTarget;
     await fb.db.collection(collections[type]).add({
       description: data.description.trim(),
       amount: Number(data.amount || 0),
       date: data.date,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    event.currentTarget.reset();
+    form.reset();
+    initDates();
     toast(`${type === "sales" ? "Sale" : "Expense"} added.`);
     await loadRecords(type);
     renderStats();
@@ -623,8 +587,8 @@
     $("#addProductBtn").addEventListener("click", openNewProduct);
     $("#closeProductModal").addEventListener("click", closeEditor);
     $("#cancelProductBtn").addEventListener("click", closeEditor);
-    $("#productForm").addEventListener("submit", saveProduct);
-    $("#deleteProductBtn").addEventListener("click", deleteProduct);
+    $("#productForm").addEventListener("submit", event => saveProduct(event).catch(error => toast(error.message)));
+    $("#deleteProductBtn").addEventListener("click", () => deleteProduct().catch(error => toast(error.message)));
     $("#imageUploadInput").addEventListener("change", event => handleImageFiles(event.target.files));
     $("#replaceAllImages").addEventListener("click", () => {
       state.replaceAll = true;
@@ -641,9 +605,9 @@
     $("#previewInstagramBtn").addEventListener("click", previewInstagram);
     $("#productSearch").addEventListener("input", renderProducts);
     $("#productFilter").addEventListener("change", renderProducts);
-    $("#saleForm").addEventListener("submit", event => submitRecord("sales", event));
-    $("#expenseForm").addEventListener("submit", event => submitRecord("expenses", event));
-    $("#settingsForm").addEventListener("submit", saveSettings);
+    $("#saleForm").addEventListener("submit", event => submitRecord("sales", event).catch(error => toast(error.message)));
+    $("#expenseForm").addEventListener("submit", event => submitRecord("expenses", event).catch(error => toast(error.message)));
+    $("#settingsForm").addEventListener("submit", event => saveSettings(event).catch(error => toast(error.message)));
   }
 
   function initDates() {
@@ -659,8 +623,14 @@
     if (!requireFirebase()) return;
 
     fb.auth.onAuthStateChanged(user => {
-      if (user) showApp(user);
-      else showLogin();
+      if (user?.uid === OWNER_UID) showApp(user);
+      else {
+        showLogin();
+        if (user) {
+          $("#loginMessage").textContent = "This account does not have shop owner access.";
+          fb.auth.signOut();
+        }
+      }
     });
   }
 

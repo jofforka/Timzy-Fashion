@@ -16,9 +16,9 @@
   <div id="adminLogin" class="auth-screen">
     <form id="adminLoginForm" class="auth-card">
       <img src="../assets/img/timzy-logo.png" alt="Timzy Fashion">
-      <span class="eyebrow">Secure Staff Access</span>
+      <span class="eyebrow">Shop Owner Access</span>
       <h1>Timzy Admin</h1>
-      <p>Manage products, images, Instagram videos, sales, and expenses.</p>
+      <p>Owner-only product management and manual sales and expense records.</p>
 
       <label>Email<input type="email" name="email" required autocomplete="username"></label>
       <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
@@ -32,7 +32,7 @@
     <aside class="sidebar">
       <a class="admin-brand" href="../index.html">
         <img src="../assets/img/timzy-logo.png" alt="Timzy Fashion">
-        <span><b>TIMZY FASHION</b><small>Admin OS v2</small></span>
+        <span><b>TIMZY FASHION</b><small>Shop Owner</small></span>
       </a>
 
       <nav class="side-nav">
@@ -63,6 +63,7 @@
       </header>
 
       <section id="dashboardView" class="admin-view">
+        <p class="admin-card">Orders are confirmed over WhatsApp. Record completed sales and expenses manually; these entries do not change stock or calculate investor payouts. Keep investor agreements and payouts in your separate records.</p>
         <div class="stats-grid">
           <article><span>Products</span><strong id="statProducts">0</strong></article>
           <article><span>Published</span><strong id="statPublished">0</strong></article>
@@ -95,8 +96,8 @@
         <div id="productTable" class="product-table"></div>
       </section>
 
-      <section id="ordersView" class="admin-view" hidden>
-        <div class="admin-card empty-state"><h2>Orders</h2><p>Orders created through the connected checkout will appear here.</p></div>
+      <section id="ordersView" class="admin-view" hidden><p>WhatsApp enquiries are not automatically saved here. Confirm each order and payment directly with the customer.</p>
+        <div class="admin-card empty-state"><h2>WhatsApp Orders</h2><p>Confirm availability and payment in WhatsApp, then record completed sales manually in Sales.</p></div>
       </section>
 
       <section id="salesView" class="admin-view" hidden>
@@ -244,7 +245,7 @@
         </div>
 
         <footer class="editor-footer">
-          <button id="deleteProductBtn" class="danger-btn" type="button" hidden>Delete Product</button>
+          <button id="deleteProductBtn" class="danger-btn" type="button" hidden>Archive Product</button>
           <div>
             <button id="cancelProductBtn" class="secondary-btn" type="button">Cancel</button>
             <button class="primary-btn" type="submit">Save Product</button>
@@ -270,6 +271,6 @@
   
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
-  <script src="admin.js?v=8.6"></script>
+  <script src="admin.js?v=spark1"></script>
 </body>
 </html>
