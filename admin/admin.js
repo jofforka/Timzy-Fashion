@@ -5,6 +5,8 @@
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const cfg = window.TIMZY_CONFIG || {};
   const fb = window.TIMZY_FIREBASE;
+  const placement = window.TimzyProductPlacement;
+  let editorTrigger = null;
   const collections = cfg.collections || {
     products: "products",
     orders: "orders",
@@ -105,6 +107,7 @@
     state.uid = null;
     state.products = []; state.sales = []; state.expenses = []; state.settings = {};
     $("#productModal").hidden = true;
+    document.body.classList.remove('editor-open');
     $("#productForm").reset(); $("#settingsForm").reset();
     for (const id of ['statProducts','statPublished','statSales','statExpenses']) document.getElementById(id).textContent = '0';
     for (const id of ['productTable','latestProducts','recentActivity','salesList','expensesList','portfolioItems','accountList','allocationList']) {
@@ -181,7 +184,8 @@
   function renderCategoryFilter() {
     const select = $("#productFilter");
     const current = select.value;
-    const categories = [...new Set(state.products.map(p => p.category).filter(Boolean))].sort();
+    const section = $("#productSectionFilter")?.value || "All";
+    const categories = [...new Set(state.products.filter(p => section === 'All' || placement.sectionOf(p) === section).map(p => p.category).filter(Boolean))].sort();
     select.innerHTML = `<option value="All">All categories</option>${categories.map(c => `<option>${escapeHTML(c)}</option>`).join("")}`;
     if ([...select.options].some(o => o.value === current)) select.value = current;
   }
@@ -189,10 +193,11 @@
   function filteredProducts() {
     const search = $("#productSearch")?.value.trim().toLowerCase() || "";
     const category = $("#productFilter")?.value || "All";
+    const section = $("#productSectionFilter")?.value || "All";
     return state.products.filter(product => {
       const matchesSearch = !search || JSON.stringify(product).toLowerCase().includes(search);
       const matchesCategory = category === "All" || product.category === category;
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesCategory && (section === "All" || placement.sectionOf(product) === section);
     });
   }
 
@@ -210,7 +215,7 @@
           ${product.instagramVideoUrl ? `<small>Instagram video linked</small>` : ""}
         </div>
         <div class="hide-tablet">
-          <small>Category</small>
+          <small>${escapeHTML(placement.labels[placement.sectionOf(product)])}</small>
           <b>${escapeHTML(product.category || "—")}</b>
         </div>
         <div class="hide-tablet">
@@ -297,6 +302,34 @@
     select.value = selected;
   }
 
+  function syncPlacement(section, category = '', type = '') {
+    const form = $("#productForm");
+    const data = placement.normalize(section, category, type);
+    form.elements.storeSection.value = section;
+    const categories = [...placement.groups[section]];
+    if (!categories.includes(data.category)) categories.push(data.category);
+    form.elements.category.innerHTML = categories.map(value => `<option value="${escapeHTML(value)}">${escapeHTML(value)}</option>`).join('');
+    form.elements.category.value = data.category;
+    const types = section === 'outfits' ? [['Ready-Made','Ready-made'],['Custom Sewing','Made to measure / custom sewing']] : [[data.productType,section === 'materials' ? 'Fabric / Material' : 'Accessory']];
+    form.elements.productType.innerHTML = types.map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
+    form.elements.productType.value = data.productType;
+    $("#productTypeCaption").textContent = section === 'outfits' ? 'Outfit type' : 'Product type';
+    form.elements.measurementRequired.checked = data.productType === 'Custom Sewing';
+    $("#productPlacementHint").textContent = section === 'accessories' ? 'Appears in accessory suggestions, outside the two main shop tabs.' : `Appears in the ${placement.labels[section]} tab.`;
+    $("#materialLinkField").hidden = section !== 'outfits';
+    if (section !== 'outfits') form.elements.materialProductId.value = '';
+    if (data.productType === 'Custom Sewing' && !form.elements.sizes.value.trim()) form.elements.sizes.value = 'Custom';
+    if (data.productType !== 'Custom Sewing' && form.elements.sizes.value === 'Custom') form.elements.sizes.value = '';
+  }
+
+  function revealEditor() {
+    editorTrigger = document.activeElement;
+    $("#productModal").hidden = false;
+    document.body.classList.add('editor-open');
+    $(".editor-grid").scrollTop = 0;
+    $("#productStoreSection").focus();
+  }
+
   function resetEditor() {
     state.editingId = null;
     state.images = [];
@@ -304,8 +337,9 @@
     state.replaceAll = false;
     $("#productForm").reset();
     $("#productForm").elements.status.value = "Published";
-    $("#productForm").elements.sizes.value = "Custom";
+    $("#productForm").elements.sizes.value = "";
     populateMaterialOptions();
+    syncPlacement('outfits', 'Senator', 'Ready-Made');
     $("#productModalTitle").textContent = "Add Product";
     $("#deleteProductBtn").hidden = true;
     $("#uploadProgress").hidden = true;
@@ -315,7 +349,7 @@
   function openNewProduct() {
     if (state.role !== "admin") return;
     resetEditor();
-    $("#productModal").hidden = false;
+    revealEditor();
   }
 
   function openEditProduct(id) {
@@ -338,6 +372,7 @@
     fields.forEach(field => {
       if (form.elements[field]) form.elements[field].value = product[field] ?? "";
     });
+    syncPlacement(placement.sectionOf(product), product.category, product.productType);
     form.elements.id.value = id;
     form.elements.featured.checked = Boolean(product.featured);
     form.elements.measurementRequired.checked = Boolean(product.measurementRequired);
@@ -345,12 +380,14 @@
     $("#productModalTitle").textContent = "Edit Product";
     $("#deleteProductBtn").hidden = false;
     renderImagePreviews();
-    $("#productModal").hidden = false;
+    revealEditor();
   }
 
   function closeEditor() {
     $("#productModal").hidden = true;
+    document.body.classList.remove('editor-open');
     resetEditor();
+    editorTrigger?.focus?.();
   }
 
   function renderImagePreviews() {
@@ -447,8 +484,7 @@
     return {
       name: data.name.trim(),
       sku: data.sku.trim(),
-      category: data.category,
-      productType: data.productType.trim(),
+      ...placement.normalize(data.storeSection, data.category, data.productType),
       price: Number(data.price || 0),
       salePrice: Number(data.salePrice || 0),
       fabricType: data.fabricType.trim(),
@@ -471,6 +507,9 @@
     if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
     const product = formProductData();
+    if (product.productType === 'Ready-Made' && (!$("#productForm").elements.sizes.value.trim() || product.sizes.toLowerCase() === 'custom')) {
+      return toast('Enter the ready-made sizes you actually stock, or choose made to measure.');
+    }
     if (!product.name || !product.category || !Number.isFinite(product.price) || product.price < 0) {
       return toast("Complete the required product fields.");
     }
@@ -655,6 +694,19 @@
       renderImagePreviews();
     });
     $("#previewInstagramBtn").addEventListener("click", previewInstagram);
+    $("#productSectionFilter").addEventListener("change", () => { renderCategoryFilter(); renderProducts(); });
+    $("#productStoreSection").addEventListener("change", event => { $("#productForm").elements.sizes.value = ''; syncPlacement(event.target.value); });
+    $("#productForm").elements.productType.addEventListener("change", event => syncPlacement($("#productForm").elements.storeSection.value, $("#productForm").elements.category.value, event.target.value));
+    document.addEventListener('keydown', event => {
+      if ($("#productModal").hidden) return;
+      if (event.key === 'Escape') { event.preventDefault(); closeEditor(); }
+      if (event.key === 'Tab') {
+        const controls = $$('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled])', $("#productModal")).filter(el => el.offsetParent !== null);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    });
     $("#productSearch").addEventListener("input", renderProducts);
     $("#productFilter").addEventListener("change", renderProducts);
     $("#saleForm").addEventListener("submit", event => submitRecord("sales", event).catch(error => toast(error.message)));

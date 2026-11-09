@@ -6,7 +6,7 @@ const owner='sCkXSrVIlHNGBoufFtirvLBvaTi1';
 const nodes=new Map(), reads=[], passwordRequests=[];
 function node(id){
  if(!nodes.has(id))nodes.set(id,{hidden:false,value:'',textContent:'',innerHTML:'',dataset:{},options:[],
-  elements:new Proxy({}, {get:(o,k)=>o[k]??(o[k]={value:''})}),
+  elements:new Proxy({}, {get:(o,k)=>o[k]??(o[k]={value:'',addEventListener(){}})}),
   classList:{add(){},remove(){},toggle(){}},listeners:{},addEventListener(name,fn){this.listeners[name]=fn;},reset(){},replaceChildren(){this.innerHTML='';},querySelectorAll(){return [];}});
  return nodes.get(id);
 }
@@ -28,7 +28,7 @@ function ref(path,filters=[]){return{
 };}
 context.window.TIMZY_FIREBASE={auth:{onAuthStateChanged:cb=>authChange=cb,setPersistence(){},signOut:async()=>{},sendPasswordResetEmail:async email=>passwordRequests.push(email)},db:{collection:name=>ref(name)}};
 vm.createContext(context);
-for(const file of ['admin/admin.js','admin/spark-roles.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
+for(const file of ['admin/product-placement.js','admin/admin.js','admin/spark-roles.js'])vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
 init();
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 (async()=>{

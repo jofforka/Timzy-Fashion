@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="admin.css?v=8.5">
+  <link rel="stylesheet" href="admin.css?v=compact1">
 </head>
 <body>
   <div id="adminLogin" class="auth-screen">
@@ -90,6 +90,7 @@
 
       <section id="productsView" class="admin-view" hidden>
         <div class="view-toolbar">
+          <select id="productSectionFilter" aria-label="Filter by shop section"><option value="All">All shop sections</option><option value="outfits">Ready-made &amp; Outfits</option><option value="materials">Fabrics &amp; Materials</option><option value="accessories">Accessories &amp; Extras</option></select>
           <input id="productSearch" type="search" placeholder="Search products...">
           <select id="productFilter">
             <option value="All">All categories</option>
@@ -189,20 +190,28 @@
     </main>
   </div>
 
-  <div id="productModal" class="modal" hidden>
+  <div id="productModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle" hidden>
     <div class="modal-card product-editor">
       <header class="modal-head">
         <div><span class="eyebrow">Product CMS</span><h2 id="productModalTitle">Add Product</h2></div>
-        <button id="closeProductModal" type="button">×</button>
+        <button id="closeProductModal" aria-label="Close product editor" type="button">×</button>
       </header>
 
       <form id="productForm">
         <input type="hidden" name="id">
 
-        <div class="editor-grid">
+        <div class="editor-grid" tabindex="-1">
           <section>
             <h3>Product Information</h3>
             <div class="form-grid">
+              <label class="section-choice">Show this product under
+                <select name="storeSection" id="productStoreSection" required>
+                  <option value="outfits">Ready-made &amp; Outfits</option>
+                  <option value="materials">Fabrics &amp; Materials</option>
+                  <option value="accessories">Accessories &amp; Extras</option>
+                </select>
+                <small id="productPlacementHint">Appears in the Ready-made &amp; Outfits tab.</small>
+              </label>
               <label>Product Name<input name="name" required></label>
               <label>SKU<input name="sku"></label>
               <label>Category
@@ -220,18 +229,18 @@
                   <option>Accessories</option>
                 </select>
               </label>
-              <label>Product Type<input name="productType"></label>
+              <label id="productTypeLabel"><span id="productTypeCaption">Outfit type</span><select name="productType"><option value="Ready-Made">Ready-made</option><option value="Custom Sewing">Made to measure / custom sewing</option></select></label>
               <label>Price<input name="price" type="number" min="0" required></label>
               <label>Sale Price<input name="salePrice" type="number" min="0"></label>
               <label>Fabric / Material<input name="fabricType"></label>
-              <label>Linked material listing (optional)
+              <label id="materialLinkField">Linked material listing (optional)
                 <select name="materialProductId" id="materialProductId">
                   <option value="">Not linked yet</option>
                 </select>
                 <small>Choose the exact published fabric product used for this outfit. Leave empty until verified.</small>
               </label>
               <label>Colour<input name="color"></label>
-              <label>Sizes<input name="sizes" value="Custom"></label>
+              <label>Sizes / selling unit<input name="sizes" placeholder="e.g. M, L, XL; One Size; or price per yard" required></label>
               <label>Delivery Estimate<input name="deliveryEstimate"></label>
               <label>Status
                 <select name="status">
@@ -289,7 +298,7 @@
         </div>
 
         <footer class="editor-footer">
-          <button id="deleteProductBtn" class="danger-btn" type="button" hidden>Archive Product</button>
+          <button id="deleteProductBtn" aria-label="Archive product" class="danger-btn" type="button" hidden>Archive</button>
           <div>
             <button id="cancelProductBtn" class="secondary-btn" type="button">Cancel</button>
             <button class="primary-btn" type="submit">Save Product</button>
@@ -315,7 +324,8 @@
   
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
-  <script src="admin.js?v=spark2"></script>
+  <script src="product-placement.js?v=1"></script>
+  <script src="admin.js?v=compact1"></script>
   <script src="spark-roles.js?v=1"></script>
 </body>
 </html>
