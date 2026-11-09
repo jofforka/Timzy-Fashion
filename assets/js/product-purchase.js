@@ -27,6 +27,7 @@
   function addSelectedItem(p, choice, quantity) {
     const qty = Number(quantity);
     if (!p || !choice || !Number.isInteger(qty) || qty < 1 || qty > 10) return false;
+    if (String(p.status).toLowerCase() === 'out of stock') return false;
     // Variant-specific basket IDs preserve different sizes and quantities.
     // Names include the choice so checkout and WhatsApp order details retain it.
     const id = String(p.id) + '::' + choice;
@@ -193,6 +194,15 @@
 
     const form = detail.querySelector('#productPurchaseForm');
     const status = detail.querySelector('#purchaseStatus');
+    const soldOut = String(p.status || '').toLowerCase() === 'out of stock' ||
+      (Number.isSafeInteger(p.stockOnHand) && p.stockOnHand === 0);
+    if (soldOut) {
+      form.querySelectorAll('[data-purchase-action]').forEach(button => {
+        button.disabled = true;
+        button.setAttribute('aria-disabled', 'true');
+      });
+      if (status) status.textContent = 'This product is sold out. Please contact Timzy about availability.';
+    }
 
     function process(action) {
       if (!form.reportValidity()) return;

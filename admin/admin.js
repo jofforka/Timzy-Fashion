@@ -14,6 +14,9 @@
   };
 
   const state = {
+    role: null,
+    uid: null,
+    session: 0,
     products: [],
     sales: [],
     expenses: [],
@@ -81,76 +84,51 @@
     }
   }
 
+  const OWNER_UID = "sCkXSrVIlHNGBoufFtirvLBvaTi1";
+
   function showApp(user) {
     $("#adminLogin").hidden = true;
     $("#adminApp").hidden = false;
-    loadAll();
+    document.body.dataset.role = state.role;
+    document.querySelectorAll('[data-admin-only]').forEach(el => el.hidden = state.role !== 'admin');
+    document.querySelectorAll('[data-operations-only]').forEach(el => el.hidden = state.role === 'investor');
+    document.querySelectorAll('[data-investor-only]').forEach(el => el.hidden = state.role !== 'investor');
+    $("#currentRole").textContent = state.role === 'admin' ? 'Super Admin' : state.role === 'staff' ? 'Shop Staff' : 'Investor';
+    switchView(state.role === 'investor' ? 'portfolio' : 'dashboard');
+    if (state.role !== 'investor') loadAll().catch(() => toast("Could not load records. Check your connection and account access."));
   }
 
   function showLogin() {
     $("#adminApp").hidden = true;
     $("#adminLogin").hidden = false;
+    state.role = null;
+    state.uid = null;
+    state.products = []; state.sales = []; state.expenses = []; state.settings = {};
+    $("#productModal").hidden = true;
+    $("#productForm").reset(); $("#settingsForm").reset();
+    for (const id of ['statProducts','statPublished','statSales','statExpenses']) document.getElementById(id).textContent = '0';
+    for (const id of ['productTable','latestProducts','recentActivity','salesList','expensesList','portfolioItems','accountList','allocationList']) {
+      const el = document.getElementById(id); if (el) el.replaceChildren();
+    }
   }
 
   async function loadAll() {
+    const session = state.session;
     await Promise.all([
       loadProducts(),
       loadRecords("sales"),
-      loadRecords("expenses"),
-      loadSettings()
+      ...(state.role === 'admin' ? [loadRecords("expenses"), loadSettings()] : [])
     ]);
-    renderAll();
+    if (session === state.session) renderAll();
   }
 
   async function loadProducts() {
-    let snapshot = await fb.db.collection(collections.products).get();
+    const session = state.session;
+    const source = fb.db.collection(collections.products);
+    const snapshot = await (state.role === 'admin' ? source : source.where('status','in',['Published','Out of Stock'])).get();
+    if (session !== state.session) return;
 
-    if (snapshot.empty) {
-      try {
-        const response = await fetch("../data/products.json", { cache: "no-store" });
-        const seedProducts = await response.json();
-
-        if (Array.isArray(seedProducts) && seedProducts.length) {
-          const batches = [];
-          let batch = fb.db.batch();
-          let count = 0;
-
-          for (const raw of seedProducts) {
-            const id = raw.id || slugify(raw.name) || `product-${Date.now()}-${count}`;
-            const images = Array.isArray(raw.images) && raw.images.length
-              ? raw.images
-              : [raw.image1, raw.image2, raw.image3, raw.image4].filter(Boolean);
-
-            const doc = {
-              ...raw,
-              images,
-              image1: images[0] || "",
-              image2: images[1] || "",
-              image3: images[2] || "",
-              image4: images[3] || "",
-              instagramVideoUrl: raw.instagramVideoUrl || raw.videoUrl || "",
-              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            batch.set(fb.db.collection(collections.products).doc(id), doc);
-            count += 1;
-
-            if (count % 400 === 0) {
-              batches.push(batch.commit());
-              batch = fb.db.batch();
-            }
-          }
-
-          batches.push(batch.commit());
-          await Promise.all(batches);
-          snapshot = await fb.db.collection(collections.products).get();
-          toast("Existing products imported into the admin.");
-        }
-      } catch (error) {
-        console.warn("Initial product import failed:", error);
-      }
-    }
+    // An empty live catalogue stays empty; bundled examples are never imported.
 
     state.products = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
@@ -158,18 +136,26 @@
   }
 
   async function loadRecords(type) {
+    const session = state.session;
     const collection = collections[type];
+    const source = fb.db.collection(collection);
+    const records = state.role === 'staff' ? source.where('createdBy','==',state.uid) : source;
     try {
-      const snapshot = await fb.db.collection(collection).orderBy("date", "desc").limit(100).get();
+      const snapshot = await records.orderBy("date", "desc").limit(100).get();
+      if (session !== state.session) return;
       state[type] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch {
-      const snapshot = await fb.db.collection(collection).limit(100).get();
+      if (session !== state.session) return;
+      const snapshot = await records.limit(100).get();
+      if (session !== state.session) return;
       state[type] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
   }
 
   async function loadSettings() {
+    const session = state.session;
     const doc = await fb.db.collection(collections.settings).doc("store").get();
+    if (session !== state.session) return;
     state.settings = doc.exists ? doc.data() : {};
   }
 
@@ -187,6 +173,7 @@
   function renderStats() {
     $("#statProducts").textContent = state.products.length;
     $("#statPublished").textContent = state.products.filter(p => String(p.status).toLowerCase() === "published").length;
+    $("#salesStatLabel").textContent = state.role === 'staff' ? 'Your recorded sales (up to 100 records)' : 'Recorded sales (up to 100 records)';
     $("#statSales").textContent = money(state.sales.reduce((sum, item) => sum + Number(item.amount || 0), 0));
     $("#statExpenses").textContent = money(state.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
   }
@@ -233,7 +220,7 @@
         <div class="hide-tablet">
           <span class="status-pill">${escapeHTML(product.status || "Published")}</span>
         </div>
-        <div class="row-actions">
+        <div class="row-actions" ${state.role !== "admin" ? "hidden" : ""}>
           <button type="button" data-edit-product="${escapeHTML(product.id)}">Edit</button>
           <button type="button" data-duplicate-product="${escapeHTML(product.id)}">Duplicate</button>
         </div>
@@ -288,7 +275,10 @@
   }
 
   function switchView(view) {
+    const allowed = state.role === 'admin' ? ['dashboard','products','orders','sales','expenses','settings','accounts','allocations'] : state.role === 'staff' ? ['dashboard','products','orders','sales'] : ['portfolio'];
+    if (!allowed.includes(view)) return;
     state.view = view;
+    if (view === 'accounts' || view === 'allocations') window.TimzyRoles?.loadAccounts().catch(error => toast(error.message));
     $$(".admin-view").forEach(section => section.hidden = section.id !== `${view}View`);
     $$("[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === view));
     $("#viewTitle").textContent = view.charAt(0).toUpperCase() + view.slice(1);
@@ -323,11 +313,13 @@
   }
 
   function openNewProduct() {
+    if (state.role !== "admin") return;
     resetEditor();
     $("#productModal").hidden = false;
   }
 
   function openEditProduct(id) {
+    if (state.role !== "admin") return;
     const product = state.products.find(p => p.id === id);
     if (!product) return;
 
@@ -476,9 +468,10 @@
   }
 
   async function saveProduct(event) {
+    if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
     const product = formProductData();
-    if (!product.name || !product.category || product.price < 0) {
+    if (!product.name || !product.category || !Number.isFinite(product.price) || product.price < 0) {
       return toast("Complete the required product fields.");
     }
 
@@ -511,18 +504,20 @@
   }
 
   async function deleteProduct() {
+    if (state.role !== "admin") return;
     if (!state.editingId) return;
     const product = state.products.find(p => p.id === state.editingId);
-    if (!confirm(`Delete "${product?.name || "this product"}"?`)) return;
+    if (!confirm(`Archive "${product?.name || "this product"}" as a draft?`)) return;
 
-    await fb.db.collection(collections.products).doc(state.editingId).delete();
-    toast("Product deleted.");
+    await fb.db.collection(collections.products).doc(state.editingId).update({status: "Draft", updatedAt: firebase.firestore.FieldValue.serverTimestamp()});
+    toast("Product archived as a draft.");
     closeEditor();
     await loadProducts();
     renderAll();
   }
 
   async function duplicateProduct(id) {
+    if (state.role !== "admin") return;
     const product = state.products.find(p => p.id === id);
     if (!product) return;
     const copyId = `${id}-copy-${Date.now().toString().slice(-5)}`;
@@ -535,6 +530,8 @@
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     delete copy.id;
+    delete copy.stockOnHand;
+    copy.quantity = "Verify availability before publishing";
     await fb.db.collection(collections.products).doc(copyId).set(copy);
     toast("Product duplicated.");
     await loadProducts();
@@ -543,14 +540,21 @@
 
   async function submitRecord(type, event) {
     event.preventDefault();
+    if (!['admin','staff'].includes(state.role) || (type === 'expenses' && state.role !== 'admin')) return;
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+    if (!data.description.trim() || !Number.isFinite(Number(data.amount)) || Number(data.amount) <= 0 || Number(data.amount) > 1000000000) {
+      return toast("Enter a description and a positive amount up to ₦1,000,000,000.");
+    }
+    const form = event.currentTarget;
     await fb.db.collection(collections[type]).add({
       description: data.description.trim(),
       amount: Number(data.amount || 0),
       date: data.date,
+      createdBy: state.uid,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    event.currentTarget.reset();
+    form.reset();
+    initDates();
     toast(`${type === "sales" ? "Sale" : "Expense"} added.`);
     await loadRecords(type);
     renderStats();
@@ -559,6 +563,7 @@
   }
 
   async function saveSettings(event) {
+    if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
     await fb.db.collection(collections.settings).doc("store").set({
@@ -578,6 +583,17 @@
   }
 
   function bindEvents() {
+    $("#resetPasswordBtn").addEventListener("click", async () => {
+      if (!requireFirebase()) return;
+      const email = $("#adminLoginForm").elements.email;
+      if (!email.value.trim() || !email.reportValidity()) return;
+      try {
+        await fb.auth.sendPasswordResetEmail(email.value.trim());
+        $("#loginMessage").textContent = "If this email has an account, a password setup link has been requested. Check your inbox and spam folder.";
+      } catch {
+        $("#loginMessage").textContent = "Could not request a password link. Check your connection and try again later.";
+      }
+    });
     $("#adminLoginForm").addEventListener("submit", async event => {
       event.preventDefault();
       if (!requireFirebase()) return;
@@ -623,8 +639,8 @@
     $("#addProductBtn").addEventListener("click", openNewProduct);
     $("#closeProductModal").addEventListener("click", closeEditor);
     $("#cancelProductBtn").addEventListener("click", closeEditor);
-    $("#productForm").addEventListener("submit", saveProduct);
-    $("#deleteProductBtn").addEventListener("click", deleteProduct);
+    $("#productForm").addEventListener("submit", event => saveProduct(event).catch(error => toast(error.message)));
+    $("#deleteProductBtn").addEventListener("click", () => deleteProduct().catch(error => toast(error.message)));
     $("#imageUploadInput").addEventListener("change", event => handleImageFiles(event.target.files));
     $("#replaceAllImages").addEventListener("click", () => {
       state.replaceAll = true;
@@ -641,9 +657,9 @@
     $("#previewInstagramBtn").addEventListener("click", previewInstagram);
     $("#productSearch").addEventListener("input", renderProducts);
     $("#productFilter").addEventListener("change", renderProducts);
-    $("#saleForm").addEventListener("submit", event => submitRecord("sales", event));
-    $("#expenseForm").addEventListener("submit", event => submitRecord("expenses", event));
-    $("#settingsForm").addEventListener("submit", saveSettings);
+    $("#saleForm").addEventListener("submit", event => submitRecord("sales", event).catch(error => toast(error.message)));
+    $("#expenseForm").addEventListener("submit", event => submitRecord("expenses", event).catch(error => toast(error.message)));
+    $("#settingsForm").addEventListener("submit", event => saveSettings(event).catch(error => toast(error.message)));
   }
 
   function initDates() {
@@ -658,11 +674,32 @@
 
     if (!requireFirebase()) return;
 
-    fb.auth.onAuthStateChanged(user => {
-      if (user) showApp(user);
-      else showLogin();
+    // All portals use the same authenticated identity; UI visibility is not authorization.
+    fb.auth.onAuthStateChanged(async user => {
+      const session = ++state.session;
+      showLogin();
+      if (!user) return;
+      state.uid = user.uid;
+      try {
+        if (user.uid === OWNER_UID) state.role = 'admin';
+        else {
+          const profile = await fb.db.collection('access').doc(user.uid).get();
+          if (session !== state.session) return;
+          const data = profile.exists ? profile.data() : {};
+          if (data.active !== true || !['staff','investor'].includes(data.role)) throw Error('Your account has not been granted active shop access. Contact the administrator.');
+          state.role = data.role;
+        }
+        if (session !== state.session) return;
+        showApp(user);
+        if (state.role === 'investor') await window.TimzyRoles.loadPortfolio(user.uid);
+      } catch (error) {
+        if (session !== state.session) return;
+        showLogin();
+        $('#loginMessage').textContent = error.message;
+      }
     });
   }
 
+  window.TimzyAdmin = {state, escapeHTML, money, toast, imageOf};
   document.addEventListener("DOMContentLoaded", init);
 })();

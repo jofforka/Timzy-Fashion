@@ -26,7 +26,7 @@ for (const file of pages) {
     file + ': one accessible basket counter');
   assert.doesNotMatch(html, /class="floating-bag"/,
     file + ': avoid duplicate floating bag controls');
-  assert.match(html, /assets\/js\/app\.js\?v=8\.5/,
+  assert.match(html, /assets\/js\/app\.js\?v=spark1/,
     file + ': same commerce application version');
   assert.equal((html.match(/<header class="site-header">/g) || []).length, 1);
 }

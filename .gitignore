@@ -1,0 +1,8 @@
+node_modules/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
+.firebaserc
+*-backup.json
+*-audit-private.json

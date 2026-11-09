@@ -1,34 +1,121 @@
 rules_version = '2';
-
+// Spark admin, staff and investor access. Products contain public display fields only.
+// Sales/expenses are manual records: description/string, amount/number,
+// date/YYYY-MM-DD string, createdAt/timestamp. They never change inventory.
+// Settings are private owner configuration. All other paths default-deny.
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Sales and expenses are staff-only. Staff must be signed in with Firebase Auth.
-    match /sales/{docId} {
-      allow read, write: if request.auth != null;
+    function owner() {
+      return request.auth != null && request.auth.uid == 'sCkXSrVIlHNGBoufFtirvLBvaTi1';
+    }
+    // Only the fixed owner can provision access; legacy /users roles grant nothing.
+    function assignedRole(role) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/access/$(request.auth.uid))
+        && get(/databases/$(database)/documents/access/$(request.auth.uid)).data.active == true
+        && get(/databases/$(database)/documents/access/$(request.auth.uid)).data.role == role;
+    }
+    function staff() { return assignedRole('staff'); }
+    function investor(uid) { return request.auth != null && request.auth.uid == uid && assignedRole('investor'); }
+    function validAccess(uid) {
+      let d = request.resource.data;
+      return uid != 'sCkXSrVIlHNGBoufFtirvLBvaTi1'
+        && d.keys().hasAll(['role','active','label','updatedAt'])
+        && d.keys().hasOnly(['role','active','label','updatedAt'])
+        && d.role in ['staff','investor'] && d.active is bool
+        && d.label is string && d.label.size() > 0 && d.label.size() <= 100
+        && d.updatedAt == request.time;
+    }
+    function validInvestorProduct(uid, productId) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['productId','name','image','agreedPrice','reference','updatedAt'])
+        && d.keys().hasOnly(['productId','name','image','agreedPrice','reference','updatedAt'])
+        && d.productId == productId && d.productId is string
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 300
+        && d.image is string && d.image.size() <= 2000
+        && d.agreedPrice is number && d.agreedPrice >= 0 && d.agreedPrice <= 1000000000
+        && d.reference is string && d.reference.size() > 0 && d.reference.size() <= 500
+        && d.updatedAt == request.time
+        && exists(/databases/$(database)/documents/products/$(productId))
+        && get(/databases/$(database)/documents/access/$(uid)).data.role == 'investor';
+    }
+    function cleanPublicProduct() {
+      // Public product documents must contain only known display/inventory
+      // fields. A new cost/margin field is denied automatically.
+      return request.resource.data.keys().hasOnly([
+        'badge', 'category', 'color', 'colour', 'deliveryEstimate', 'description', 'ethnicStyle', 'fabric', 'fabricType', 'featured', 'id', 'image', 'image1',
+        'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8', 'imageSource', 'images', 'instagramVideoUrl', 'materialProductId', 'measurementRequired', 'name',
+        'originInfluence', 'price', 'productName', 'productType', 'quantity', 'salePrice', 'size', 'sizes', 'sku', 'status', 'stockOnHand', 'tags', 'videoUrl', 'createdAt', 'updatedAt'
+      ])
+      && request.resource.data.status in ['Published','Draft','Out of Stock']
+      && request.resource.data.price is number
+      && request.resource.data.price >= 0
+      && !request.resource.data.keys().hasAny([
+        'investorId', 'investorUid', 'investorPayout', 'payoutPerUnit',
+        'agreedPayout', 'costPrice', 'supplierCost', 'grossMargin',
+        'margin', 'profit', 'investorAgreement',
+        'wholesalePrice', 'purchasePrice', 'supplierPrice',
+        'unitCost', 'cost', 'internalCost', 'investorRate',
+        'investorPayoutPerUnit', 'investorEmail',
+        'investorAgreementId', 'settlementBankAccount'
+      ])
+      && (
+        !request.resource.data.keys().hasAny(['stockOnHand']) ||
+        (request.resource.data.stockOnHand is int
+         && request.resource.data.stockOnHand >= 0)
+      );
     }
 
-    match /expenses/{docId} {
-      allow read, write: if request.auth != null;
-    }
 
-    // Optional legacy collections. Keep staff-only.
-    match /products/{docId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    function validRecord() {
+      let d = request.resource.data;
+      return d.keys().hasAll(['description','amount','date','createdAt','createdBy'])
+        && d.keys().hasOnly(['description','amount','date','createdAt','createdBy'])
+        && d.description is string && d.description.size() > 0 && d.description.size() <= 1000
+        && d.amount is number && d.amount > 0 && d.amount <= 1000000000
+        && d.date is string && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.createdAt == request.time && d.createdBy == request.auth.uid;
     }
-
-    match /orders/{docId} {
-      allow read, write: if request.auth != null;
+    function validSettings() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['whatsappNumber','pickupAddress','bankName','accountName',
+        'accountNumber','instagramUrl','googleDriveUploadUrl','googleDriveUploadToken','updatedAt'])
+        && d.updatedAt == request.time;
     }
-
-    match /customers/{docId} {
-      allow read, write: if request.auth != null;
+    match /products/{id} {
+      allow read: if owner() || resource.data.status in ['Published','Out of Stock'];
+      allow create, update: if owner() && cleanPublicProduct();
+      allow delete: if false;
     }
-
-    // Block everything else.
-    match /{document=**} {
-      allow read, write: if false;
+    match /settings/{id} {
+      allow read: if owner();
+      allow create, update: if owner() && validSettings();
+      allow delete: if false;
+    }
+    match /sales/{id} {
+      allow read: if owner() || (staff() && resource.data.createdBy == request.auth.uid);
+      allow create: if (owner() || staff()) && validRecord();
+      allow update, delete: if false;
+    }
+    match /expenses/{id} {
+      allow read: if owner();
+      allow create: if owner() && validRecord();
+      allow update, delete: if false;
+    }
+    match /access/{uid} {
+      allow get: if owner() || (request.auth != null && request.auth.uid == uid);
+      allow list: if owner();
+      allow create, update: if owner() && validAccess(uid);
+      allow delete: if false;
+    }
+    match /investorCatalog/{uid}/items/{productId} {
+      allow read: if owner() || investor(uid);
+      allow create, update: if owner() && validInvestorProduct(uid, productId);
+      allow delete: if owner();
+    }
+    match /orders/{id} {
+      allow read: if owner();
+      allow write: if false;
     }
   }
 }
