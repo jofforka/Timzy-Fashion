@@ -38,6 +38,7 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
  await no(getDoc(doc(staff,'access/investor-a')));
  await no(getDocs(collection(staff,'access')));
  await no(setDoc(doc(owner,'access/bad'),{role:'super_admin',active:true,label:'Bad',updatedAt:now()}));
+ await no(setDoc(doc(owner,'access/'+ownerId),{role:'staff',active:true,label:'Change owner',updatedAt:now()}));
  await ok(setDoc(doc(owner,'access/new-investor'),{role:'investor',active:true,label:'New Investor',updatedAt:now()}));
  await ok(setDoc(doc(owner,'investorCatalog/investor-a/items/public'),rate));
  await ok(setDoc(doc(owner,'investorCatalog/investor-b/items/public'),{...rate,agreedPrice:9000}));
@@ -46,6 +47,8 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
  await no(getDoc(doc(other,'investorCatalog/investor-a/items/public')));
  for(const key of ['retailPrice','grossMargin','profit','investorUid']) await no(updateDoc(doc(owner,'investorCatalog/investor-a/items/public'),{[key]:1}));
  await no(setDoc(doc(owner,'investorCatalog/staff-uid/items/public'),rate));
+ await no(updateDoc(doc(owner,'investorCatalog/investor-a/items/public'),{agreedPrice:-1}));
+ await no(updateDoc(doc(owner,'investorCatalog/investor-a/items/public'),{agreedPrice:'8000'}));
  await no(setDoc(doc(owner,'investorCatalog/investor-a/items/missing'),{...rate,productId:'missing'}));
  await ok(getDocs(collection(owner,'products')));
  await ok(getDoc(doc(owner,'settings/store')));
@@ -72,6 +75,7 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
   await no(updateDoc(doc(db,'investorCatalog/investor-a/items/public'),{agreedPrice:1}));
  }
  for(const [db,uid] of [[investor,'investor-a'],[inactive,'inactive'],[impostor,'another-uid']]) await no(setDoc(doc(db,'sales/forged-'+uid),receipt(uid)));
+ for(const db of [staff,inactive,impostor,anon]) await no(getDoc(doc(db,'investorCatalog/investor-a/items/public')));
  for(const type of ['sales','expenses']) {
   const record=receipt(ownerId);
   await ok(setDoc(doc(owner,type+'/valid'),record));
