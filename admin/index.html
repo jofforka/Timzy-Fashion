@@ -271,7 +271,7 @@
 
           <section>
             <h3>Product Media</h3>
-            <label>Color variants (JSON array)<textarea name="variantsJson" rows="10" spellcheck="false" placeholder='[{"color":"Teal Green","image":"https://...","stockOnHand":null,"price":null,"sizes":[]}]'></textarea><small>Each color can have its own image URL, stock, price and sizes. Leave unknown values null. Upload images first, then paste their permanent URLs.</small></label>
+            <label>Quick-start material preset<select id="fabricPreset"><option value="">Choose one of the three fabrics</option><option value="alabamu">Alabamu Viscose Rayon Suiting</option><option value="sanrose">Original Italian Virgin Linkloom Sanrose</option><option value="tr-superfine">TR Superfine Eco Friendly by Linkloom</option></select></label><button type="button" id="loadFabricPreset" class="btn btn-outline">Load fabric colors as draft</button><p>Upload the matching WebP files below. Files named <code>alabamu--teal-green.webp</code> (or ending in <code>--teal-green.webp</code>) will be assigned to the corresponding color automatically when saved.</p><label>Color variants (JSON array)<textarea name="variantsJson" rows="10" spellcheck="false" placeholder='[{"color":"Teal Green","image":"https://...","stockOnHand":null,"price":null,"sizes":[]}]'></textarea><small>Each color can have its own image URL, stock, price and sizes. Leave unknown values null. Upload images first, then paste their permanent URLs.</small></label>
 
             <div id="imagePreviewGrid" class="image-preview-grid"></div>
 
