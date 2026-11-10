@@ -1,0 +1,161 @@
+[
+  {
+    "id": "alabamu-viscose-rayon-suiting",
+    "name": "Alabamu Viscose Rayon Suiting",
+    "category": "Materials",
+    "status": "Draft",
+    "price": null,
+    "sizes": [],
+    "investorId": null,
+    "variants": [
+      {
+        "id": "alabamu-viscose-rayon-suiting-teal-green",
+        "color": "Teal Green",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "alabamu-viscose-rayon-suiting-black",
+        "color": "Black",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "alabamu-viscose-rayon-suiting-white",
+        "color": "White",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      }
+    ]
+  },
+  {
+    "id": "original-italian-virgin-linkloom-sanrose",
+    "name": "Original Italian Virgin Linkloom Sanrose",
+    "category": "Materials",
+    "status": "Draft",
+    "price": null,
+    "sizes": [],
+    "investorId": null,
+    "variants": [
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-cream",
+        "color": "Cream",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-gold",
+        "color": "Gold",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-light-army-green",
+        "color": "Light Army Green",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-stone-gray",
+        "color": "Stone Gray",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-royal-blue",
+        "color": "Royal Blue",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-dark-gold",
+        "color": "Dark Gold",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-lilac",
+        "color": "Lilac",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "original-italian-virgin-linkloom-sanrose-dark-ash",
+        "color": "Dark Ash",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      }
+    ]
+  },
+  {
+    "id": "tr-superfine-eco-friendly-linkloom",
+    "name": "TR Superfine Eco Friendly by Linkloom",
+    "category": "Materials",
+    "status": "Draft",
+    "price": null,
+    "sizes": [],
+    "investorId": null,
+    "variants": [
+      {
+        "id": "tr-superfine-eco-friendly-linkloom-navy-blue",
+        "color": "Navy Blue",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "tr-superfine-eco-friendly-linkloom-dark-burgundy",
+        "color": "Dark Burgundy",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      },
+      {
+        "id": "tr-superfine-eco-friendly-linkloom-coffee-brown",
+        "color": "Coffee Brown",
+        "images": [],
+        "stockOnHand": null,
+        "price": null,
+        "sizes": [],
+        "status": "Draft"
+      }
+    ]
+  }
+]
