@@ -333,6 +333,7 @@
   function resetEditor() {
     state.editingId = null;
     state.images = [];
+    if ($("#productForm")?.elements?.variantsJson) $("#productForm").elements.variantsJson.value = "[]";
     state.pendingFiles = [];
     state.replaceAll = false;
     $("#productForm").reset();
@@ -359,6 +360,7 @@
 
     resetEditor();
     state.editingId = id;
+    if ($("#productForm")?.elements?.variantsJson) $("#productForm").elements.variantsJson.value = JSON.stringify(product.variants || [], null, 2);
     state.images = Array.isArray(product.images) && product.images.length
       ? [...product.images]
       : [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
@@ -499,6 +501,7 @@
       instagramVideoUrl: data.instagramVideoUrl.trim(),
       featured: form.elements.featured.checked,
       measurementRequired: form.elements.measurementRequired.checked,
+      variants: (() => { const raw = form.elements.variantsJson?.value?.trim(); if (!raw) return []; const list = JSON.parse(raw); if (!Array.isArray(list) || list.length > 40) throw Error("Enter up to 40 color variants."); return list.map(v => { if (!v || !String(v.color || "").trim()) throw Error("Each variant needs a color."); const stock = v.stockOnHand == null || v.stockOnHand === "" ? null : Number(v.stockOnHand); if (stock !== null && (!Number.isSafeInteger(stock) || stock < 0)) throw Error("Stock must be a nonnegative integer."); const price = v.price == null || v.price === "" ? null : Number(v.price); if (price !== null && (!Number.isFinite(price) || price < 0)) throw Error("Price must be nonnegative."); return {color:String(v.color).trim(),image:String(v.image || "").trim(),stockOnHand:stock,price,sizes:Array.isArray(v.sizes)?v.sizes.map(String):[]}; }); })(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
   }
@@ -506,7 +509,8 @@
   async function saveProduct(event) {
     if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
-    const product = formProductData();
+    let product;
+    try { product = formProductData(); } catch (error) { return toast(error.message || "Invalid variants."); }
     if (product.productType === 'Ready-Made' && (!$("#productForm").elements.sizes.value.trim() || product.sizes.toLowerCase() === 'custom')) {
       return toast('Enter the ready-made sizes you actually stock, or choose made to measure.');
     }
