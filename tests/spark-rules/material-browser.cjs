@@ -63,6 +63,7 @@ const bootstrap = admin => `
    await admin.evaluate(async()=>{
      for(const p of window.TimzyAdmin.state.products) await TIMZY_FIREBASE.db.collection('products').doc(p.id).update({status:'Published'});
    });
+   console.log('PASS: Admin import, idempotency, eight-image preview and save through Firestore.');
    const shop=await page(false,{width:390,height:844});
    await shop.goto(base+'/shop.html?section=materials');
    await shop.waitForFunction(()=>window.Timzy?.products.some(p=>p.id==='sanrose'));
@@ -78,6 +79,7 @@ const bootstrap = admin => `
        assert(await shop.locator('[data-purchase-action="bag"]').isDisabled());
      }
    }
+   console.log('PASS: Exactly three mobile material cards and all 14 color/image choices, with unknown purchases blocked.');
    // Verified test fixture: color + unit + quantity survive basket and WhatsApp.
    await admin.evaluate(async()=>{
      const ref=TIMZY_FIREBASE.db.collection('products').doc('alabamu');

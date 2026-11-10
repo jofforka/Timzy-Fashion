@@ -104,6 +104,8 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
    await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],stockOnHand:-1}]}));
    await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],price:'100'}]}));
    await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],sizes:['yard',{investorPayout:1}]}]}));
+   await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],sizes:[123]}]}));
+   await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],sizes:['yard~metre']}]}));
    await ok(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],price:100,stockOnHand:5,sizes:['yard']}]}));
  }
  console.log('PASS: Prepared material writes, draft privacy, public variants, every-slot investor-field rejection and commercial validation.');

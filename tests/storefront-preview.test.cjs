@@ -63,7 +63,7 @@ async function scenario(page, current, query = '') {
   assert.ok(oneMaterial.rows.some(p => p.id === 'real-fabric'), 'Do not remove real fabric');
   assert.ok(oneMaterial.rows.some(p => p.id === reference.outfit), 'Add missing ready-made preview');
   assert.ok(oneMaterial.rows.some(p => p.id === reference.custom), 'Add a custom outfit to test fabric link');
-  assert.ok(oneMaterial.rows.some(p => p.id === reference.fabric), 'Add related sample fabric for cross-link');
+  assert.ok(!oneMaterial.rows.some(p => p.id === reference.fabric), 'Do not add sample fabric alongside real materials; direct preview pages resolve their own related samples');
 
   const oneOutfit = await scenario('shop', [{ id: 'real-outfit', category: 'Senator', name: 'Live outfit' }]);
   assert.ok(oneOutfit.rows.some(p => p.id === 'real-outfit'));
