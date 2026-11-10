@@ -77,6 +77,8 @@ const bootstrap = admin => `
        await shop.waitForFunction(()=>document.querySelector('#mainImage')?.complete&&document.querySelector('#mainImage').naturalWidth===1000);
        assert((await shop.locator('#mainImage').getAttribute('src')).endsWith(product.variants[i].image));
        assert(await shop.locator('[data-purchase-action="bag"]').isDisabled());
+       await shop.locator('[data-thumb="'+i+'"]').click();
+       assert.equal(await shop.locator('#fabricColor').inputValue(),String(i));
      }
    }
    console.log('PASS: Exactly three mobile material cards and all 14 color/image choices, with unknown purchases blocked.');
