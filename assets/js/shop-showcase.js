@@ -52,7 +52,7 @@
       </a>
       <div class="showcase-card__body">
         <h3 class="showcase-card__title"><a href="${url}">${name}</a></h3>
-        <strong class="showcase-card__price">${money(p.price)}</strong>
+        <strong class="showcase-card__price">${p.variants?.length ? "Choose color · Enquire for price" : Number(p.price)>0 ? money(p.price) : "Enquire for price"}</strong>
         <a class="showcase-card__buy" href="${url}" aria-label="View ${name} and buy">${soldOut ? "View Details" : "View &amp; Buy"} <span aria-hidden="true">→</span></a>
       </div>
     </article>`;

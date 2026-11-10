@@ -15,3 +15,18 @@ assert(app.includes('variantColor'));
 assert(app.includes('stockLimit'));
 assert(app.includes('Price and stock must be confirmed'));
 console.log('Material manifest and integration smoke checks passed.');
+// Verify committed media bytes and family mappings, not only planned paths.
+for (const product of manifest.products) {
+  assert.equal(product.images.length, product.variants.length);
+  assert.equal(product.image1, product.variants[0].image);
+  for (const variant of product.variants) {
+    assert(variant.id.startsWith(product.id + '--'));
+    assert(product.images.includes(variant.image));
+    const bytes=fs.readFileSync(variant.image);
+    assert.equal(bytes.toString('ascii',0,4),'RIFF');
+    assert.equal(bytes.toString('ascii',8,12),'WEBP');
+    assert(bytes.length>1000);
+  }
+}
+assert.equal(fs.readdirSync('assets/img/materials').filter(f=>f.endsWith('.webp')).length,14);
+console.log('PASS: All 14 committed WebP assets match three material families and gallery covers.');

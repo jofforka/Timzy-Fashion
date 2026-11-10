@@ -39,30 +39,53 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/products/$(productId))
         && get(/databases/$(database)/documents/access/$(uid)).data.role == 'investor';
     }
+    // Public variants contain display/stock fields only; never investor agreements.
+    // Optional price/stock may be null until the merchant confirms them.
+    function validSizes(s) {
+      // Round-trip rejects numbers, maps and nested arrays without unrolling.
+      // The separator is reserved and cannot occur inside a selling-unit label.
+      return s.size() <= 40 && (s == [] || s == s.join('~').split('~'));
+    }
+    function validVariant(v) {
+      let price = v.price;
+      let stock = v.stockOnHand;
+      return v.keys().hasOnly(['id','color','image','price','stockOnHand','sizes'])
+        && v.get('id', '') is string
+        && v.color is string
+        && v.image is string
+        && (price == null || (price is number && price >= 0))
+        && (stock == null || (stock is int && stock >= 0))
+        && validSizes(v.sizes);
+    }
+    function validVariants(v) {
+      return v is list && v.size() <= 8
+        && (v.size() <= 0 || validVariant(v[0]))
+        && (v.size() <= 1 || validVariant(v[1]))
+        && (v.size() <= 2 || validVariant(v[2]))
+        && (v.size() <= 3 || validVariant(v[3]))
+        && (v.size() <= 4 || validVariant(v[4]))
+        && (v.size() <= 5 || validVariant(v[5]))
+        && (v.size() <= 6 || validVariant(v[6]))
+        && (v.size() <= 7 || validVariant(v[7]))
+      ;
+    }
     function cleanPublicProduct() {
       // Public product documents must contain only known display/inventory
       // fields. A new cost/margin field is denied automatically.
       return request.resource.data.keys().hasOnly([
         'badge', 'category', 'color', 'colour', 'deliveryEstimate', 'description', 'ethnicStyle', 'fabric', 'fabricType', 'featured', 'id', 'image', 'image1',
         'image2', 'image3', 'image4', 'image5', 'image6', 'image7', 'image8', 'imageSource', 'images', 'instagramVideoUrl', 'materialProductId', 'measurementRequired', 'name',
-        'originInfluence', 'price', 'productName', 'productType', 'quantity', 'salePrice', 'size', 'sizes', 'sku', 'status', 'stockOnHand', 'tags', 'videoUrl', 'createdAt', 'updatedAt'
+        'originInfluence', 'price', 'productName', 'productType', 'quantity', 'salePrice', 'size', 'sizes', 'sku', 'status', 'stockOnHand', 'tags', 'videoUrl', 'createdAt', 'updatedAt', 'variants', 'storeSection'
       ])
       && request.resource.data.status in ['Published','Draft','Out of Stock']
-      && request.resource.data.price is number
-      && request.resource.data.price >= 0
-      && !request.resource.data.keys().hasAny([
-        'investorId', 'investorUid', 'investorPayout', 'payoutPerUnit',
-        'agreedPayout', 'costPrice', 'supplierCost', 'grossMargin',
-        'margin', 'profit', 'investorAgreement',
-        'wholesalePrice', 'purchasePrice', 'supplierPrice',
-        'unitCost', 'cost', 'internalCost', 'investorRate',
-        'investorPayoutPerUnit', 'investorEmail',
-        'investorAgreementId', 'settlementBankAccount'
-      ])
+      && (request.resource.data.price == null ||
+          (request.resource.data.price is number && request.resource.data.price >= 0))
+      && (!('variants' in request.resource.data) || validVariants(request.resource.data.variants))
+
       && (
         !request.resource.data.keys().hasAny(['stockOnHand']) ||
-        (request.resource.data.stockOnHand is int
-         && request.resource.data.stockOnHand >= 0)
+        (request.resource.data.stockOnHand == null || (request.resource.data.stockOnHand is int
+         && request.resource.data.stockOnHand >= 0))
       );
     }
 

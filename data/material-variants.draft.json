@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "notes": "Preparation only. Do not publish or import until images are uploaded and shade accuracy, prices and stock verified. Existing Firebase products remain authoritative.",
+  "notes": "Prepared catalogue media. Drafts remain unpublished until merchant confirms shades, prices, selling units and stock. Existing Firebase product values remain authoritative.",
   "products": [
     {
       "id": "alabamu",
@@ -18,7 +18,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "alabamu--black",
@@ -27,7 +27,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "alabamu--white",
@@ -36,9 +36,19 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         }
-      ]
+      ],
+      "productType": "Fabric / Material",
+      "sku": "alabamu",
+      "color": "Multiple colors",
+      "images": [
+        "assets/img/materials/alabamu--teal-green.webp",
+        "assets/img/materials/alabamu--black.webp",
+        "assets/img/materials/alabamu--white.webp"
+      ],
+      "image1": "assets/img/materials/alabamu--teal-green.webp",
+      "measurementRequired": false
     },
     {
       "id": "sanrose",
@@ -56,7 +66,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "sanrose--gold",
@@ -65,7 +75,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "sanrose--light-army-green",
@@ -74,7 +84,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "sanrose--stone-gray",
@@ -83,7 +93,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "sanrose--royal-blue",
@@ -92,7 +102,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "sanrose--dark-gold",
@@ -101,7 +111,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "sanrose--lilac",
@@ -110,7 +120,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "sanrose--dark-ash",
@@ -119,9 +129,24 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         }
-      ]
+      ],
+      "productType": "Fabric / Material",
+      "sku": "sanrose",
+      "color": "Multiple colors",
+      "images": [
+        "assets/img/materials/sanrose--cream.webp",
+        "assets/img/materials/sanrose--gold.webp",
+        "assets/img/materials/sanrose--light-army-green.webp",
+        "assets/img/materials/sanrose--stone-gray.webp",
+        "assets/img/materials/sanrose--royal-blue.webp",
+        "assets/img/materials/sanrose--dark-gold.webp",
+        "assets/img/materials/sanrose--lilac.webp",
+        "assets/img/materials/sanrose--dark-ash.webp"
+      ],
+      "image1": "assets/img/materials/sanrose--cream.webp",
+      "measurementRequired": false
     },
     {
       "id": "tr-superfine",
@@ -139,7 +164,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "tr-superfine--dark-burgundy",
@@ -148,7 +173,7 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         },
         {
           "id": "tr-superfine--coffee-brown",
@@ -157,9 +182,19 @@
           "stockOnHand": null,
           "sizes": [],
           "price": null,
-          "imageStatus": "provisional-unverified"
+          "imageStatus": "prepared-shade-unverified"
         }
-      ]
+      ],
+      "productType": "Fabric / Material",
+      "sku": "tr-superfine",
+      "color": "Multiple colors",
+      "images": [
+        "assets/img/materials/tr-superfine--navy-blue.webp",
+        "assets/img/materials/tr-superfine--dark-burgundy.webp",
+        "assets/img/materials/tr-superfine--coffee-brown.webp"
+      ],
+      "image1": "assets/img/materials/tr-superfine--navy-blue.webp",
+      "measurementRequired": false
     }
   ]
 }
