@@ -337,6 +337,7 @@
     state.pendingFiles = [];
     state.replaceAll = false;
     $("#productForm").reset();
+    $("#productForm").elements.variantsJson.value = "[]";
     $("#productForm").elements.status.value = "Published";
     $("#productForm").elements.sizes.value = "";
     populateMaterialOptions();
@@ -527,7 +528,16 @@
     }
 
     const productId = state.editingId || slugify(product.name) || `product-${Date.now()}`;
+    const uploadedFileNames = state.pendingFiles.map(file => file.name);
     const newUrls = await uploadPendingImages(productId);
+    if (product.variants.length && newUrls.length) {
+      const normalizeName = value => slugify(String(value || "").replace(/\\.[^.]+$/, ""));
+      product.variants = product.variants.map(variant => {
+        const color = slugify(variant.color);
+        const index = uploadedFileNames.findIndex(name => { const stem = normalizeName(name); return stem === color || stem === `${productId}--${color}` || stem.endsWith(`--${color}`); });
+        return index >= 0 ? { ...variant, image: newUrls[index] } : variant;
+      });
+    }
     const images = state.replaceAll ? newUrls : [...state.images, ...newUrls];
 
     product.images = images;
@@ -683,6 +693,24 @@
     $("#closeProductModal").addEventListener("click", closeEditor);
     $("#cancelProductBtn").addEventListener("click", closeEditor);
     $("#productForm").addEventListener("submit", event => saveProduct(event).catch(error => toast(error.message)));
+    $("#loadFabricPreset")?.addEventListener("click", () => {
+      const presets = {
+        alabamu: ["Alabamu Viscose Rayon Suiting", ["Teal Green", "Black", "White"]],
+        sanrose: ["Original Italian Virgin Linkloom Sanrose", ["Cream", "Gold", "Light Army Green", "Stone Gray", "Royal Blue", "Dark Gold", "Lilac", "Dark Ash"]],
+        "tr-superfine": ["TR Superfine Eco Friendly by Linkloom", ["Navy Blue", "Dark Burgundy", "Coffee Brown"]]
+      };
+      const id = $("#fabricPreset")?.value, preset = presets[id];
+      if (!preset) return toast("Choose a material preset.");
+      if (state.editingId && !confirm("Replace the color list for this product? Existing variant values will be overwritten.")) return;
+      const form = $("#productForm");
+      syncPlacement("materials");
+      form.elements.name.value = preset[0];
+      form.elements.sku.value = id;
+      form.elements.status.value = "Draft";
+      form.elements.price.value = "0";
+      form.elements.variantsJson.value = JSON.stringify(preset[1].map(color => ({color,image:"",stockOnHand:null,price:null,sizes:[]})),null,2);
+      toast("Preset loaded as draft. Upload matching color images, then save.");
+    });
     $("#deleteProductBtn").addEventListener("click", () => deleteProduct().catch(error => toast(error.message)));
     $("#imageUploadInput").addEventListener("change", event => handleImageFiles(event.target.files));
     $("#replaceAllImages").addEventListener("click", () => {
