@@ -692,6 +692,41 @@
     $("#addProductBtn").addEventListener("click", openNewProduct);
     $("#closeProductModal").addEventListener("click", closeEditor);
     $("#cancelProductBtn").addEventListener("click", closeEditor);
+    $("#seedFabricDrafts")?.addEventListener("click", async () => {
+      if (state.role !== "admin") return;
+      const presets = [
+        ["alabamu","Alabamu Viscose Rayon Suiting",["Teal Green","Black","White"]],
+        ["sanrose","Original Italian Virgin Linkloom Sanrose",["Cream","Gold","Light Army Green","Stone Gray","Royal Blue","Dark Gold","Lilac","Dark Ash"]],
+        ["tr-superfine","TR Superfine Eco Friendly by Linkloom",["Navy Blue","Dark Burgundy","Coffee Brown"]]
+      ];
+      const existing = state.products.filter(p => presets.some(([id,name]) => p.id === id || String(p.name || "").toLowerCase() === name.toLowerCase()));
+      if (existing.length) return toast("One or more fabrics already exist. Edit those products instead of creating duplicates.");
+      if (!confirm("Create three unpublished material drafts with 14 colors? No existing products will be changed.")) return;
+      const button = $("#seedFabricDrafts");
+      button.disabled = true;
+      try {
+        const collection = fb.db.collection(collections.products);
+        const batch = fb.db.batch();
+        for (const [id,name,colors] of presets) {
+          const ref = collection.doc(id);
+          const snapshot = await ref.get();
+          if (snapshot.exists) throw Error("Product ID " + id + " already exists. No changes made.");
+          batch.set(ref, {
+            name,sku:id,category:"Fabrics",storeSection:"materials",productType:"Fabric / Material",
+            status:"Draft",price:0,salePrice:0,quantity:0,images:[],image1:"",
+            color:"Multiple colors",sizes:"",description:"Fabric colors and availability to be confirmed.",
+            variants:colors.map(color => ({color,image:"",stockOnHand:null,price:null,sizes:[]})),
+            createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+        await batch.commit();
+        await loadProducts();
+        renderAll();
+        toast("Three unpublished fabric drafts created. Open each to upload images.");
+      } catch (error) { toast(error.message || "Could not prepare fabrics."); }
+      finally { button.disabled = false; }
+    });
     $("#productForm").addEventListener("submit", event => saveProduct(event).catch(error => toast(error.message)));
     $("#loadFabricPreset")?.addEventListener("click", () => {
       const presets = {
