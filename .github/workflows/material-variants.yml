@@ -1,0 +1,22 @@
+name: Material variants checks
+on:
+  pull_request:
+    paths:
+      - 'assets/js/app.js'
+      - 'admin/admin.js'
+      - 'admin/index.html'
+      - 'data/material-variants.draft.json'
+      - 'tests/material-variants.test.cjs'
+      - '.github/workflows/material-variants.yml'
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check assets/js/app.js && node --check admin/admin.js && node tests/material-variants.test.cjs
