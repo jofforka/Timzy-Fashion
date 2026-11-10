@@ -36,7 +36,7 @@ const bootstrap = admin => `
    });
    await context.route('**/assets/js/firebase.js',route=>route.fulfill({body:bootstrap(admin),contentType:'text/javascript'}));
    await context.route('https://fonts.googleapis.com/**',route=>route.abort());
-   const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));return p;
+   const p=await context.newPage();p.on('pageerror',e=>{errors.push(e.message);console.error('Browser page error:',e.message);});return p;
  }
  try{
    const admin=await page(true);
