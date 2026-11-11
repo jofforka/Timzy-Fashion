@@ -703,14 +703,23 @@
       return toast("Enter a description and a positive amount up to ₦1,000,000,000.");
     }
     const form = event.currentTarget;
-    await fb.db.collection(type === "expenses" ? "expenseRequests" : collections[type]).add({
-      description: data.description.trim(),
-      amount: Number(data.amount || 0),
-      date: data.date,
-      createdBy: state.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      ...(type === "expenses" ? {status:"pending"} : {})
-    });
+    const targetCollection = type === "expenses" ? "expenseRequests" : collections[type];
+    try {
+      await fb.db.collection(targetCollection).add({
+        description: data.description.trim(),
+        amount: Number(data.amount || 0),
+        date: data.date,
+        createdBy: state.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ...(type === "expenses" ? {status:"pending"} : {})
+      });
+    } catch (error) {
+      console.error('Timzy Firestore create failed:',targetCollection,error);
+      toast(error.code === 'permission-denied'
+        ? 'Permission denied writing '+targetCollection+'. Check published Firebase rules and account access.'
+        : 'Could not save '+type+': '+(error.code || 'unknown error'));
+      return;
+    }
     form.reset();
     initDates();
     toast(type === "sales" ? "Sale recorded." : "Expense submitted for approval.");
