@@ -7,7 +7,7 @@
     try { const u = new URL(value); return u.protocol === 'https:' ? u.href : ''; }
     catch { return ''; }
   };
-  fb.db.collection('publicSettings').doc('contact').get().then(doc => {
+  fb.db.collection('publicSettings').doc('contact').onSnapshot(doc => {
     if (!doc.exists) return;
     const c = doc.data();
     const setText = (selector, value) => { if (value) document.querySelectorAll(selector).forEach(el => { el.textContent = value; }); };
@@ -34,5 +34,5 @@
       const link = document.querySelector('[data-public-contact-link="'+network+'"]');
       if (url && link) { link.href = url; link.hidden = false; }
     }
-  }).catch(error => console.warn('Public contact settings unavailable; using website defaults.',error.code || error.message));
+  }, error => console.warn('Public contact settings unavailable; using website defaults.',error.code || error.message));
 })();
