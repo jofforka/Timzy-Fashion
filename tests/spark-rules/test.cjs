@@ -76,7 +76,7 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
  }
  for(const [db,uid] of [[investor,'investor-a'],[inactive,'inactive'],[impostor,'another-uid']]) await no(setDoc(doc(db,'sales/forged-'+uid),receipt(uid)));
  for(const db of [staff,inactive,impostor,anon]) await no(getDoc(doc(db,'investorCatalog/investor-a/items/public')));
- for(const type of ['sales','expenses']) {
+ for(const type of ['sales']) {
   const record=receipt(ownerId);
   await ok(setDoc(doc(owner,type+'/valid'),record));
   await no(getDoc(doc(staff,type+'/valid')));
@@ -85,6 +85,31 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
   await no(updateDoc(doc(owner,type+'/valid'),{amount:1}));
   await no(deleteDoc(doc(owner,type+'/valid')));
  }
+ // Staff can submit but never approve expenses; owner alone reviews.
+ const expense = (uid,amount=500) => ({description:'Shop supplies',amount,date:'2026-11-11',
+   createdAt:now(),createdBy:uid,status:'pending'});
+ await ok(setDoc(doc(staff,'expenseRequests/staff-one'),expense('staff-uid')));
+ await ok(getDoc(doc(staff,'expenseRequests/staff-one')));
+ await no(setDoc(doc(staff,'expenseRequests/approved-forged'),{...expense('staff-uid'),status:'approved'}));
+ await no(setDoc(doc(staff,'expenseRequests/spoofed'),expense(ownerId)));
+ await no(setDoc(doc(staff,'expenseRequests/negative'),expense('staff-uid',-2)));
+ await no(updateDoc(doc(staff,'expenseRequests/staff-one'),{status:'approved'}));
+ await no(deleteDoc(doc(staff,'expenseRequests/staff-one')));
+ await no(getDoc(doc(investor,'expenseRequests/staff-one')));
+ await no(getDoc(doc(other,'expenseRequests/staff-one')));
+ await no(getDoc(doc(inactive,'expenseRequests/staff-one')));
+ await ok(getDoc(doc(owner,'expenseRequests/staff-one')));
+ await ok(updateDoc(doc(owner,'expenseRequests/staff-one'),{status:'approved',reviewedAt:now(),reviewedBy:ownerId}));
+ await no(updateDoc(doc(owner,'expenseRequests/staff-one'),{status:'rejected'}));
+ await ok(setDoc(doc(owner,'expenseRequests/owner-one'),expense(ownerId)));
+ await no(setDoc(doc(owner,'expenses/new-legacy'),receipt(ownerId)));
+ await no(setDoc(doc(staff,'expenses/new-legacy'),receipt('staff-uid')));
+ await ok(setDoc(doc(staff,'restockRequests/staff-one'),{productId:'public',productName:'Fabric',
+   note:'Low stock',status:'pending',createdAt:now(),createdBy:'staff-uid'}));
+ await no(updateDoc(doc(staff,'restockRequests/staff-one'),{status:'resolved'}));
+ await no(getDoc(doc(investor,'restockRequests/staff-one')));
+ await ok(updateDoc(doc(owner,'restockRequests/staff-one'),{status:'resolved',reviewedAt:now(),reviewedBy:ownerId}));
+ await no(deleteDoc(doc(staff,'restockRequests/staff-one')));
  // The exact prepared products must save through deployed-equivalent rules.
  const materials=JSON.parse(fs.readFileSync('data/material-variants.draft.json','utf8')).products;
  for(const {id,...product} of materials){
