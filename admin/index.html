@@ -176,6 +176,17 @@
           </form>
           <p id="allocationMessage" role="status"></p>
           <div id="allocationList" class="record-list"></div>
+          <h3>Investor stock and recorded sales</h3>
+          <p>Record received units before recording sales. Only the owner can post movements. Every sale uses the investor's agreed unit amount at the time of sale. No historical sales are assumed.</p>
+          <form id="investorMovementForm" class="form-grid">
+            <label>Movement<select name="kind"><option value="receipt">Receive stock</option><option value="sale">Record completed sale</option></select></label>
+            <label>Quantity<input name="quantity" type="number" min="1" step="1" required></label>
+            <label>Retail price per unit (₦; sales only)<input name="unitRetailPrice" type="number" min="0" step="0.01" placeholder="Required for sales"></label>
+            <label>Reference / receipt / order ID<input name="reference" maxlength="300" required></label>
+            <button type="submit" class="primary-btn">Record Movement</button>
+          </form>
+          <p id="movementMessage" role="status"></p>
+          <div id="allocationLedger" class="record-list"></div>
         </div>
       </section>
       <section id="portfolioView" class="admin-view" hidden>
@@ -184,7 +195,10 @@
           <p>Your assigned products and current agreed price per unit. These prices do not represent completed sales, amounts paid, or balances due.</p>
           <button id="refreshPortfolio" class="secondary-btn" type="button">Refresh My Products</button>
           <p id="portfolioMessage" role="status"></p>
+          <div id="investorSummary" role="status"></div>
           <div id="portfolioItems" class="compact-list"></div>
+          <h3>Recent stock and sales movements</h3>
+          <div id="investorMovements" class="record-list"></div>
         </div>
       </section>
 
@@ -328,6 +342,6 @@
   <script src="../assets/js/firebase.js"></script>
   <script src="product-placement.js?v=1"></script>
   <script src="../assets/js/fabric-profile.js?v=1"></script><script src="admin.js?v=investor-auth-20261111"></script>
-  <script src="spark-roles.js?v=1"></script>
+  <script src="spark-roles.js?v=investor-ledger-1"></script>
 </body>
 </html>
