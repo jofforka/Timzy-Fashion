@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const {initializeTestEnvironment, assertSucceeds:ok, assertFails:no} = require('@firebase/rules-unit-testing');
-const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serverTimestamp:now} = require('firebase/firestore');
+const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,writeBatch,serverTimestamp:now} = require('firebase/firestore');
 (async()=>{
  const env=await initializeTestEnvironment({projectId:'demo-timzy-spark',firestore:{rules:fs.readFileSync('firestore.rules','utf8')}});
  try {
@@ -142,6 +142,27 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
    await ok(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],price:100,stockOnHand:5,sizes:['yard']}]}));
  }
  console.log('PASS: Prepared material writes, draft privacy, public variants, every-slot investor-field rejection and commercial validation.');
+ // Investor stock movement must work for the owner in one atomic commit.
+ const ledgerPath='investorLedger/investor-a/products/public';
+ const ledgerDoc=doc(owner,ledgerPath);
+ const movementDoc=doc(owner,ledgerPath+'/movements/receipt-one');
+ const receiptBatch=writeBatch(owner);
+ receiptBatch.set(ledgerDoc,{received:5,sold:0,grossSales:0,investorEarnings:0,updatedAt:now()});
+ receiptBatch.set(movementDoc,{kind:'receipt',quantity:5,productId:'public',unitRetailPrice:0,
+   agreedUnitAmount:0,grossAmount:0,investorAmount:0,reference:'Test receipt',
+   createdAt:now(),createdBy:ownerId});
+ await ok(receiptBatch.commit());
+ await ok(getDoc(doc(investor,ledgerPath)));
+ await no(getDoc(doc(other,ledgerPath)));
+ await no(getDoc(doc(staff,ledgerPath)));
+ await no(setDoc(doc(investor,ledgerPath+'/movements/forged'),{kind:'receipt'}));
+ const saleBatch=writeBatch(owner);
+ saleBatch.set(ledgerDoc,{received:5,sold:2,grossSales:30000,investorEarnings:16000,updatedAt:now()});
+ saleBatch.set(doc(owner,ledgerPath+'/movements/sale-one'),{kind:'sale',quantity:2,
+   productId:'public',unitRetailPrice:15000,agreedUnitAmount:8000,grossAmount:30000,
+   investorAmount:16000,reference:'Test sale',createdAt:now(),createdBy:ownerId});
+ await ok(saleBatch.commit());
+ await no(updateDoc(doc(investor,ledgerPath),{received:999}));
  await ok(updateDoc(doc(owner,'access/investor-a'),{active:false,updatedAt:now()}));
  await no(getDoc(doc(investor,'investorCatalog/investor-a/items/public')));
  await ok(updateDoc(doc(owner,'access/staff-uid'),{active:false,updatedAt:now()}));
