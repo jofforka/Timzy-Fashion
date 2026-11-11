@@ -166,7 +166,17 @@ const bootstrap = admin => `
    await shop.evaluate(()=>Timzy.cart.save([]));
    await shop.locator('[data-purchase-action="bag"]').click();
    assert.equal(await shop.evaluate(()=>Timzy.cart.validationError()),'');
+   // Public entrypoint smoke: homepage remains the store and essential routes render on mobile.
+   await shop.goto(base+'/index.html');
+   await shop.locator('#productGrid').waitFor();
+   assert(await shop.locator('body.page-shop').count()===1,'Homepage should render the storefront');
+   for (const route of ['/shop.html','/checkout.html','/contact.html']) {
+     const response = await shop.goto(base+route);
+     assert.equal(response.status(),200,route+' should load');
+     assert(await shop.locator('body').isVisible(),route+' should render');
+   }
    assert.deepEqual(errors,[]);
+
    console.log('PASS: Chromium mobile storefront, all 14 images/colors, 3 cards, admin draft import/edit/save, idempotency, Firebase writes, blocked unknown commerce, variant basket/WhatsApp, stale price and legacy outfit.');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));await env.cleanup();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
