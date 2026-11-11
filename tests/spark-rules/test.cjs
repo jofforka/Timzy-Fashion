@@ -92,8 +92,12 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
    product.variants=product.variants.map(({imageStatus,...v})=>v);
    await ok(setDoc(doc(owner,'products/'+id),product));
    await no(getDoc(doc(anon,'products/'+id)));
+   await ok(setDoc(doc(owner,'fabricProfiles/'+id),{}));
+   await no(getDoc(doc(anon,'fabricProfiles/'+id)));
    await ok(updateDoc(doc(owner,'products/'+id),{status:'Published'}));
    await ok(getDoc(doc(anon,'products/'+id)));
+   await ok(getDoc(doc(anon,'fabricProfiles/'+id)));
+   for(const db of [anon,staff,investor]) await no(setDoc(doc(db,'fabricProfiles/'+id),{care:'Forged'}));
    for(const db of [anon,staff,investor]) await no(updateDoc(doc(db,'products/'+id),{price:1}));
    for(let index=0;index<product.variants.length;index++){
      const variants=structuredClone(product.variants);
@@ -101,6 +105,10 @@ const {doc,collection,getDoc,getDocs,setDoc,updateDoc,deleteDoc,query,where,serv
      await no(updateDoc(doc(owner,'products/'+id),{variants}));
    }
    await ok(updateDoc(doc(owner,'products/'+id),{variants:product.variants.map(v=>({...v,price:100,stockOnHand:5,sizes:['yard','metre']}))}));
+   await ok(setDoc(doc(owner,'fabricProfiles/'+id),{composition:'Test fixture only',weight:'Test fixture',feel:'Test fixture',breathability:'Test fixture',care:'Test fixture',uses:'Test fixture',videoUrl:'https://example.com/fabric.mp4',occasions:['work']}));
+   await no(setDoc(doc(owner,'fabricProfiles/'+id),{investorEmail:'private@example.test'}));
+   await no(setDoc(doc(owner,'fabricProfiles/'+id),{composition:{investorPayout:1}}));
+   await no(setDoc(doc(owner,'fabricProfiles/'+id),{occasions:['invented']}));
    await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],stockOnHand:-1}]}));
    await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],price:'100'}]}));
    await no(updateDoc(doc(owner,'products/'+id),{variants:[{...product.variants[0],sizes:['yard',{investorPayout:1}]}]}));

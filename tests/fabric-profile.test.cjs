@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const f=require('../assets/js/fabric-profile.js');
+assert.equal(f.safeVideo('javascript:alert(1)'), '');
+assert.equal(f.safeVideo('https://user:pass@example.com/a.mp4'),'');
+assert.equal(f.safeVideo('http://example.com/a.mp4'),'');
+assert.equal(f.safeVideo('https://example.com/a.mp4'),'https://example.com/a.mp4');
+assert.equal(f.safeVideo('https://example.com/page'),'');
+assert.deepEqual(f.profile({}),{composition:'',weight:'',feel:'',breathability:'',care:'',uses:'',videoUrl:'',occasions:[]});
+const profile=f.profile({raw:{fabricProfile:{composition:'  Merchant supplied  ',occasions:['work','work','unknown'],investorEmail:'private@example.test'}}});
+assert.equal(profile.composition,'Merchant supplied');assert.deepEqual(profile.occasions,['work']);assert(!('investorEmail' in profile));
+assert.deepEqual(f.liveMaterials([{id:'draft',category:'Fabrics',status:'Draft'},{id:'sample',category:'Fabrics',status:'Published',sampleListing:true},{id:'live',category:'Fabrics',status:'Published'}]).map(p=>p.id),['live']);
+console.log('PASS: Fabric profile uses merchant inputs, rejects unsafe videos and excludes drafts/samples.');

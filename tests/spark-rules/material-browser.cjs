@@ -103,6 +103,36 @@ const bootstrap = admin => `
    await shop.goto(base+'/checkout.html');
    await shop.waitForFunction(()=>Timzy.products.some(p=>p.id==='alabamu'));
    assert.match(await shop.evaluate(()=>Timzy.cart.validationError()),/changed price/);
+   // Discovery details are isolated test fixtures, never invented live claims.
+   await admin.evaluate(async()=>{
+     for(const id of ['alabamu','sanrose']) await TIMZY_FIREBASE.db.collection('fabricProfiles').doc(id).set({composition:'Test composition',weight:'Test weight',feel:'Test feel',breathability:'Test airflow',care:'Test care',uses:'Test use',videoUrl:'https://example.com/fabric.mp4',occasions:['work']});
+   });
+   await shop.goto(base+'/shop.html?section=materials');
+   await shop.locator('#compareFirst').selectOption('alabamu');
+   await shop.locator('#compareSecond').selectOption('sanrose');
+   await shop.locator('#compareFabrics').click();
+   assert((await shop.locator('#studioComparison').textContent()).includes('Test composition'));
+   await shop.locator('#studioOccasion').selectOption('work');
+   assert.equal(await shop.locator('#productGrid [data-product-id]').count(),2);
+   await shop.locator('#studioOccasion').selectOption('graduation');
+   assert.equal(await shop.locator('#productGrid [data-product-id]').count(),0);
+   assert.match(await shop.locator('#studioStatus').textContent(),/No materials are tagged/);
+   await shop.goto(base+'/product.html?id=alabamu');
+   await shop.locator('#createFabricLook').waitFor();
+   assert.equal(await shop.locator('video.studio-video').count(),1);
+   await shop.locator('#fabricColor').selectOption('1');
+   await shop.locator('#createFabricLook').click();
+   await shop.locator('#styleBriefForm').waitFor();
+   assert.equal(await shop.locator('#styleBriefForm [name="material"]').inputValue(),'alabamu');
+   assert.equal(await shop.locator('#styleBriefForm [name="color"]').inputValue(),'Black');
+   await shop.locator('#styleBriefForm [name="idea"]').fill('A test style idea');
+   await shop.locator('#saveStyleBrief').click();
+   await shop.reload();
+   await shop.locator('#styleBriefForm').waitFor();
+   assert.equal(await shop.locator('#styleBriefForm [name="idea"]').inputValue(),'A test style idea');
+   await shop.locator('#clearStyleBrief').click();
+   assert.equal(await shop.evaluate(()=>localStorage.getItem('timzy.styleBrief.v1')),null);
+   console.log('PASS: Merchant fabric specs/video, comparison, honest occasion filtering, color-aware brief links, local save/reload/clear.');
    // Legacy product size IDs remain accepted by shared checkout validation.
    await admin.evaluate(async()=>TIMZY_FIREBASE.db.collection('products').doc('legacy').set({name:'Existing outfit',category:'Senator',status:'Published',price:500,sizes:'M, L'}));
    await shop.goto(base+'/product.html?id=legacy');

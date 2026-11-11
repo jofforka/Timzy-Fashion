@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'assets/js/**'
+      - 'assets/css/material-studio.css'
+      - 'shop.html'
+      - 'product.html'
+      - 'build-your-look.html'
       - 'assets/img/materials/**'
       - 'admin/**'
       - 'data/material-variants.draft.json'
