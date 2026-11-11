@@ -64,7 +64,7 @@
       const hasOutfits = output.some(isOutfit);
       const hasMaterials = output.some(isMaterial);
       if (!hasOutfits) sampleRows.filter(isOutfit).forEach(add);
-      if (!hasMaterials || !hasOutfits) sampleRows.filter(isMaterial).forEach(add);
+      if (!hasMaterials) sampleRows.filter(isMaterial).forEach(add);
     }
     return output;
   }

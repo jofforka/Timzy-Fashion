@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "notes": "Prepared catalogue media. Drafts remain unpublished until merchant confirms shades, prices, selling units and stock. Existing Firebase product values remain authoritative.",
+  "products": [
+    {
+      "id": "alabamu",
+      "name": "Alabamu Viscose Rayon Suiting",
+      "category": "Fabrics",
+      "storeSection": "materials",
+      "status": "Draft",
+      "price": null,
+      "sizes": [],
+      "variants": [
+        {
+          "id": "alabamu--teal-green",
+          "color": "Teal Green",
+          "image": "assets/img/materials/alabamu--teal-green.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "alabamu--black",
+          "color": "Black",
+          "image": "assets/img/materials/alabamu--black.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "alabamu--white",
+          "color": "White",
+          "image": "assets/img/materials/alabamu--white.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        }
+      ],
+      "productType": "Fabric / Material",
+      "sku": "alabamu",
+      "color": "Multiple colors",
+      "images": [
+        "assets/img/materials/alabamu--teal-green.webp",
+        "assets/img/materials/alabamu--black.webp",
+        "assets/img/materials/alabamu--white.webp"
+      ],
+      "image1": "assets/img/materials/alabamu--teal-green.webp",
+      "measurementRequired": false
+    },
+    {
+      "id": "sanrose",
+      "name": "Original Italian Virgin Linkloom Sanrose",
+      "category": "Fabrics",
+      "storeSection": "materials",
+      "status": "Draft",
+      "price": null,
+      "sizes": [],
+      "variants": [
+        {
+          "id": "sanrose--cream",
+          "color": "Cream",
+          "image": "assets/img/materials/sanrose--cream.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "sanrose--gold",
+          "color": "Gold",
+          "image": "assets/img/materials/sanrose--gold.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "sanrose--light-army-green",
+          "color": "Light Army Green",
+          "image": "assets/img/materials/sanrose--light-army-green.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "sanrose--stone-gray",
+          "color": "Stone Gray",
+          "image": "assets/img/materials/sanrose--stone-gray.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "sanrose--royal-blue",
+          "color": "Royal Blue",
+          "image": "assets/img/materials/sanrose--royal-blue.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "sanrose--dark-gold",
+          "color": "Dark Gold",
+          "image": "assets/img/materials/sanrose--dark-gold.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "sanrose--lilac",
+          "color": "Lilac",
+          "image": "assets/img/materials/sanrose--lilac.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "sanrose--dark-ash",
+          "color": "Dark Ash",
+          "image": "assets/img/materials/sanrose--dark-ash.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        }
+      ],
+      "productType": "Fabric / Material",
+      "sku": "sanrose",
+      "color": "Multiple colors",
+      "images": [
+        "assets/img/materials/sanrose--cream.webp",
+        "assets/img/materials/sanrose--gold.webp",
+        "assets/img/materials/sanrose--light-army-green.webp",
+        "assets/img/materials/sanrose--stone-gray.webp",
+        "assets/img/materials/sanrose--royal-blue.webp",
+        "assets/img/materials/sanrose--dark-gold.webp",
+        "assets/img/materials/sanrose--lilac.webp",
+        "assets/img/materials/sanrose--dark-ash.webp"
+      ],
+      "image1": "assets/img/materials/sanrose--cream.webp",
+      "measurementRequired": false
+    },
+    {
+      "id": "tr-superfine",
+      "name": "TR Superfine Eco Friendly by Linkloom",
+      "category": "Fabrics",
+      "storeSection": "materials",
+      "status": "Draft",
+      "price": null,
+      "sizes": [],
+      "variants": [
+        {
+          "id": "tr-superfine--navy-blue",
+          "color": "Navy Blue",
+          "image": "assets/img/materials/tr-superfine--navy-blue.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "tr-superfine--dark-burgundy",
+          "color": "Dark Burgundy",
+          "image": "assets/img/materials/tr-superfine--dark-burgundy.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        },
+        {
+          "id": "tr-superfine--coffee-brown",
+          "color": "Coffee Brown",
+          "image": "assets/img/materials/tr-superfine--coffee-brown.webp",
+          "stockOnHand": null,
+          "sizes": [],
+          "price": null,
+          "imageStatus": "prepared-shade-unverified"
+        }
+      ],
+      "productType": "Fabric / Material",
+      "sku": "tr-superfine",
+      "color": "Multiple colors",
+      "images": [
+        "assets/img/materials/tr-superfine--navy-blue.webp",
+        "assets/img/materials/tr-superfine--dark-burgundy.webp",
+        "assets/img/materials/tr-superfine--coffee-brown.webp"
+      ],
+      "image1": "assets/img/materials/tr-superfine--navy-blue.webp",
+      "measurementRequired": false
+    }
+  ]
+}

@@ -79,7 +79,7 @@ assert.match(builder, /builder/i);
 
 const core = read('assets/js/app.js');
 assert.match(core, /sampleListing===true/, 'Checkout blocks preview submissions');
-assert.match(core, /Remove sample preview items before sending an order/,
+assert.match(core, /Remove sample preview items before placing an order/,
   'Direct WhatsApp basket action also blocks preview submissions');
 assert.match(core, /sampleListing:p\.raw\?\.sampleListing===true/,
   'Global basket addition keeps sample flag');

@@ -13,7 +13,7 @@
     .replaceAll("'", '&#039;');
 
   function sizeOptions(value) {
-    const raw = String(value || 'One Size').trim();
+    const raw = (Array.isArray(value) ? value.join(',') : String(value || '')).trim();
     const range = raw.match(/^(\d{2})\s*[–-]\s*(\d{2})$/);
     if (range) {
       const first = Number(range[1]), last = Number(range[2]);
@@ -27,27 +27,29 @@
   function addSelectedItem(p, choice, quantity) {
     const qty = Number(quantity);
     if (!p || !choice || !Number.isInteger(qty) || qty < 1 || qty > 10) return false;
-    if (String(p.status).toLowerCase() === 'out of stock') return false;
-    // Variant-specific basket IDs preserve different sizes and quantities.
-    // Names include the choice so checkout and WhatsApp order details retain it.
-    const id = String(p.id) + '::' + choice;
+    if (String(p.status).toLowerCase() !== 'published') return false;
+    const variants = p.variants || [];
+    const variant = variants.length ? variants[Number(document.querySelector('#fabricColor')?.value)] : null;
+    if (variants.length && (!variant || !variant.sizes?.includes(choice))) return false;
+    const price = variant ? variant.price : p.price;
+    const stock = variant ? variant.stockOnHand : p.stockOnHand;
+    if (price == null || !Number.isFinite(Number(price)) || Number(price) <= 0) return false;
+    if (variant && (stock == null || !Number.isSafeInteger(stock))) return false;
+    const id = String(p.id) + '::' + (variant ? (variant.id || variant.color) + '::' : '') + choice;
     const rows = app.cart.list();
+    const total = rows.filter(item => String(item.productId || item.sourceProductId) === String(p.id) &&
+      (!variant || (item.variantId ? item.variantId === variant.id : item.variantColor === variant.color)))
+      .reduce((n, item) => n + item.qty, 0);
+    if (stock != null && (!Number.isSafeInteger(stock) || stock < total + qty)) return false;
     const previous = rows.find(item => item.id === id);
-    if (previous) {
-      previous.qty += qty;
-    } else {
-      rows.push({
-        id,
-        sourceProductId: p.id,
-        name: p.name + ' — ' + choice,
-        category: p.category,
-        image: app.image(p),
-        price: p.price,
-        size: choice,
-        sampleListing: p.raw?.sampleListing === true,
-        qty
-      });
-    }
+    if (previous) previous.qty += qty;
+    else rows.push({
+      id, productId: p.id, sourceProductId: p.id,
+      variantId: variant?.id || null, variantColor: variant?.color || null,
+      name: p.name + ' — ' + (variant ? variant.color + ' — ' : '') + choice,
+      category: p.category, image: variant?.image || app.image(p), price: Number(price),
+      size: choice, stockLimit: stock, sampleListing: p.raw?.sampleListing === true, qty
+    });
     app.cart.save(rows);
     return true;
   }
@@ -151,7 +153,7 @@
       if (back) { back.href = 'shop.html?section=materials#products'; back.textContent = '← Back to materials'; }
     }
 
-    const options = sizeOptions(p.sizes);
+    const options = p.variants?.length ? [] : sizeOptions(p.sizes);
     const oneOption = options.length === 1;
     const custom = String(p.sizes || '').toLowerCase() === 'custom';
     const outfit = ['Senator', 'Agbada'].includes(p.category);
@@ -194,15 +196,27 @@
 
     const form = detail.querySelector('#productPurchaseForm');
     const status = detail.querySelector('#purchaseStatus');
-    const soldOut = String(p.status || '').toLowerCase() === 'out of stock' ||
-      (Number.isSafeInteger(p.stockOnHand) && p.stockOnHand === 0);
-    if (soldOut) {
-      form.querySelectorAll('[data-purchase-action]').forEach(button => {
-        button.disabled = true;
-        button.setAttribute('aria-disabled', 'true');
-      });
-      if (status) status.textContent = 'This product is sold out. Please contact Timzy about availability.';
+    function syncChoice() {
+      const variant = p.variants?.length ? p.variants[Number(detail.querySelector('#fabricColor')?.value)] : null;
+      let available = String(p.status).toLowerCase() === 'published' && Number(p.price) > 0;
+      if (variant) {
+        const select = form.elements.selectedSize;
+        select.innerHTML = '<option value="">Choose a size / selling unit</option>' +
+          (variant.sizes || []).map(size => `<option value="${esc(size)}">${esc(size)}</option>`).join('');
+        const price = detail.querySelector('.detail-row .price');
+        if (price) price.textContent = variant.price == null ? 'Enquire for price' :
+          (window.TIMZY_CONFIG?.currency || '₦') + Number(variant.price).toLocaleString();
+        available = String(p.status).toLowerCase() === 'published' && Number(variant.price) > 0 &&
+          Number.isSafeInteger(variant.stockOnHand) && variant.stockOnHand > 0 && variant.sizes?.length > 0;
+        form.elements.quantity.max = available ? Math.min(10, variant.stockOnHand) : 10;
+        form.elements.quantity.value = 1;
+      } else if (p.variants?.length) available = false;
+      if (Number.isSafeInteger(p.stockOnHand) && p.stockOnHand === 0) available = false;
+      form.querySelectorAll('[data-purchase-action]').forEach(button => { button.disabled = !available; });
+      if (status) status.textContent = available ? '' : 'Price, stock and selling units must be confirmed before purchase.';
     }
+    detail.querySelector('#fabricColor')?.addEventListener('change', syncChoice);
+    syncChoice();
 
     function process(action) {
       if (!form.reportValidity()) return;
@@ -210,7 +224,7 @@
       const size = String(data.get('selectedSize') || '').trim();
       const qty = Number(data.get('quantity'));
       if (!addSelectedItem(p, size, qty)) {
-        if (status) status.textContent = 'Select a valid size and quantity.';
+        if (status) status.textContent = 'Select a valid size and quantity within available stock.';
         return;
       }
       if (action === 'checkout') {

@@ -70,7 +70,8 @@
   }
 
   function imageOf(product) {
-    return product.images?.[0] || product.image1 || "../assets/img/hero-senator-grey.jpg";
+    const image = product.images?.[0] || product.image1 || "assets/img/hero-senator-grey.jpg";
+    return image.startsWith("assets/") ? "../" + image : image;
   }
 
   function instagramEmbed(url) {
@@ -220,7 +221,7 @@
         </div>
         <div class="hide-tablet">
           <small>Price</small>
-          <b>${money(product.salePrice > 0 ? product.salePrice : product.price)}</b>
+          <b>${product.price == null ? "Unconfirmed" : money(product.salePrice > 0 ? product.salePrice : product.price)}</b>
         </div>
         <div class="hide-tablet">
           <span class="status-pill">${escapeHTML(product.status || "Published")}</span>
@@ -239,7 +240,7 @@
       <div class="compact-item">
         <img src="${escapeHTML(imageOf(product))}" alt="${escapeHTML(product.name)}" onerror="this.src='../assets/img/hero-senator-grey.jpg'">
         <div><b>${escapeHTML(product.name)}</b><small>${escapeHTML(product.category || "Collection")}</small></div>
-        <strong>${money(product.salePrice > 0 ? product.salePrice : product.price)}</strong>
+        <strong>${product.price == null ? "Unconfirmed" : money(product.salePrice > 0 ? product.salePrice : product.price)}</strong>
       </div>
     `).join("") || `<p>No products yet.</p>`;
   }
@@ -313,6 +314,8 @@
     const types = section === 'outfits' ? [['Ready-Made','Ready-made'],['Custom Sewing','Made to measure / custom sewing']] : [[data.productType,section === 'materials' ? 'Fabric / Material' : 'Accessory']];
     form.elements.productType.innerHTML = types.map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
     form.elements.productType.value = data.productType;
+    form.elements.price.required = section !== "materials";
+    form.elements.sizes.required = section !== "materials";
     $("#productTypeCaption").textContent = section === 'outfits' ? 'Outfit type' : 'Product type';
     form.elements.measurementRequired.checked = data.productType === 'Custom Sewing';
     $("#productPlacementHint").textContent = section === 'accessories' ? 'Appears in accessory suggestions, outside the two main shop tabs.' : `Appears in the ${placement.labels[section]} tab.`;
@@ -333,9 +336,11 @@
   function resetEditor() {
     state.editingId = null;
     state.images = [];
+    if ($("#productForm")?.elements?.variantsJson) $("#productForm").elements.variantsJson.value = "[]";
     state.pendingFiles = [];
     state.replaceAll = false;
     $("#productForm").reset();
+    $("#productForm").elements.variantsJson.value = "[]";
     $("#productForm").elements.status.value = "Published";
     $("#productForm").elements.sizes.value = "";
     populateMaterialOptions();
@@ -359,6 +364,7 @@
 
     resetEditor();
     state.editingId = id;
+    if ($("#productForm")?.elements?.variantsJson) $("#productForm").elements.variantsJson.value = JSON.stringify(product.variants || [], null, 2);
     state.images = Array.isArray(product.images) && product.images.length
       ? [...product.images]
       : [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
@@ -370,7 +376,7 @@
       "description", "tags", "instagramVideoUrl"
     ];
     fields.forEach(field => {
-      if (form.elements[field]) form.elements[field].value = product[field] ?? "";
+      if (form.elements[field]) form.elements[field].value = Array.isArray(product[field]) ? product[field].join(", ") : product[field] ?? "";
     });
     syncPlacement(placement.sectionOf(product), product.category, product.productType);
     form.elements.id.value = id;
@@ -399,7 +405,7 @@
 
     root.innerHTML = all.length ? all.map((item, visualIndex) => `
       <div class="image-tile">
-        <img src="${escapeHTML(item.url)}" alt="Product image">
+        <img src="${escapeHTML(item.url.startsWith("assets/") ? "../" + item.url : item.url)}" alt="Product image">
         ${visualIndex === 0 ? `<span class="cover-badge">Cover</span>` : ""}
         <button type="button" data-remove-image="${item.type}:${item.index}">×</button>
       </div>
@@ -485,12 +491,12 @@
       name: data.name.trim(),
       sku: data.sku.trim(),
       ...placement.normalize(data.storeSection, data.category, data.productType),
-      price: Number(data.price || 0),
-      salePrice: Number(data.salePrice || 0),
+      price: data.price.trim() === "" ? null : Number(data.price),
+      salePrice: data.salePrice.trim() === "" ? null : Number(data.salePrice),
       fabricType: data.fabricType.trim(),
       materialProductId: String(data.materialProductId || "").trim(),
       color: data.color.trim(),
-      sizes: data.sizes.trim() || "Custom",
+      sizes: data.sizes.trim() || (data.storeSection === "outfits" ? "Custom" : ""),
       deliveryEstimate: data.deliveryEstimate.trim() || "7–14 business days after confirmation",
       status: data.status,
       badge: data.badge,
@@ -499,6 +505,7 @@
       instagramVideoUrl: data.instagramVideoUrl.trim(),
       featured: form.elements.featured.checked,
       measurementRequired: form.elements.measurementRequired.checked,
+      variants: (() => { const raw = form.elements.variantsJson?.value?.trim(); if (!raw) return []; const list = JSON.parse(raw); if (!Array.isArray(list) || list.length > 8) throw Error("Enter up to 8 color variants."); if(new Set(list.map(v=>String(v?.color||"").trim().toLowerCase())).size!==list.length) throw Error("Color names must be unique."); return list.map(v => { if (!v || !String(v.color || "").trim()) throw Error("Each variant needs a color."); const stock = v.stockOnHand == null || v.stockOnHand === "" ? null : Number(v.stockOnHand); if (stock !== null && (!Number.isSafeInteger(stock) || stock < 0)) throw Error("Stock must be a nonnegative integer."); if(v.sizes != null && (!Array.isArray(v.sizes) || v.sizes.length>40 || v.sizes.some(s=>typeof s!=="string" || s.includes("~")))) throw Error("Enter up to 40 size / selling unit labels per color."); const price = v.price == null || v.price === "" ? null : Number(v.price); if (price !== null && (!Number.isFinite(price) || price < 0)) throw Error("Price must be nonnegative."); const image=String(v.image || "").trim(); if(image && !/^(https:\/\/|assets\/img\/)/i.test(image)) throw Error("Use an HTTPS image URL or an assets/img path."); return {...(v.id ? {id:String(v.id)} : {}),color:String(v.color).trim(),image,stockOnHand:stock,price,sizes:Array.isArray(v.sizes)?v.sizes.map(String).map(x=>x.trim()).filter(Boolean):[]}; }); })(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
   }
@@ -506,11 +513,12 @@
   async function saveProduct(event) {
     if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
-    const product = formProductData();
+    let product;
+    try { product = formProductData(); } catch (error) { return toast(error.message || "Invalid variants."); }
     if (product.productType === 'Ready-Made' && (!$("#productForm").elements.sizes.value.trim() || product.sizes.toLowerCase() === 'custom')) {
       return toast('Enter the ready-made sizes you actually stock, or choose made to measure.');
     }
-    if (!product.name || !product.category || !Number.isFinite(product.price) || product.price < 0) {
+    if (!product.name || !product.category || product.price !== null && (!Number.isFinite(product.price) || product.price < 0)) {
       return toast("Complete the required product fields.");
     }
 
@@ -523,7 +531,16 @@
     }
 
     const productId = state.editingId || slugify(product.name) || `product-${Date.now()}`;
+    const uploadedFileNames = state.pendingFiles.map(file => file.name);
     const newUrls = await uploadPendingImages(productId);
+    if (product.variants.length && newUrls.length) {
+      const normalizeName = value => slugify(String(value || "").replace(/\.[^.]+$/, ""));
+      product.variants = product.variants.map(variant => {
+        const color = slugify(variant.color);
+        const index = uploadedFileNames.findIndex(name => { const stem = normalizeName(name); return stem === color || stem === `${productId}--${color}` || stem.endsWith(`--${color}`); });
+        return index >= 0 ? { ...variant, image: newUrls[index] } : variant;
+      });
+    }
     const images = state.replaceAll ? newUrls : [...state.images, ...newUrls];
 
     product.images = images;
@@ -678,7 +695,59 @@
     $("#addProductBtn").addEventListener("click", openNewProduct);
     $("#closeProductModal").addEventListener("click", closeEditor);
     $("#cancelProductBtn").addEventListener("click", closeEditor);
+    $("#seedFabricDrafts")?.addEventListener("click", async () => {
+      if (state.role !== "admin") return;
+      const button = $("#seedFabricDrafts");
+      button.disabled = true;
+      try {
+        const response = await fetch("../data/material-variants.draft.json", {cache:"no-store"});
+        if (!response.ok) throw Error("Could not load material catalogue.");
+        const {products} = await response.json();
+        const collection = fb.db.collection(collections.products);
+        const current = await collection.get();
+        const conflicts = current.docs.filter(doc => products.some(p => p.id !== doc.id &&
+          (String(doc.data().name || "").toLowerCase() === p.name.toLowerCase() || doc.data().sku === p.sku)));
+        if (conflicts.length) throw Error("A matching fabric already exists under another ID. Edit that product to avoid duplicates.");
+        await fb.db.runTransaction(async transaction => {
+          const refs = products.map(p => collection.doc(p.id));
+          const snapshots = await Promise.all(refs.map(ref => transaction.get(ref)));
+          snapshots.forEach((snapshot, i) => {
+            if (snapshot.exists) return; // Never overwrite merchant data or existing images.
+            const {id, ...product} = products[i];
+            product.variants = product.variants.map(({imageStatus, ...variant}) => variant);
+            transaction.set(refs[i], {...product,
+              createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+              updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+          });
+        });
+        await loadProducts(); renderAll();
+        toast("Missing fabric drafts prepared with all 14 images. Existing products preserved.");
+      } catch (error) { toast(error.message || "Could not prepare fabrics."); }
+      finally { button.disabled = false; }
+    });
     $("#productForm").addEventListener("submit", event => saveProduct(event).catch(error => toast(error.message)));
+    $("#loadFabricPreset")?.addEventListener("click", () => {
+      const id = $("#fabricPreset")?.value;
+      if (!id) return toast("Choose a material preset.");
+      if (state.editingId && !confirm("Replace this product's color list with the prepared draft?")) return;
+      fetch("../data/material-variants.draft.json", {cache:"no-store"}).then(response => {
+        if (!response.ok) throw Error("Could not load material catalogue.");
+        return response.json();
+      }).then(({products}) => {
+        const preset = products.find(p => p.id === id);
+        if (!preset) throw Error("Material preset not found.");
+        const form = $("#productForm");
+        syncPlacement("materials");
+        form.elements.name.value = preset.name;
+        form.elements.sku.value = id;
+        form.elements.status.value = "Draft";
+        form.elements.price.value = ""; form.elements.salePrice.value = "";
+        form.elements.sizes.value = "";
+        form.elements.variantsJson.value = JSON.stringify(preset.variants.map(({imageStatus,...v}) => v),null,2);
+        state.images = [...preset.images]; renderImagePreviews();
+        toast("Prepared images loaded. Confirm commercial values before publishing.");
+      }).catch(error => toast(error.message));
+    });
     $("#deleteProductBtn").addEventListener("click", () => deleteProduct().catch(error => toast(error.message)));
     $("#imageUploadInput").addEventListener("change", event => handleImageFiles(event.target.files));
     $("#replaceAllImages").addEventListener("click", () => {
