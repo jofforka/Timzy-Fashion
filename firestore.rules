@@ -69,6 +69,19 @@ service cloud.firestore {
         && (v.size() <= 7 || validVariant(v[7]))
       ;
     }
+    // Separate public display profiles keep variant validation below rule limits.
+    function validFabricProfile(p) {
+      return p.keys().hasOnly(['composition','weight','feel','breathability','care','uses','videoUrl','occasions'])
+        && p.get('composition','') is string && p.get('composition','').size() <= 400
+        && p.get('weight','') is string && p.get('weight','').size() <= 400
+        && p.get('feel','') is string && p.get('feel','').size() <= 400
+        && p.get('breathability','') is string && p.get('breathability','').size() <= 400
+        && p.get('care','') is string && p.get('care','').size() <= 400
+        && p.get('uses','') is string && p.get('uses','').size() <= 400
+        && p.get('videoUrl','') is string && p.get('videoUrl','').size() <= 2000
+        && p.get('occasions',[]) is list && p.get('occasions',[]).size() <= 5
+        && p.get('occasions',[]).hasOnly(['wedding','work','festive','graduation','everyday']);
+    }
     function cleanPublicProduct() {
       // Public product documents must contain only known display/inventory
       // fields. A new cost/margin field is denied automatically.
@@ -108,6 +121,12 @@ service cloud.firestore {
     match /products/{id} {
       allow read: if owner() || resource.data.status in ['Published','Out of Stock'];
       allow create, update: if owner() && cleanPublicProduct();
+      allow delete: if false;
+    }
+    match /fabricProfiles/{productId} {
+      allow read: if owner() || get(/databases/$(database)/documents/products/$(productId)).data.status in ['Published','Out of Stock'];
+      allow create, update: if owner() && validFabricProfile(request.resource.data)
+        && existsAfter(/databases/$(database)/documents/products/$(productId));
       allow delete: if false;
     }
     match /settings/{id} {

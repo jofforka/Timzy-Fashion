@@ -137,6 +137,11 @@
     state.products = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .sort((a, b) => timestampValue(b.updatedAt) - timestampValue(a.updatedAt));
+    await Promise.all(state.products.filter(p => window.TimzyFabric.isMaterial(p)).map(async product => {
+      try { const profile = await fb.db.collection('fabricProfiles').doc(product.id).get();
+        if (session === state.session) {product.fabricProfile = profile.exists ? profile.data() : {}; product.profileUnavailable = false;}
+      } catch { if (session === state.session) {product.fabricProfile = {}; product.profileUnavailable = true;} }
+    }));
   }
 
   async function loadRecords(type) {
@@ -314,6 +319,7 @@
     const types = section === 'outfits' ? [['Ready-Made','Ready-made'],['Custom Sewing','Made to measure / custom sewing']] : [[data.productType,section === 'materials' ? 'Fabric / Material' : 'Accessory']];
     form.elements.productType.innerHTML = types.map(([value,label]) => `<option value="${value}">${label}</option>`).join('');
     form.elements.productType.value = data.productType;
+    $("#fabricProfileFields").hidden = section !== "materials";
     form.elements.price.required = section !== "materials";
     form.elements.sizes.required = section !== "materials";
     $("#productTypeCaption").textContent = section === 'outfits' ? 'Outfit type' : 'Product type';
@@ -370,6 +376,9 @@
       : [product.image1, product.image2, product.image3, product.image4].filter(Boolean);
 
     const form = $("#productForm");
+    const profile = window.TimzyFabric.profile(product);
+    for (const key of [...Object.keys(window.TimzyFabric.fields), 'videoUrl']) form.elements['fabric_'+key].value = profile[key];
+    Array.from(form.elements.fabric_occasions.options).forEach(option => {option.selected = profile.occasions.includes(option.value);});
     const fields = [
       "id", "name", "sku", "category", "productType", "price", "salePrice",
       "fabricType", "materialProductId", "color", "sizes", "deliveryEstimate", "status", "badge",
@@ -505,6 +514,15 @@
       instagramVideoUrl: data.instagramVideoUrl.trim(),
       featured: form.elements.featured.checked,
       measurementRequired: form.elements.measurementRequired.checked,
+      fabricProfile: (() => {
+        const profile = {};
+        for (const key of Object.keys(window.TimzyFabric.fields)) { profile[key] = String(data['fabric_'+key] || '').trim().slice(0,400); }
+        const video = String(data.fabric_videoUrl || '').trim();
+        if(video && !window.TimzyFabric.safeVideo(video)) throw Error('Use a direct HTTPS MP4 or WebM video URL.');
+        profile.videoUrl = window.TimzyFabric.safeVideo(video);
+        profile.occasions = Array.from(form.elements.fabric_occasions.selectedOptions).map(option=>option.value);
+        return profile;
+      })(),
       variants: (() => { const raw = form.elements.variantsJson?.value?.trim(); if (!raw) return []; const list = JSON.parse(raw); if (!Array.isArray(list) || list.length > 8) throw Error("Enter up to 8 color variants."); if(new Set(list.map(v=>String(v?.color||"").trim().toLowerCase())).size!==list.length) throw Error("Color names must be unique."); return list.map(v => { if (!v || !String(v.color || "").trim()) throw Error("Each variant needs a color."); const stock = v.stockOnHand == null || v.stockOnHand === "" ? null : Number(v.stockOnHand); if (stock !== null && (!Number.isSafeInteger(stock) || stock < 0)) throw Error("Stock must be a nonnegative integer."); if(v.sizes != null && (!Array.isArray(v.sizes) || v.sizes.length>40 || v.sizes.some(s=>typeof s!=="string" || s.includes("~")))) throw Error("Enter up to 40 size / selling unit labels per color."); const price = v.price == null || v.price === "" ? null : Number(v.price); if (price !== null && (!Number.isFinite(price) || price < 0)) throw Error("Price must be nonnegative."); const image=String(v.image || "").trim(); if(image && !/^(https:\/\/|assets\/img\/)/i.test(image)) throw Error("Use an HTTPS image URL or an assets/img path."); return {...(v.id ? {id:String(v.id)} : {}),color:String(v.color).trim(),image,stockOnHand:stock,price,sizes:Array.isArray(v.sizes)?v.sizes.map(String).map(x=>x.trim()).filter(Boolean):[]}; }); })(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -515,6 +533,7 @@
     event.preventDefault();
     let product;
     try { product = formProductData(); } catch (error) { return toast(error.message || "Invalid variants."); }
+    if (state.editingId && placement.sectionOf(product) === 'materials' && state.products.find(p=>p.id===state.editingId)?.profileUnavailable) return toast('Fabric details could not load. Reload before saving to preserve existing details.');
     if (product.productType === 'Ready-Made' && (!$("#productForm").elements.sizes.value.trim() || product.sizes.toLowerCase() === 'custom')) {
       return toast('Enter the ready-made sizes you actually stock, or choose made to measure.');
     }
@@ -552,7 +571,11 @@
       ? state.products.find(p => p.id === state.editingId)?.createdAt || firebase.firestore.FieldValue.serverTimestamp()
       : firebase.firestore.FieldValue.serverTimestamp();
 
-    await fb.db.collection(collections.products).doc(productId).set(product, { merge: true });
+    const {fabricProfile, ...productDocument} = product;
+    const batch = fb.db.batch();
+    batch.set(fb.db.collection(collections.products).doc(productId), productDocument, { merge: true });
+    if (placement.sectionOf(product) === 'materials') batch.set(fb.db.collection('fabricProfiles').doc(productId), fabricProfile);
+    await batch.commit();
     toast(state.editingId ? "Product updated." : "Product created.");
     closeEditor();
     await loadProducts();
@@ -588,6 +611,8 @@
     delete copy.id;
     delete copy.stockOnHand;
     copy.quantity = "Verify availability before publishing";
+    delete copy.fabricProfile;
+    delete copy.profileUnavailable;
     await fb.db.collection(collections.products).doc(copyId).set(copy);
     toast("Product duplicated.");
     await loadProducts();
