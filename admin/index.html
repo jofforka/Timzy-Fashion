@@ -44,6 +44,7 @@
         <button data-view="restock" data-operations-only>Restock Requests</button>
         <button data-view="expenses" data-operations-only>Expenses</button>
         <button data-view="settings" data-admin-only>Settings</button>
+        <button data-view="contact" data-admin-only>Contact Information</button>
         <button data-view="accounts" data-admin-only>Account Permissions</button>
         <button data-view="allocations" data-admin-only>Investor Products</button>
         <button data-view="portfolio" data-investor-only hidden>My Products</button>
@@ -164,6 +165,8 @@
           </div>
           <button class="primary-btn" type="submit">Save Settings</button>
         </form>
+      </section>
+      <section id="contactView" class="admin-view" hidden>
         <form id="publicContactForm" class="admin-card settings-form">
           <div class="card-head"><div><span class="eyebrow">Public Website</span><h2>Contact Information</h2></div></div>
           <p>These details are public. Banking details and upload credentials remain private.</p>
@@ -374,7 +377,7 @@
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
   <script src="product-placement.js?v=1"></script>
-  <script src="../assets/js/fabric-profile.js?v=1"></script><script src="admin.js?v=shop-operations-20261111"></script>
+  <script src="../assets/js/fabric-profile.js?v=1"></script><script src="admin.js?v=contact-nav-20261111"></script>
   <script src="spark-roles.js?v=investor-ledger-1"></script>
 </body>
 </html>
