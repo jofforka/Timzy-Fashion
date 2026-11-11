@@ -3,6 +3,8 @@
  'use strict';
  const app=window.Timzy, fabric=window.TimzyFabric;
  if(!app||!fabric)return;
+ const contact=document.querySelector('.floating-whatsapp'),phone=String(window.TIMZY_CONFIG?.whatsappNumber||'').replace(/[^0-9]/g,'');
+ if(contact&&phone){contact.href='https://wa.me/'+phone;contact.rel='noopener noreferrer';}
  const load=app.loadProducts.bind(app);
  app.loadProducts=async()=>{
   await load();const db=window.TIMZY_FIREBASE?.db;if(!db)return;
