@@ -54,6 +54,14 @@
     toast.timer = setTimeout(() => el.classList.remove("show"), 2600);
   }
 
+  function withDeadline(promise, milliseconds, message) {
+    let timer;
+    return Promise.race([
+      Promise.resolve(promise),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), milliseconds); })
+    ]).finally(() => clearTimeout(timer));
+  }
+
   function requireFirebase() {
     if (!fb?.auth || !fb?.db) {
       $("#loginMessage").textContent = "Firebase Authentication or Firestore is unavailable. Check the SDK and configuration.";
@@ -681,7 +689,7 @@
       const data = Object.fromEntries(new FormData(event.currentTarget).entries());
       $("#loginMessage").textContent = "Signing in...";
       try {
-        await fb.auth.signInWithEmailAndPassword(data.email, data.password);
+        await withDeadline(fb.auth.signInWithEmailAndPassword(data.email, data.password), 15000, "Sign-in timed out. Check your connection and Firebase Authentication settings, then try again.");
         // Do not clear the authorization error set by onAuthStateChanged.
         // Firebase sign-in success does not imply a valid active access/{uid} role.
       } catch (error) {
@@ -830,13 +838,14 @@
       try {
         if (user.uid === OWNER_UID) state.role = 'admin';
         else {
-          const profile = await fb.db.collection('access').doc(user.uid).get();
+          const profile = await withDeadline(fb.db.collection('access').doc(user.uid).get({source: 'server'}), 12000, 'Signed in, but investor permissions could not be verified. Check Firestore connectivity and rules, then try again.');
           if (session !== state.session) return;
           const data = profile.exists ? profile.data() : {};
           if (data.active !== true || !['staff','investor'].includes(data.role)) throw Error('Your account has not been granted active shop access. Contact the administrator.');
           state.role = data.role;
         }
         if (session !== state.session) return;
+        $('#loginMessage').textContent = '';
         showApp(user);
         if (state.role === 'investor') await window.TimzyRoles.loadPortfolio(user.uid);
       } catch (error) {
