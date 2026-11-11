@@ -177,6 +177,9 @@
     const doc = await fb.db.collection(collections.settings).doc("store").get();
     if (session !== state.session) return;
     state.settings = doc.exists ? doc.data() : {};
+    const publicDoc = await fb.db.collection("publicSettings").doc("contact").get();
+    if (session !== state.session) return;
+    state.publicContact = publicDoc.exists ? publicDoc.data() : {};
   }
 
 
@@ -356,6 +359,10 @@
   function renderSettings() {
     const form = $("#settingsForm");
     if (!form) return;
+    const publicForm = $("#publicContactForm");
+    if (publicForm) for (const [key, value] of Object.entries(state.publicContact || {})) {
+      if (publicForm.elements[key]) publicForm.elements[key].value = value ?? "";
+    }
     for (const [key, value] of Object.entries(state.settings)) {
       if (form.elements[key]) form.elements[key].value = value ?? "";
     }
@@ -742,6 +749,21 @@
     toast("Settings saved.");
   }
 
+  async function savePublicContact(event) {
+    event.preventDefault();
+    if (state.role !== "admin") return;
+    const form = event.currentTarget;
+    if (!form.reportValidity()) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+    for (const [key,value] of Object.entries(data)) data[key] = value.trim();
+    for (const key of ["mapsUrl","instagramUrl","facebookUrl","tiktokUrl"]) {
+      if (data[key] && (!/^https:\/\//i.test(data[key]) || !/^https:$/.test(new URL(data[key]).protocol))) throw new Error(key+" must use HTTPS.");
+    }
+    await fb.db.collection("publicSettings").doc("contact").set({...data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    state.publicContact = data;
+    toast("Public contact information saved.");
+  }
+
   function previewInstagram() {
     const url = $("#productForm").elements.instagramVideoUrl.value.trim();
     const embed = instagramEmbed(url);
@@ -896,6 +918,7 @@
     $("#restockForm").addEventListener("submit", event => submitRestock(event).catch(error => toast(error.message)));
     document.addEventListener("click",event=>{const e=event.target.closest("[data-expense-review]");const r=event.target.closest("[data-restock-review]");if(e)reviewRequest("expenseRequests",e.dataset.expenseReview,e.dataset.decision).catch(x=>toast(x.message));if(r)reviewRequest("restockRequests",r.dataset.restockReview,r.dataset.decision).catch(x=>toast(x.message));});
     $("#settingsForm").addEventListener("submit", event => saveSettings(event).catch(error => toast(error.message)));
+    $("#publicContactForm").addEventListener("submit", event => savePublicContact(event).catch(error => toast(error.message)));
   }
 
   function initDates() {
