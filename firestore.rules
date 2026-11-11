@@ -129,6 +129,7 @@ service cloud.firestore {
         && existsAfter(/databases/$(database)/documents/products/$(productId));
       allow delete: if false;
     }
+    // Public contact details are isolated from owner-only settings/store.
     match /publicSettings/{id} {
       allow read: if id == 'contact';
       allow create, update: if id == 'contact' && owner()
@@ -136,7 +137,18 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['phone','whatsapp','email','address','hours','mapsUrl','instagramUrl','facebookUrl','tiktokUrl','updatedAt'])
         && request.resource.data.updatedAt == request.time
         && request.resource.data.phone is string && request.resource.data.phone.size() <= 30
-        && request.resource.data.whatsapp is string && (request.resource.data.whatsapp == '' || request.resource.data.whatsapp.matches('^[0-9]{8,15}
+        && request.resource.data.whatsapp is string
+        && (request.resource.data.whatsapp == '' || request.resource.data.whatsapp.matches('^[0-9]{8,15}$'))
+        && request.resource.data.email is string && request.resource.data.email.size() <= 254
+        && request.resource.data.address is string && request.resource.data.address.size() <= 300
+        && request.resource.data.hours is string && request.resource.data.hours.size() <= 200
+        && request.resource.data.mapsUrl is string && request.resource.data.mapsUrl.size() <= 500
+        && request.resource.data.instagramUrl is string && request.resource.data.instagramUrl.size() <= 500
+        && request.resource.data.facebookUrl is string && request.resource.data.facebookUrl.size() <= 500
+        && request.resource.data.tiktokUrl is string && request.resource.data.tiktokUrl.size() <= 500;
+      allow delete: if false;
+    }
+    match /settings/{id} {
       allow read: if owner();
       allow create, update: if owner() && validSettings();
       allow delete: if false;
