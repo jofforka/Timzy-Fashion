@@ -66,7 +66,7 @@ const bootstrap = admin => `
    console.log('PASS: Admin import, idempotency, eight-image preview and save through Firestore.');
    const shop=await page(false,{width:390,height:844});
    await shop.goto(base+'/shop.html?section=materials');
-   await shop.waitForFunction(()=>window.Timzy?.products.some(p=>p.id==='sanrose'));
+   await shop.waitForFunction(()=>document.querySelectorAll('#productGrid [data-product-id]').length===3);
    assert.equal(await shop.locator('#productGrid [data-product-id]').count(),3);
    assert(!await shop.locator('#productGrid').textContent().then(s=>s.includes('₦0')));
    for(const product of manifest.products){
