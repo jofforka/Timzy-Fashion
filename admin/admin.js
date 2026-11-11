@@ -22,6 +22,8 @@
     products: [],
     sales: [],
     expenses: [],
+    expenseRequests: [],
+    restockRequests: [],
     settings: {},
     editingId: null,
     images: [],
@@ -129,7 +131,8 @@
     await Promise.all([
       loadProducts(),
       loadRecords("sales"),
-      ...(state.role === 'admin' ? [loadRecords("expenses"), loadSettings()] : [])
+      ...(state.role === 'admin' ? [loadRecords("expenses"), loadSettings()] : []),
+      loadOperationsRequests()
     ]);
     if (session === state.session) renderAll();
   }
@@ -176,6 +179,63 @@
     state.settings = doc.exists ? doc.data() : {};
   }
 
+
+  async function loadOperationsRequests() {
+    const session = state.session;
+    const scoped = source => state.role === 'staff' ? source.where('createdBy','==',state.uid) : source;
+    const [expenses,restocks] = await Promise.all([
+      scoped(fb.db.collection('expenseRequests')).limit(100).get(),
+      scoped(fb.db.collection('restockRequests')).limit(100).get()
+    ]);
+    if (session !== state.session) return;
+    state.expenseRequests = expenses.docs.map(d=>({id:d.id,...d.data()}));
+    state.restockRequests = restocks.docs.map(d=>({id:d.id,...d.data()}));
+  }
+  function renderOperations() {
+    const approved = state.expenseRequests.filter(x=>x.status==='approved').reduce((a,x)=>a+Number(x.amount||0),0);
+    const legacy = state.role==='admin' ? state.expenses.reduce((a,x)=>a+Number(x.amount||0),0) : 0;
+    const today = new Date().toLocaleDateString('en-CA');
+    const todaySales = state.sales.filter(x=>x.date===today).reduce((a,x)=>a+Number(x.amount||0),0);
+    const todayExpenses = state.expenseRequests.filter(x=>x.date===today && x.status==='approved').reduce((a,x)=>a+Number(x.amount||0),0) +
+      (state.role==='admin' ? state.expenses.filter(x=>x.date===today).reduce((a,x)=>a+Number(x.amount||0),0) : 0);
+    $('#dailyShopSummary').textContent = 'Today ('+today+'): recorded sales '+money(todaySales)+' · approved expenses '+money(todayExpenses)+
+      ' · difference '+money(todaySales-todayExpenses)+'. This is not net profit; records are limited to the latest 100 per source'+
+      (state.role==='staff' ? ' and your own submissions.' : '.') ;
+    $('#expenseSummary').textContent = 'Approved expenses in loaded records: '+money(approved+legacy)+
+      ' · Awaiting approval: '+state.expenseRequests.filter(x=>x.status==='pending').length;
+    $('#expensesList').innerHTML = state.expenseRequests.slice().sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0))
+      .map(x=>'<div class="record-item"><div><b>'+escapeHTML(x.date)+'</b><small>'+escapeHTML(x.description)+
+        '</small></div><strong>'+money(x.amount)+' · '+escapeHTML(x.status)+'</strong>'+
+        (state.role==='admin' && x.status==='pending' ? '<button type="button" data-expense-review="'+escapeHTML(x.id)+'" data-decision="approved">Approve</button>'+
+        '<button type="button" data-expense-review="'+escapeHTML(x.id)+'" data-decision="rejected">Reject</button>' : '')+'</div>').join('')+
+      (state.role==='admin' ? state.expenses.map(x=>'<div class="record-item"><b>Legacy expense · '+escapeHTML(x.date)+'</b> '+escapeHTML(x.description)+' · '+money(x.amount)+'</div>').join('') : '');
+    $('#restockProduct').innerHTML = state.products.map(p=>'<option value="'+escapeHTML(p.id)+'">'+escapeHTML(p.name)+'</option>').join('');
+    $('#restockList').innerHTML = state.restockRequests.map(x=>'<div class="record-item"><div><b>'+escapeHTML(x.productName)+
+      '</b><small>'+escapeHTML(x.note)+'</small></div><strong>'+escapeHTML(x.status)+'</strong>'+
+      (state.role==='admin' && x.status==='pending' ? '<button type="button" data-restock-review="'+escapeHTML(x.id)+'" data-decision="resolved">Mark resolved</button>'+
+      '<button type="button" data-restock-review="'+escapeHTML(x.id)+'" data-decision="dismissed">Dismiss</button>' : '')+'</div>').join('') || '<p>No restock requests.</p>';
+  }
+  async function submitRestock(event) {
+    event.preventDefault();
+    if (state.role!=='staff') return;
+    const d=Object.fromEntries(new FormData(event.currentTarget));
+    const product=state.products.find(p=>p.id===d.productId);
+    if (!product || !d.note.trim()) return toast('Choose a product and enter a reason.');
+    await fb.db.collection('restockRequests').add({productId:product.id,productName:product.name,note:d.note.trim(),
+      status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:state.uid});
+    event.currentTarget.reset();
+    $('#restockMessage').textContent='Restock request submitted for administrator review.';
+    await loadOperationsRequests();renderOperations();
+  }
+  async function reviewRequest(collection,id,decision) {
+    if (state.role!=='admin') return;
+    const record=collection==='expenseRequests' ? state.expenseRequests.find(x=>x.id===id) : state.restockRequests.find(x=>x.id===id);
+    if (!record || record.status!=='pending') return;
+    if (!confirm('Confirm '+decision+' for this request?')) return;
+    await fb.db.collection(collection).doc(id).update({status:decision,reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),reviewedBy:state.uid});
+    await loadOperationsRequests();renderOperations();
+  }
+
   function renderAll() {
     renderStats();
     renderProducts();
@@ -185,6 +245,7 @@
     renderRecords("expenses");
     renderSettings();
     renderCategoryFilter();
+    renderOperations();
   }
 
   function renderStats() {
@@ -192,7 +253,7 @@
     $("#statPublished").textContent = state.products.filter(p => String(p.status).toLowerCase() === "published").length;
     $("#salesStatLabel").textContent = state.role === 'staff' ? 'Your recorded sales (up to 100 records)' : 'Recorded sales (up to 100 records)';
     $("#statSales").textContent = money(state.sales.reduce((sum, item) => sum + Number(item.amount || 0), 0));
-    $("#statExpenses").textContent = money(state.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
+    $("#statExpenses").textContent = money(state.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0) + state.expenseRequests.filter(x=>x.status==="approved").reduce((sum,x)=>sum+Number(x.amount||0),0));
   }
 
   function renderCategoryFilter() {
@@ -226,6 +287,7 @@
         <div>
           <h3>${escapeHTML(product.name || "Untitled Product")}</h3>
           <p>${escapeHTML(product.sku || product.id)}</p>
+          <small>Stock: ${Number.isSafeInteger(product.stockOnHand) ? product.stockOnHand + ' units' : 'Not recorded'}${Array.isArray(product.variants) && product.variants.length ? ' · Variants: ' + product.variants.map(v=>escapeHTML(v.color||'')+': '+(Number.isSafeInteger(v.stockOnHand)?v.stockOnHand:'not recorded')).join(', ') : ''}</small>
           ${product.instagramVideoUrl ? `<small>Instagram video linked</small>` : ""}
         </div>
         <div class="hide-tablet">
@@ -294,7 +356,7 @@
   }
 
   function switchView(view) {
-    const allowed = state.role === 'admin' ? ['dashboard','products','orders','sales','expenses','settings','accounts','allocations'] : state.role === 'staff' ? ['dashboard','products','orders','sales'] : ['portfolio'];
+    const allowed = state.role === 'admin' ? ['dashboard','products','orders','sales','expenses','restock','settings','accounts','allocations'] : state.role === 'staff' ? ['dashboard','products','orders','sales','expenses','restock'] : ['portfolio'];
     if (!allowed.includes(view)) return;
     state.view = view;
     if (view === 'accounts' || view === 'allocations') window.TimzyRoles?.loadAccounts().catch(error => toast(error.message));
@@ -629,26 +691,28 @@
 
   async function submitRecord(type, event) {
     event.preventDefault();
-    if (!['admin','staff'].includes(state.role) || (type === 'expenses' && state.role !== 'admin')) return;
+    if (!['admin','staff'].includes(state.role)) return;
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
     if (!data.description.trim() || !Number.isFinite(Number(data.amount)) || Number(data.amount) <= 0 || Number(data.amount) > 1000000000) {
       return toast("Enter a description and a positive amount up to ₦1,000,000,000.");
     }
     const form = event.currentTarget;
-    await fb.db.collection(collections[type]).add({
+    await fb.db.collection(type === "expenses" ? "expenseRequests" : collections[type]).add({
       description: data.description.trim(),
       amount: Number(data.amount || 0),
       date: data.date,
       createdBy: state.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      ...(type === "expenses" ? {status:"pending"} : {})
     });
     form.reset();
     initDates();
-    toast(`${type === "sales" ? "Sale" : "Expense"} added.`);
-    await loadRecords(type);
+    toast(type === "sales" ? "Sale recorded." : "Expense submitted for approval.");
+    if (type === "expenses") await loadOperationsRequests(); else await loadRecords(type);
     renderStats();
     renderRecords(type);
     renderActivity();
+    renderOperations();
   }
 
   async function saveSettings(event) {
@@ -814,6 +878,8 @@
     $("#productFilter").addEventListener("change", renderProducts);
     $("#saleForm").addEventListener("submit", event => submitRecord("sales", event).catch(error => toast(error.message)));
     $("#expenseForm").addEventListener("submit", event => submitRecord("expenses", event).catch(error => toast(error.message)));
+    $("#restockForm").addEventListener("submit", event => submitRestock(event).catch(error => toast(error.message)));
+    document.addEventListener("click",event=>{const e=event.target.closest("[data-expense-review]");const r=event.target.closest("[data-restock-review]");if(e)reviewRequest("expenseRequests",e.dataset.expenseReview,e.dataset.decision).catch(x=>toast(x.message));if(r)reviewRequest("restockRequests",r.dataset.restockReview,r.dataset.decision).catch(x=>toast(x.message));});
     $("#settingsForm").addEventListener("submit", event => saveSettings(event).catch(error => toast(error.message)));
   }
 
