@@ -287,6 +287,7 @@
         <div>
           <h3>${escapeHTML(product.name || "Untitled Product")}</h3>
           <p>${escapeHTML(product.sku || product.id)}</p>
+          <small>Stock: ${Number.isSafeInteger(product.stockOnHand) ? product.stockOnHand + ' units' : 'Not recorded'}${Array.isArray(product.variants) && product.variants.length ? ' · Variants: ' + product.variants.map(v=>escapeHTML(v.color||'')+': '+(Number.isSafeInteger(v.stockOnHand)?v.stockOnHand:'not recorded')).join(', ') : ''}</small>
           ${product.instagramVideoUrl ? `<small>Instagram video linked</small>` : ""}
         </div>
         <div class="hide-tablet">
