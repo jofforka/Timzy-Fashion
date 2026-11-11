@@ -183,13 +183,19 @@
   async function loadOperationsRequests() {
     const session = state.session;
     const scoped = source => state.role === 'staff' ? source.where('createdBy','==',state.uid) : source;
-    const [expenses,restocks] = await Promise.all([
+    const [expenses,restocks] = await Promise.allSettled([
       scoped(fb.db.collection('expenseRequests')).limit(100).get(),
       scoped(fb.db.collection('restockRequests')).limit(100).get()
     ]);
     if (session !== state.session) return;
-    state.expenseRequests = expenses.docs.map(d=>({id:d.id,...d.data()}));
-    state.restockRequests = restocks.docs.map(d=>({id:d.id,...d.data()}));
+    state.expenseRequests = expenses.status === 'fulfilled' ? expenses.value.docs.map(d=>({id:d.id,...d.data()})) : [];
+    state.restockRequests = restocks.status === 'fulfilled' ? restocks.value.docs.map(d=>({id:d.id,...d.data()})) : [];
+    for (const [name,result] of [['expenseRequests',expenses],['restockRequests',restocks]]) {
+      if (result.status === 'rejected') {
+        console.error('Timzy Firestore read failed:',name,result.reason);
+        toast('Could not load '+name+' ('+(result.reason?.code || 'unknown')+'). Check deployed Firebase rules.');
+      }
+    }
   }
   function renderOperations() {
     const approved = state.expenseRequests.filter(x=>x.status==='approved').reduce((a,x)=>a+Number(x.amount||0),0);
@@ -697,14 +703,23 @@
       return toast("Enter a description and a positive amount up to ₦1,000,000,000.");
     }
     const form = event.currentTarget;
-    await fb.db.collection(type === "expenses" ? "expenseRequests" : collections[type]).add({
-      description: data.description.trim(),
-      amount: Number(data.amount || 0),
-      date: data.date,
-      createdBy: state.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      ...(type === "expenses" ? {status:"pending"} : {})
-    });
+    const targetCollection = type === "expenses" ? "expenseRequests" : collections[type];
+    try {
+      await fb.db.collection(targetCollection).add({
+        description: data.description.trim(),
+        amount: Number(data.amount || 0),
+        date: data.date,
+        createdBy: state.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ...(type === "expenses" ? {status:"pending"} : {})
+      });
+    } catch (error) {
+      console.error('Timzy Firestore create failed:',targetCollection,error);
+      toast(error.code === 'permission-denied'
+        ? 'Permission denied writing '+targetCollection+'. Check published Firebase rules and account access.'
+        : 'Could not save '+type+': '+(error.code || 'unknown error'));
+      return;
+    }
     form.reset();
     initDates();
     toast(type === "sales" ? "Sale recorded." : "Expense submitted for approval.");
