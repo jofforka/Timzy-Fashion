@@ -21,6 +21,8 @@
    controls.querySelector('[data-angle-next]').addEventListener('click', () => go(1));
    gallery.querySelector('.thumbs')?.insertAdjacentElement('afterend', controls);
    gallery.querySelector('.thumbs')?.addEventListener('click', () => queueMicrotask(refresh));
+   const color = root.querySelector('#fabricColor');
+   color?.addEventListener('change', () => queueMicrotask(refresh));
    refresh();
  };
  new MutationObserver(setup).observe(root, {childList:true,subtree:true});
