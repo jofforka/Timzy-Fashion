@@ -5,6 +5,86 @@
   const db = window.TIMZY_FIREBASE?.db;
   const $ = id => document.getElementById(id);
   let accounts = [];
+  const ledger = (uid, productId) => db.collection('investorLedger').doc(uid).collection('products').doc(productId);
+  const count = n => Number(n || 0).toLocaleString();
+  const safeAmount = n => Math.round((n + Number.EPSILON) * 100) / 100;
+  async function ledgerSnapshot(uid, products) {
+    return Promise.all(products.map(async p => {
+      const snap = await ledger(uid, p.productId).get();
+      return {...p, stockRecorded: snap.exists, ledger: snap.exists ? snap.data() : null};
+    }));
+  }
+  function stockRow(p) {
+    const l = p.ledger;
+    return '<div class="record-item"><div><b>' + esc(p.name) + '</b><small>' +
+      (l ? 'Received: '+count(l.received)+' · Sold: '+count(l.sold)+' · Available: '+count(l.received-l.sold) +
+      ' · Sales value: '+money(l.grossSales)+' · Investor earnings: '+money(l.investorEarnings)
+      : 'Stock not recorded yet — no sales or earnings assumed') +
+      '</small></div></div>';
+  }
+  async function refreshOwnerLedger() {
+    if (!owner()) return;
+    const uid = $('allocationInvestor').value;
+    const target = $('allocationLedger');
+    if (!validUid(uid)) { target.replaceChildren(); return; }
+    const rows = await ledgerSnapshot(uid, allocations);
+    if (uid !== $('allocationInvestor').value || !owner()) return;
+    target.innerHTML = rows.map(stockRow).join('') || '<p>Assign a product before recording stock.</p>';
+  }
+  $('investorMovementForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    if (!owner()) return;
+    const form = event.currentTarget;
+    const d = Object.fromEntries(new FormData(form));
+    const uid = $('allocationInvestor').value;
+    const productId = $('allocationProduct').value;
+    const quantity = Number(d.quantity);
+    const unitRetailPrice = d.unitRetailPrice === '' ? NaN : Number(d.unitRetailPrice);
+    const allocation = allocations.find(a => a.productId === productId);
+    const msg = $('movementMessage');
+    if (!validUid(uid) || !allocation) { msg.textContent = 'Select an investor and an assigned product.'; return; }
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1000000 ||
+        !['receipt','sale'].includes(d.kind) || !d.reference.trim() ||
+        (d.kind === 'sale' && (!Number.isFinite(unitRetailPrice) || unitRetailPrice < 0 || unitRetailPrice > 1000000000))) {
+      msg.textContent = 'Enter a valid movement, quantity, reference, and retail price for sales.'; return;
+    }
+    const agreedUnitAmount = Number(allocation.agreedPrice);
+    if (!Number.isFinite(agreedUnitAmount) || agreedUnitAmount < 0) { msg.textContent = 'Invalid agreed unit amount.'; return; }
+    const ref = ledger(uid, productId);
+    const movement = ref.collection('movements').doc();
+    const timestamp = now();
+    const grossAmount = d.kind === 'sale' ? safeAmount(unitRetailPrice * quantity) : 0;
+    const investorAmount = d.kind === 'sale' ? safeAmount(agreedUnitAmount * quantity) : 0;
+    if (grossAmount > 1e12 || investorAmount > 1e12) { msg.textContent = 'Amount exceeds supported limit.'; return; }
+    const button = form.querySelector('button[type=submit]');
+    button.disabled = true;
+    msg.textContent = 'Recording movement…';
+    try {
+      await db.runTransaction(async tx => {
+        const [current, agreement] = await Promise.all([
+          tx.get(ref), tx.get(items(uid).doc(productId))
+        ]);
+        if (!agreement.exists) throw Error('Investor assignment was removed. Refresh and retry.');
+        const terms = agreement.data();
+        if (Number(terms.agreedPrice) !== agreedUnitAmount) throw Error('Agreed unit amount changed. Refresh and retry.');
+        const old = current.exists ? current.data() : {received:0,sold:0,grossSales:0,investorEarnings:0};
+        const received = Number(old.received) + (d.kind === 'receipt' ? quantity : 0);
+        const sold = Number(old.sold) + (d.kind === 'sale' ? quantity : 0);
+        if (sold > received) throw Error('Insufficient available stock. Receive stock first.');
+        const next = {received,sold,grossSales:safeAmount(Number(old.grossSales)+grossAmount),
+          investorEarnings:safeAmount(Number(old.investorEarnings)+investorAmount),updatedAt:timestamp};
+        tx.set(ref,next);
+        tx.set(movement,{kind:d.kind,quantity,productId,unitRetailPrice:d.kind === 'sale'?unitRetailPrice:0,
+          agreedUnitAmount:d.kind === 'sale'?agreedUnitAmount:0,grossAmount,investorAmount,
+          reference:d.reference.trim(),createdAt:timestamp,createdBy:state.uid});
+      });
+      msg.textContent = d.kind === 'sale' ? 'Sale recorded and stock deducted.' : 'Stock received.';
+      form.reset();
+      await refreshOwnerLedger();
+    } catch(error) { msg.textContent = error.message || 'Movement could not be saved.'; }
+    finally { button.disabled = false; }
+  });
+
   const now = () => firebase.firestore.FieldValue.serverTimestamp();
   const items = uid => db.collection('investorCatalog').doc(uid).collection('items');
   const validUid = uid => /^[A-Za-z0-9_-]{1,128}$/.test(uid);
@@ -24,7 +104,26 @@
     try {
       const snap = await items(uid).get();
       if (session !== state.session || state.role !== 'investor' || state.uid !== uid) return;
-      $('portfolioItems').innerHTML = productRows(snap.docs.map(d=>d.data()));
+      const rows = await ledgerSnapshot(uid, snap.docs.map(d=>d.data()));
+      if (session !== state.session || state.uid !== uid) return;
+      $('portfolioItems').innerHTML = rows.map(p => productRows([p]) + stockRow(p)).join('') || '<p>No products assigned yet.</p>';
+      const recorded = rows.filter(p=>p.stockRecorded);
+      $('investorSummary').textContent = 'Recorded stock: '+count(recorded.reduce((n,p)=>n+p.ledger.received-p.ledger.sold,0))+
+        ' available · '+count(recorded.reduce((n,p)=>n+p.ledger.sold,0))+' units sold · Sales value: '+
+        money(recorded.reduce((n,p)=>n+p.ledger.grossSales,0))+' · Your earned amount: '+
+        money(recorded.reduce((n,p)=>n+p.ledger.investorEarnings,0))+
+        (recorded.length !== rows.length ? ' · Some products have no recorded opening stock.' : '');
+      const movementSets = await Promise.all(rows.map(async p => {
+        if (!p.stockRecorded) return [];
+        const events = await ledger(uid,p.productId).collection('movements').orderBy('createdAt','desc').limit(20).get();
+        return events.docs.map(d=>({...d.data(),name:p.name}));
+      }));
+      if (session !== state.session || state.uid !== uid) return;
+      const events = movementSets.flat().sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0)).slice(0,40);
+      $('investorMovements').innerHTML = events.map(e=>'<div class="record-item"><div><b>'+esc(e.name)+'</b><small>'+
+        esc(e.kind)+' · '+count(e.quantity)+' units · '+esc(e.reference)+
+        (e.kind === 'sale' ? ' · Investor earned '+money(e.investorAmount) : '')+
+        '</small></div></div>').join('') || '<p>No stock or sales movements recorded yet.</p>';
       $('portfolioMessage').textContent = '';
     } catch (error) {
       if (session === state.session) {
@@ -58,6 +157,7 @@
     if (!owner() || session!==state.session || request!==allocationRequest || uid!==$('allocationInvestor').value) return;
     allocations=snap.docs.map(d=>d.data());
     $('allocationList').innerHTML=productRows(allocations,true);
+    await refreshOwnerLedger();
   }
   $('accessForm').addEventListener('submit',async event=>{
     event.preventDefault(); if (!owner()) return;
