@@ -41,7 +41,8 @@
         <button data-view="products" data-operations-only>Products</button>
         <button data-view="orders" data-operations-only>Orders</button>
         <button data-view="sales" data-operations-only>Sales</button>
-        <button data-view="expenses" data-admin-only>Expenses</button>
+        <button data-view="restock" data-operations-only>Restock Requests</button>
+        <button data-view="expenses" data-operations-only>Expenses</button>
         <button data-view="settings" data-admin-only>Settings</button>
         <button data-view="accounts" data-admin-only>Account Permissions</button>
         <button data-view="allocations" data-admin-only>Investor Products</button>
@@ -115,10 +116,24 @@
             <input name="date" type="date" required>
             <button class="primary-btn" type="submit">Add Sale</button>
           </form>
+          <div id="dailyShopSummary" role="status"></div>
           <div id="salesList" class="record-list"></div>
         </div>
       </section>
 
+      <section id="restockView" class="admin-view" hidden>
+        <div class="admin-card">
+          <h2>Inventory restock requests</h2>
+          <p>Staff can request restocking but cannot modify inventory. The administrator reviews and updates stock separately.</p>
+          <form id="restockForm" class="record-form">
+            <label>Product<select name="productId" id="restockProduct" required></select></label>
+            <label>Reason / requested quantity<input name="note" maxlength="500" required></label>
+            <button type="submit" class="primary-btn">Request Restock</button>
+          </form>
+          <p id="restockMessage" role="status"></p>
+          <div id="restockList" class="record-list"></div>
+        </div>
+      </section>
       <section id="expensesView" class="admin-view" hidden>
         <div class="admin-card">
           <div class="card-head"><div><span class="eyebrow">Daily Records</span><h2>Expenses</h2></div></div>
@@ -128,6 +143,8 @@
             <input name="date" type="date" required>
             <button class="primary-btn" type="submit">Add Expense</button>
           </form>
+          <p>Staff submissions remain pending until the main administrator approves them. Pending expenses do not reduce the approved expense total.</p>
+          <div id="expenseSummary" role="status"></div>
           <div id="expensesList" class="record-list"></div>
         </div>
       </section>
@@ -341,7 +358,7 @@
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
   <script src="product-placement.js?v=1"></script>
-  <script src="../assets/js/fabric-profile.js?v=1"></script><script src="admin.js?v=investor-auth-20261111"></script>
+  <script src="../assets/js/fabric-profile.js?v=1"></script><script src="admin.js?v=shop-operations-20261111"></script>
   <script src="spark-roles.js?v=investor-ledger-1"></script>
 </body>
 </html>
