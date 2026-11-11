@@ -125,6 +125,7 @@ const bootstrap = admin => `
    await shop.locator('#styleBriefForm').waitFor();
    assert.equal(await shop.locator('#styleBriefForm [name="material"]').inputValue(),'alabamu');
    assert.equal(await shop.locator('#styleBriefForm [name="color"]').inputValue(),'Black');
+   assert.equal(await shop.locator('.floating-whatsapp').getAttribute('href'),'https://wa.me/2348114599250');
    await shop.locator('#styleBriefForm [name="idea"]').fill('A test style idea');
    await shop.locator('#saveStyleBrief').click();
    await shop.reload();
