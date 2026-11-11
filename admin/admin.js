@@ -651,8 +651,17 @@
       ...data,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
+    // Publish only approved contact fields. Do not copy bank details or upload credentials.
+    const publicContact = {
+      whatsappNumber: String(data.whatsappNumber || "").replace(/[^0-9]/g, "").slice(0,24),
+      contactPhone: String(data.contactPhone || "").trim().slice(0,32),
+      contactEmail: String(data.contactEmail || "").trim().slice(0,150),
+      pickupAddress: String(data.pickupAddress || "").trim().slice(0,300),
+      businessHours: String(data.businessHours || "").trim().slice(0,200)
+    };
+    await fb.db.collection("publicContact").doc("store").set(publicContact);
     state.settings = data;
-    toast("Settings saved.");
+    toast("Settings and public contact details saved.");
   }
 
   function previewInstagram() {

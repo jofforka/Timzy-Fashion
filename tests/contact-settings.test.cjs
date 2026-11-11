@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const rules=fs.readFileSync('firestore.rules','utf8');
+const html=fs.readFileSync('contact.html','utf8');
+const admin=fs.readFileSync('admin/admin.js','utf8');
+const script=fs.readFileSync('assets/js/contact-settings.js','utf8');
+assert(rules.includes('match /publicContact/{id}'));
+assert(rules.includes("id == 'store'"));
+assert(rules.includes("allow list: if false"));
+assert(rules.includes("request.resource.data.keys().hasOnly(['whatsappNumber','contactPhone','contactEmail','pickupAddress','businessHours'])"));
+assert(html.includes('assets/js/contact-settings.js'));
+assert(admin.includes('collection("publicContact").doc("store").set(publicContact)'));
+assert(!script.includes('googleDriveUploadToken'));
+assert(script.includes('collection(\'publicContact\').doc(\'store\').get()'));
+console.log('Contact settings static security checks passed');
