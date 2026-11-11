@@ -165,6 +165,22 @@
           <button class="primary-btn" type="submit">Save Settings</button>
         </form>
       </section>
+        <form id="publicContactForm" class="admin-card settings-form">
+          <div class="card-head"><div><span class="eyebrow">Public Website</span><h2>Contact Information</h2></div></div>
+          <p>These details are public. Banking details and upload credentials remain private.</p>
+          <div class="form-grid">
+            <label>Phone<input name="phone" type="tel" maxlength="30"></label>
+            <label>WhatsApp (international digits)<input name="whatsapp" inputmode="numeric" maxlength="15" pattern="[0-9]{8,15}"></label>
+            <label>Email<input name="email" type="email" maxlength="254"></label>
+            <label>Shop Address<input name="address" maxlength="300"></label>
+            <label>Business Hours<input name="hours" maxlength="200"></label>
+            <label>Google Maps URL<input name="mapsUrl" type="url" maxlength="500"></label>
+            <label>Instagram URL<input name="instagramUrl" type="url" maxlength="500"></label>
+            <label>Facebook URL<input name="facebookUrl" type="url" maxlength="500"></label>
+            <label>TikTok URL<input name="tiktokUrl" type="url" maxlength="500"></label>
+          </div>
+          <button class="primary-btn" type="submit">Save Public Contact Information</button>
+        </form>
       <section id="accountsView" class="admin-view" hidden>
         <div class="admin-card">
           <h2>Account permissions</h2>
