@@ -91,8 +91,11 @@ const bootstrap = admin => `
    await shop.locator('.angle-explorer [data-angle-next]').click();
    assert.equal(await shop.locator('#fabricColor').inputValue(),'2');
    assert.equal(await shop.locator('.angle-explorer [data-angle-status]').textContent(),'Photo 3 of 3 · supplied images');
-   await shop.locator('#mainImage').dispatchEvent('touchstart',{touches:[{identifier:1,target:document.body,clientX:260,clientY:200}]});
-   await shop.locator('#mainImage').dispatchEvent('touchend',{changedTouches:[{identifier:1,target:document.body,clientX:100,clientY:205}]});
+   await shop.locator('#mainImage').evaluate(image => {
+     const touch = (x, y) => new Touch({identifier:1,target:image,clientX:x,clientY:y});
+     image.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[touch(260,200)],targetTouches:[touch(260,200)],changedTouches:[touch(260,200)]}));
+     image.dispatchEvent(new TouchEvent('touchend',{bubbles:true,touches:[],targetTouches:[],changedTouches:[touch(100,205)]}));
+   });
    assert.equal(await shop.locator('#fabricColor').inputValue(),'0','Horizontal swipe wraps to first photo');
    await shop.locator('.fabric-zoom-trigger').click();
    await shop.locator('.fabric-zoom-dialog').waitFor({state:'visible'});
