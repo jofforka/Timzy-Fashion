@@ -82,6 +82,31 @@ const bootstrap = admin => `
      }
    }
    console.log('PASS: Exactly three mobile material cards and all 14 color/image choices, with unknown purchases blocked.');
+   // Browser regression: variant selection, gallery navigation, touch swipe and photographic zoom.
+   await shop.goto(base+'/product.html?id=alabamu');
+   await shop.locator('.angle-explorer [data-angle-next]').waitFor();
+   await shop.locator('#fabricColor').selectOption('1');
+   assert.equal(await shop.locator('.angle-explorer [data-angle-status]').textContent(),'Photo 2 of 3 · supplied images');
+   assert.equal(await shop.locator('[data-thumb="1"]').getAttribute('aria-pressed'),'true');
+   await shop.locator('.angle-explorer [data-angle-next]').click();
+   assert.equal(await shop.locator('#fabricColor').inputValue(),'2');
+   assert.equal(await shop.locator('.angle-explorer [data-angle-status]').textContent(),'Photo 3 of 3 · supplied images');
+   await shop.locator('#mainImage').evaluate(image => {
+     const touch = (x, y) => new Touch({identifier:1,target:image,clientX:x,clientY:y});
+     image.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[touch(260,200)],targetTouches:[touch(260,200)],changedTouches:[touch(260,200)]}));
+     image.dispatchEvent(new TouchEvent('touchend',{bubbles:true,touches:[],targetTouches:[],changedTouches:[touch(100,205)]}));
+   });
+   assert.equal(await shop.locator('#fabricColor').inputValue(),'0','Horizontal swipe wraps to first photo');
+   await shop.locator('.fabric-zoom-trigger').click();
+   await shop.locator('.fabric-zoom-dialog').waitFor({state:'visible'});
+   await shop.locator('[data-zoom-in]').click();
+   assert.equal(await shop.locator('[data-zoom-level]').textContent(),'130%');
+   await shop.keyboard.press('0');
+   assert.equal(await shop.locator('[data-zoom-level]').textContent(),'100%');
+   await shop.keyboard.press('Escape');
+   assert.equal(await shop.locator('.fabric-zoom-dialog').evaluate(el=>el.open),false);
+   console.log('PASS: Mobile fabric gallery color sync, navigation, swipe and zoom controls.');
+
    // Verified test fixture: color + unit + quantity survive basket and WhatsApp.
    await admin.evaluate(async()=>{
      const ref=TIMZY_FIREBASE.db.collection('products').doc('alabamu');
