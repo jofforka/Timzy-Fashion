@@ -23,6 +23,19 @@
    gallery.querySelector('.thumbs')?.addEventListener('click', () => queueMicrotask(refresh));
    const color = root.querySelector('#fabricColor');
    color?.addEventListener('change', () => queueMicrotask(refresh));
+   let touchStart = null;
+   image.addEventListener('touchstart', event => {
+     if (event.touches.length !== 1) { touchStart = null; return; }
+     touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+   }, { passive: true });
+   image.addEventListener('touchend', event => {
+     if (!touchStart || event.changedTouches.length !== 1) { touchStart = null; return; }
+     const dx = event.changedTouches[0].clientX - touchStart.x;
+     const dy = event.changedTouches[0].clientY - touchStart.y;
+     touchStart = null;
+     if (Math.abs(dx) >= 55 && Math.abs(dx) > Math.abs(dy) * 1.5) go(dx < 0 ? 1 : -1);
+   }, { passive: true });
+   image.addEventListener('touchcancel', () => { touchStart = null; }, { passive: true });
    refresh();
  };
  new MutationObserver(setup).observe(root, {childList:true,subtree:true});
