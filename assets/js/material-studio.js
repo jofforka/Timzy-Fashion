@@ -7,12 +7,13 @@
  app.loadProducts=async()=>{
   await load();const db=window.TIMZY_FIREBASE?.db;if(!db)return;
   await Promise.all(fabric.liveMaterials(app.products).map(async product=>{
-   try{const snapshot=await db.collection('fabricProfiles').doc(String(product.id)).get();product.raw.fabricProfile=snapshot.exists?snapshot.data():{};}
-   catch{product.raw.fabricProfile={};}
+   try{const snapshot=await db.collection('fabricProfiles').doc(String(product.id)).get();product.raw.fabricProfile=snapshot.exists?snapshot.data():{};product.raw.profileUnavailable=false;}
+   catch{product.raw.fabricProfile={};product.raw.profileUnavailable=true;}
   }));
  };
  const esc=s=>String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
  const label=s=>s||'Not provided by Timzy yet';
+ const detailLabel=(p,value)=>p.raw?.profileUnavailable?'Details temporarily unavailable — please retry':label(value);
  const options=(rows,placeholder)=>`<option value="">${esc(placeholder)}</option>`+rows.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
  const occasionOptions=()=>Object.entries(fabric.occasions).map(([id,name])=>`<option value="${id}">${name}</option>`).join('');
  function setupShop(){
@@ -31,7 +32,7 @@
    const status=panel.querySelector('#studioStatus'),target=panel.querySelector('#studioComparison');
    if(rows.some(p=>!p)||ids[0]===ids[1]){target.replaceChildren();status.textContent='Choose two different published fabrics to compare.';return;}
    const profiles=rows.map(fabric.profile);
-   const values=[['Available colors',p=>(p.variants||[]).map(v=>v.color).join(', ')||p.color||''],...Object.entries(fabric.fields).map(([key,name])=>[name,(_,i)=>profiles[i][key]]),['Occasions',(_,i)=>profiles[i].occasions.map(o=>fabric.occasions[o]).join(', ')]];
+   const values=[['Available colors',p=>(p.variants||[]).map(v=>v.color).join(', ')||p.color||''],...Object.entries(fabric.fields).map(([key,name])=>[name,(p,i)=>detailLabel(p,profiles[i][key])]),['Occasions',(_,i)=>profiles[i].occasions.map(o=>fabric.occasions[o]).join(', ')]];
    target.innerHTML=`<table><caption>Merchant-provided details. Missing specifications are shown explicitly.</caption><thead><tr><th scope="col">Detail</th>${rows.map(p=>`<th scope="col"><a href="${esc(app.url(p))}">${esc(p.name)}</a></th>`).join('')}</tr></thead><tbody>${values.map(([name,get])=>`<tr><th scope="row">${esc(name)}</th>${rows.map((p,i)=>`<td>${esc(label(get(p,i)))}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
    status.textContent='Comparison ready below.';
   });
@@ -41,7 +42,7 @@
   app.product.init=()=>{
    init();const id=new URLSearchParams(location.search).get('id');const p=fabric.liveMaterials(app.products).find(p=>String(p.id)===id);const detail=document.querySelector('#productDetails .detail-card');if(!p||!detail)return;
    const profile=fabric.profile(p),panel=document.createElement('section');panel.className='material-studio';panel.setAttribute('aria-label','Fabric details and styling');
-   panel.innerHTML=`<span class="eyebrow">Know your fabric</span><h2>Details that make the difference.</h2><dl class="studio-specs">${Object.entries(fabric.fields).map(([key,name])=>`<div><dt>${name}</dt><dd>${esc(label(profile[key]))}</dd></div>`).join('')}</dl>${profile.videoUrl?`<h3>Feel the fabric in motion</h3><video class="studio-video" controls playsinline preload="none" aria-label="${esc(p.name)} fabric movement video"><source src="${esc(profile.videoUrl)}"></video><p class="studio-muted">Visual texture demonstration. Confirm the physical shade with Timzy.</p>`:'<p class="studio-empty">A fabric movement video has not been added yet. Ask Timzy for a close-up before ordering.</p>'}<a class="btn btn-outline" id="createFabricLook" href="build-your-look.html?material=${encodeURIComponent(p.id)}">Create a look with this material →</a>`;
+   panel.innerHTML=`<span class="eyebrow">Know your fabric</span><h2>Details that make the difference.</h2><dl class="studio-specs">${Object.entries(fabric.fields).map(([key,name])=>`<div><dt>${name}</dt><dd>${esc(detailLabel(p,profile[key]))}</dd></div>`).join('')}</dl>${profile.videoUrl?`<h3>Feel the fabric in motion</h3><video class="studio-video" controls playsinline preload="none" aria-label="${esc(p.name)} fabric movement video"><source src="${esc(profile.videoUrl)}"></video><p class="studio-muted">Visual texture demonstration. Confirm the physical shade with Timzy.</p>`:`<p class="studio-empty">${p.raw?.profileUnavailable?'Fabric details are temporarily unavailable. Please retry or contact Timzy.':'A fabric movement video has not been added yet. Ask Timzy for a close-up before ordering.'}</p>`}<a class="btn btn-outline" id="createFabricLook" href="build-your-look.html?material=${encodeURIComponent(p.id)}">Create a look with this material →</a>`;
    detail.append(panel);
    const sync=()=>{const index=Number(document.querySelector('#fabricColor')?.value||0);const color=p.variants?.[index]?.color||'';panel.querySelector('#createFabricLook').href='build-your-look.html?material='+encodeURIComponent(p.id)+(color?'&color='+encodeURIComponent(color):'');};
    document.querySelector('#fabricColor')?.addEventListener('change',sync);sync();

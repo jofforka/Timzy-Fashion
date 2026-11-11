@@ -139,8 +139,8 @@
       .sort((a, b) => timestampValue(b.updatedAt) - timestampValue(a.updatedAt));
     await Promise.all(state.products.filter(p => window.TimzyFabric.isMaterial(p)).map(async product => {
       try { const profile = await fb.db.collection('fabricProfiles').doc(product.id).get();
-        if (session === state.session) product.fabricProfile = profile.exists ? profile.data() : {};
-      } catch { if (session === state.session) product.fabricProfile = {}; }
+        if (session === state.session) {product.fabricProfile = profile.exists ? profile.data() : {}; product.profileUnavailable = false;}
+      } catch { if (session === state.session) {product.fabricProfile = {}; product.profileUnavailable = true;} }
     }));
   }
 
@@ -533,6 +533,7 @@
     event.preventDefault();
     let product;
     try { product = formProductData(); } catch (error) { return toast(error.message || "Invalid variants."); }
+    if (state.editingId && placement.sectionOf(product) === 'materials' && state.products.find(p=>p.id===state.editingId)?.profileUnavailable) return toast('Fabric details could not load. Reload before saving to preserve existing details.');
     if (product.productType === 'Ready-Made' && (!$("#productForm").elements.sizes.value.trim() || product.sizes.toLowerCase() === 'custom')) {
       return toast('Enter the ready-made sizes you actually stock, or choose made to measure.');
     }
@@ -611,6 +612,7 @@
     delete copy.stockOnHand;
     copy.quantity = "Verify availability before publishing";
     delete copy.fabricProfile;
+    delete copy.profileUnavailable;
     await fb.db.collection(collections.products).doc(copyId).set(copy);
     toast("Product duplicated.");
     await loadProducts();
