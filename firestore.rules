@@ -129,6 +129,20 @@ service cloud.firestore {
         && existsAfter(/databases/$(database)/documents/products/$(productId));
       allow delete: if false;
     }
+    // Public contact details only. Never expose the owner-only settings/store document.
+    match /publicContact/{id} {
+      allow get: if id == 'store';
+      allow list: if false;
+      allow create, update: if owner() && id == 'store'
+        && request.resource.data.keys().hasOnly(['whatsappNumber','contactPhone','contactEmail','pickupAddress','businessHours'])
+        && request.resource.data.keys().hasAll(['whatsappNumber','contactPhone','contactEmail','pickupAddress','businessHours'])
+        && request.resource.data.whatsappNumber is string && request.resource.data.whatsappNumber.size() <= 24
+        && request.resource.data.contactPhone is string && request.resource.data.contactPhone.size() <= 32
+        && request.resource.data.contactEmail is string && request.resource.data.contactEmail.size() <= 150
+        && request.resource.data.pickupAddress is string && request.resource.data.pickupAddress.size() <= 300
+        && request.resource.data.businessHours is string && request.resource.data.businessHours.size() <= 200;
+      allow delete: if false;
+    }
     match /settings/{id} {
       allow read: if owner();
       allow create, update: if owner() && validSettings();
