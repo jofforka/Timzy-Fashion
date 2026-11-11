@@ -682,7 +682,8 @@
       $("#loginMessage").textContent = "Signing in...";
       try {
         await fb.auth.signInWithEmailAndPassword(data.email, data.password);
-        $("#loginMessage").textContent = "";
+        // Do not clear the authorization error set by onAuthStateChanged.
+        // Firebase sign-in success does not imply a valid active access/{uid} role.
       } catch (error) {
         $("#loginMessage").textContent = error.message;
       }
@@ -842,6 +843,7 @@
         if (session !== state.session) return;
         showLogin();
         $('#loginMessage').textContent = error.message;
+        console.warn("Timzy account authorization failed:", error.code || error.name || "access-check");
       }
     });
   }
