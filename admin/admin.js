@@ -369,7 +369,7 @@
   }
 
   function switchView(view) {
-    const allowed = state.role === 'admin' ? ['dashboard','products','orders','sales','expenses','restock','settings','accounts','allocations'] : state.role === 'staff' ? ['dashboard','products','orders','sales','expenses','restock'] : ['portfolio'];
+    const allowed = state.role === 'admin' ? ['dashboard','products','orders','sales','expenses','restock','settings','contact','accounts','allocations'] : state.role === 'staff' ? ['dashboard','products','orders','sales','expenses','restock'] : ['portfolio'];
     if (!allowed.includes(view)) return;
     state.view = view;
     if (view === 'accounts' || view === 'allocations') window.TimzyRoles?.loadAccounts().catch(error => toast(error.message));
