@@ -69,7 +69,11 @@
    const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js');
    const loader=new GLTFLoader();
    const avatarUrl='assets/models/timzy-male-avatar.glb';
-   const avatar=await loader.loadAsync(avatarUrl);
+   const response=await fetch(avatarUrl,{cache:'no-store'});
+   if(!response.ok)throw new Error('Avatar unavailable ('+response.status+')');
+   const binary=await response.arrayBuffer();
+   if(binary.byteLength<20||new DataView(binary).getUint32(0,true)!==0x46546c67)throw new Error('Invalid GLB avatar');
+   const avatar=await new Promise((resolve,reject)=>loader.parse(binary,'',resolve,reject));
    realisticAvatar=avatar.scene;
    const box=new THREE.Box3().setFromObject(realisticAvatar);
    const size=box.getSize(new THREE.Vector3());
@@ -82,7 +86,55 @@
    realisticAvatar.position.z-=center.z;
    realisticAvatar.position.y-=scaledBox.min.y;
    root.add(realisticAvatar);
+   const garments={senator:'assets/models/timzy-senator.glb',kaftan:'assets/models/timzy-kaftan.glb',agbada:'assets/models/timzy-agbada.glb'};
+   const garmentObjects=new Map();
+   const garmentSelect=document.getElementById('studioOutfit');
+   const colourSelect=document.getElementById('studioColor');
+   const originalMaterials=new WeakMap();
+   function tintGarment(group){
+     const tint=colors[colourSelect.value];
+     group.traverse(object=>{
+       if(!object.isMesh)return;
+       if(!originalMaterials.has(object))originalMaterials.set(object,object.material);
+       const original=originalMaterials.get(object);
+       const copyMaterial=material=>{
+         const copy=material.clone();
+         if(copy.color)copy.color.setHex(tint);
+         return copy;
+       };
+       object.material=Array.isArray(original)?original.map(copyMaterial):copyMaterial(original);
+     });
+   }
+   async function loadGarment(type){
+     for(const mesh of garmentObjects.values())mesh.visible=false;
+     if(garmentObjects.has(type)){
+       const cached=garmentObjects.get(type);cached.visible=true;tintGarment(cached);return;
+     }
+     const url=garments[type];
+     try{
+       const response=await fetch(url);
+       if(!response.ok)throw Error('Garment asset unavailable');
+       const buffer=await response.arrayBuffer();
+       if(buffer.byteLength<20||new DataView(buffer).getUint32(0,true)!==0x46546c67)throw Error('Invalid garment GLB');
+       const result=await new Promise((resolve,reject)=>loader.parse(buffer,'',resolve,reject));
+       const group=result.scene;
+       // Garment assets must be authored in the avatar's normalized coordinate system.
+       group.scale.copy(realisticAvatar.scale);
+       group.position.copy(realisticAvatar.position);
+       root.add(group);garmentObjects.set(type,group);
+       tintGarment(group);
+       status.textContent='3D outfit preview only. Fabric appearance and tailoring fit require confirmation.';
+     }catch(error){
+       status.textContent='Real human model loaded; the selected tailored garment is not available yet.';
+     }
+   }
+   garmentSelect.addEventListener('change',()=>{if(humanMode)loadGarment(garmentSelect.value)});
+   colourSelect.addEventListener('change',()=>{if(humanMode)loadGarment(garmentSelect.value)});
+   document.querySelectorAll('[data-outfit-preview]').forEach(el=>{el.hidden=false});
+   clothingButton.disabled=true;
    setMode(true);
+   document.querySelectorAll('[data-outfit-preview]').forEach(el=>{el.hidden=false});
+   await loadGarment(garmentSelect.value);
  }catch(e){
    setMode(false);
    clothingButton.disabled=true;
