@@ -20,4 +20,4 @@ jobs:
         with:
           node-version: '22'
       - name: Test payment security primitives
-        run: node --test payments/payment-core.test.cjs
+        run: node --test payments/payment-core.test.cjs payments/paystack-test.test.cjs
