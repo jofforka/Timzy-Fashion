@@ -33,13 +33,14 @@ exports.initializeTimzyTestPayment = onRequest({region:'us-central1',secrets:[te
     const { items, email } = req.body || {};
     if (!Array.isArray(items) || !items.length || items.length > 50) return sendError(res,400,'Invalid items');
     const ids = items.map(i => String(i.id));
+    if (typeof email !== 'string' || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 254) return sendError(res,400,'Invalid email');
     if (new Set(ids).size !== ids.length || ids.some(id=>!/^[A-Za-z0-9_-]{1,100}$/.test(id))) return sendError(res,400,'Invalid product identifiers');
     const snapshots = await Promise.all(ids.map(id=>db.collection('products').doc(id).get()));
     if (snapshots.some(s=>!s.exists)) return sendError(res,400,'Unknown product');
     const catalog = snapshots.map(s=>({...s.data(),id:s.id}));
     const order = validateCart(items,catalog);
     // Material variant and inventory rules vary by product. Fail closed until integrated.
-    if (items.some(i=>i.variantId || i.color || i.size) || catalog.some(p=>p.variants || p.stock != null || p.inventory != null))
+    if (items.some(i=>i.variantId || i.color || i.size) || catalog.some(p=>p.variants || p.colors || p.colorVariants || p.stock != null || p.inventory != null || p.quantity != null))
       return sendError(res,409,'Variant and inventory validation not yet available');
     const reference = 'TFTEST-' + crypto.randomBytes(16).toString('hex');
     const record = {reference,mode:'test',status:'pending',amountKobo:order.amountKobo,currency:'NGN',lines:order.lines,
