@@ -67,7 +67,8 @@
  try{
    const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js');
    const loader=new GLTFLoader();
-   const avatar=await loader.loadAsync('https://tevy.dev/models/casual-walker/v1/lod0.glb');
+   const avatarUrl='assets/models/timzy-male-avatar.glb';
+   const avatar=await loader.loadAsync(avatarUrl);
    realisticAvatar=avatar.scene;
    const box=new THREE.Box3().setFromObject(realisticAvatar);
    const size=box.getSize(new THREE.Vector3());
@@ -85,7 +86,7 @@
    setMode(false);
    humanButton.disabled=true;
    humanButton.title='Human model could not be loaded';
-   status.textContent='Real human preview unavailable; illustrative model shown instead.';
+   status.textContent='Real human avatar asset has not been installed. Outfit concept mode is a simplified prototype, not a real fitting preview.';
  }
  function resize(){const w=Math.max(260,mount.clientWidth),h=Math.max(400,mount.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}
  resize();const observer=new ResizeObserver(resize);observer.observe(mount);
