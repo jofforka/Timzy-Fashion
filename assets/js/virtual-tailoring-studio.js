@@ -108,7 +108,7 @@
    async function loadGarment(type){
      for(const mesh of garmentObjects.values())mesh.visible=false;
      if(garmentObjects.has(type)){
-       const cached=garmentObjects.get(type);cached.visible=true;tintGarment(cached);return;
+       const cached=garmentObjects.get(type);cached.visible=true;tintGarment(cached);status.textContent='3D outfit preview only; confirm fabric and fit with a tailor.';return;
      }
      const url=garments[type];
      try{
@@ -117,6 +117,7 @@
        const buffer=await response.arrayBuffer();
        if(buffer.byteLength<20||new DataView(buffer).getUint32(0,true)!==0x46546c67)throw Error('Invalid garment GLB');
        const result=await new Promise((resolve,reject)=>loader.parse(buffer,'',resolve,reject));
+       if(request!==garmentRequest)return;
        const group=result.scene;
        // Garment assets must be authored in the avatar's normalized coordinate system.
        group.scale.copy(realisticAvatar.scale);
@@ -125,7 +126,7 @@
        tintGarment(group);
        status.textContent='3D outfit preview only. Fabric appearance and tailoring fit require confirmation.';
      }catch(error){
-       status.textContent='Real human model loaded; the selected tailored garment is not available yet.';
+       if(request===garmentRequest)status.textContent='Real human model loaded; the selected tailored garment is not available yet.';
      }
    }
    garmentSelect.addEventListener('change',()=>{if(humanMode)loadGarment(garmentSelect.value)});
