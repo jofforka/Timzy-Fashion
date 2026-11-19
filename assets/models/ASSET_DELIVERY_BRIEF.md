@@ -31,4 +31,12 @@ A **realistic adult male human**, fully clothed, in a neutral standing pose, wea
 ChatGPT can integrate files into the existing Three.js loader, connect outfit selection, add asset validation, handle graceful failures and prepare testing. A 3D artist or legally usable existing assets must supply the realistic human and fitted Nigerian garment geometry. A photo, a Canva design or a generated 2D illustration is **not** a substitute for a rotatable GLB model.
 
 ## Current state
-PR #47 contains loader infrastructure but **none** of the four requested binary GLB assets. Do not merge it as a completed fitting room.
+The draft includes the male base avatar. The Senator, Kaftan and Agbada assets and physical-device checks are pending. The viewer keeps the unclothed base mesh hidden until it loads an outfit.
+
+## Male base avatar provenance
+
+- Source: [Innerscene Male Base Mesh](https://www.innerscene.com/tools/library/3d-parts/male-base-mesh-3d-person-rigged-a-pose-380e6d89), adapted from MakeHuman assets.
+- [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) is declared by the listing and embedded GLB metadata. Commercial use and redistribution are permitted under the dedication. Third-party garments require their own rights record.
+- Source filename: male-base-mesh-base_male.glb.
+- SHA-256: 86c7cdfa989924b45e2e5110c131a4a4e6251ceb4e71246be68e468f3a32ca86.
+- Neutral A-pose, +Y up, +Z front, approximately 1.786 m tall, with a 163-joint rig. The upload uses untextured materials and has no body-shape morph targets. Author garment meshes in the avatar's native coordinates.
