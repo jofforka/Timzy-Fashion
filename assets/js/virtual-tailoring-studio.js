@@ -75,6 +75,7 @@
    if(binary.byteLength<20||new DataView(binary).getUint32(0,true)!==0x46546c67)throw new Error('Invalid GLB avatar');
    const avatar=await new Promise((resolve,reject)=>loader.parse(binary,'',resolve,reject));
    realisticAvatar=avatar.scene;
+   realisticAvatar.traverse(object=>{if(object.isMesh){object.castShadow=true;object.frustumCulled=false;}});
    const box=new THREE.Box3().setFromObject(realisticAvatar);
    const size=box.getSize(new THREE.Vector3());
    if(!Number.isFinite(size.y)||size.y<=0)throw Error('Invalid model bounds');
@@ -91,10 +92,13 @@
    const garmentSelect=document.getElementById('studioOutfit');
    const colourSelect=document.getElementById('studioColor');
    const originalMaterials=new WeakMap();
+   const tintableNames=/fabric|cloth|garment|main|outer|senator|kaftan|agbada/i;
    function tintGarment(group){
      const tint=colors[colourSelect.value];
      group.traverse(object=>{
        if(!object.isMesh)return;
+       const materials=Array.isArray(object.material)?object.material:[object.material];
+       if(!materials.some(m=>m&&tintableNames.test(m.name||'')))return;
        if(!originalMaterials.has(object))originalMaterials.set(object,object.material);
        const original=originalMaterials.get(object);
        const copyMaterial=material=>{
@@ -119,6 +123,8 @@
        const result=await new Promise((resolve,reject)=>loader.parse(buffer,'',resolve,reject));
        if(request!==garmentRequest)return;
        const group=result.scene;
+       const hasFabric=(()=>{let found=false;group.traverse(o=>{if(o.isMesh){const ms=Array.isArray(o.material)?o.material:[o.material];if(ms.some(m=>m&&tintableNames.test(m.name||'')))found=true;}});return found})();
+       if(!hasFabric)status.textContent='Garment loaded, but no named fabric material supports colour changes.';
        // Garment assets must be authored in the avatar's normalized coordinate system.
        group.scale.copy(realisticAvatar.scale);
        group.position.copy(realisticAvatar.position);
