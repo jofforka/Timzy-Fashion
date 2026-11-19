@@ -14,6 +14,7 @@
  const light=new THREE.DirectionalLight(0xffffff,2.2);light.position.set(3,7,5);scene.add(light);
  const root=new THREE.Group();scene.add(root);
  const prototype=new THREE.Group();root.add(prototype);
+ prototype.visible=false;
  let realisticAvatar=null;
  let humanMode=true;
  const skin=new THREE.MeshStandardMaterial({color:0x926449,roughness:0.88});
@@ -55,12 +56,12 @@
  const clothingButton=document.getElementById('studioClothingMode');
  function setMode(real){
    humanMode=real&&!!realisticAvatar;
-   prototype.visible=!humanMode;
+   prototype.visible=false;
    if(realisticAvatar)realisticAvatar.visible=humanMode;
-   document.querySelectorAll('[data-outfit-preview]').forEach(el=>{el.hidden=humanMode});
+   document.querySelectorAll('[data-outfit-preview]').forEach(el=>{el.hidden=true});
    humanButton.setAttribute('aria-pressed',String(humanMode));
    clothingButton.setAttribute('aria-pressed',String(!humanMode));
-   status.textContent=humanMode?'Real human model preview. Clothing fitting is not yet available on this avatar.':'Illustrative outfit silhouette preview — not a realistic tailored fit.';
+   status.textContent=humanMode?'Real human model preview. Timzy garment fitting is not yet available.':'Realistic Timzy garments are being prepared; geometric outfit previews are retired.';
  }
  humanButton.addEventListener('click',()=>setMode(true));
  clothingButton.addEventListener('click',()=>setMode(false));
@@ -84,9 +85,10 @@
    setMode(true);
  }catch(e){
    setMode(false);
+   clothingButton.disabled=true;
    humanButton.disabled=true;
    humanButton.title='Human model could not be loaded';
-   status.textContent='Real human avatar asset has not been installed. Outfit concept mode is a simplified prototype, not a real fitting preview.';
+   status.textContent='Realistic 3D fitting preview is not yet available. Choose your outfit from the catalogue below while we prepare the human model and garments.';
  }
  function resize(){const w=Math.max(260,mount.clientWidth),h=Math.max(400,mount.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}
  resize();const observer=new ResizeObserver(resize);observer.observe(mount);
