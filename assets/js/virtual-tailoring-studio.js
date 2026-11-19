@@ -13,10 +13,13 @@
  scene.add(new THREE.HemisphereLight(0xffffff,0x8c8a84,2.4));
  const light=new THREE.DirectionalLight(0xffffff,2.2);light.position.set(3,7,5);scene.add(light);
  const root=new THREE.Group();scene.add(root);
+ const prototype=new THREE.Group();root.add(prototype);
+ let realisticAvatar=null;
+ let humanMode=true;
  const skin=new THREE.MeshStandardMaterial({color:0x926449,roughness:0.88});
  const shoes=new THREE.MeshStandardMaterial({color:0x292524,roughness:0.8});
  const cloth=new THREE.MeshStandardMaterial({color:colors.navy,roughness:0.88,side:THREE.DoubleSide});
- const add=(geo,mat,x,y,z,parent=root)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);parent.add(m);return m};
+ const add=(geo,mat,x,y,z,parent=prototype)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);parent.add(m);return m};
  const cylinder=(r1,r2,h,x,y,z,mat)=>add(new THREE.CylinderGeometry(r1,r2,h,18),mat,x,y,z);
  add(new THREE.SphereGeometry(.24,20,14),skin,0,3.45,0);
  cylinder(.115,.125,.18,0,3.2,0,skin);
@@ -46,6 +49,44 @@
  });
  try{const saved=JSON.parse(localStorage.getItem('timzy-virtual-look')||'null');if(saved&&types[saved.outfit]&&colors[saved.color]){typeSelect.value=saved.outfit;colorSelect.value=saved.color;cloth.color.setHex(colors[saved.color]);}}catch(e){}
  outfit(typeSelect.value);
+ // Real human preview is intentionally separate from the illustrative clothing geometry.
+ // Never imply these outfit selectors fit the imported human until garment meshes are authored.
+ const humanButton=document.getElementById('studioHumanMode');
+ const clothingButton=document.getElementById('studioClothingMode');
+ function setMode(real){
+   humanMode=real&&!!realisticAvatar;
+   prototype.visible=!humanMode;
+   if(realisticAvatar)realisticAvatar.visible=humanMode;
+   document.querySelectorAll('[data-outfit-preview]').forEach(el=>{el.hidden=humanMode});
+   humanButton.setAttribute('aria-pressed',String(humanMode));
+   clothingButton.setAttribute('aria-pressed',String(!humanMode));
+   status.textContent=humanMode?'Real human model preview. Clothing fitting is not yet available on this avatar.':'Illustrative outfit silhouette preview — not a realistic tailored fit.';
+ }
+ humanButton.addEventListener('click',()=>setMode(true));
+ clothingButton.addEventListener('click',()=>setMode(false));
+ try{
+   const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js');
+   const loader=new GLTFLoader();
+   const avatar=await loader.loadAsync('https://tevy.dev/models/casual-walker/v1/lod0.glb');
+   realisticAvatar=avatar.scene;
+   const box=new THREE.Box3().setFromObject(realisticAvatar);
+   const size=box.getSize(new THREE.Vector3());
+   if(!Number.isFinite(size.y)||size.y<=0)throw Error('Invalid model bounds');
+   const scale=3.55/size.y;
+   realisticAvatar.scale.setScalar(scale);
+   const scaledBox=new THREE.Box3().setFromObject(realisticAvatar);
+   const center=scaledBox.getCenter(new THREE.Vector3());
+   realisticAvatar.position.x-=center.x;
+   realisticAvatar.position.z-=center.z;
+   realisticAvatar.position.y-=scaledBox.min.y;
+   root.add(realisticAvatar);
+   setMode(true);
+ }catch(e){
+   setMode(false);
+   humanButton.disabled=true;
+   humanButton.title='Human model could not be loaded';
+   status.textContent='Real human preview unavailable; illustrative model shown instead.';
+ }
  function resize(){const w=Math.max(260,mount.clientWidth),h=Math.max(400,mount.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}
  resize();const observer=new ResizeObserver(resize);observer.observe(mount);
  let visible=true;const io=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting});io.observe(mount);
