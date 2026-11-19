@@ -55,6 +55,8 @@
     }
 
     const avatar = await loadModel('timzy-male-avatar.glb');
+    // The skinned meshes need current world matrices before measuring the posed avatar.
+    avatar.updateMatrixWorld(true);
     const bounds = new THREE.Box3().setFromObject(avatar, true);
     const size = bounds.getSize(new THREE.Vector3());
     if (!Number.isFinite(size.length()) || size.y <= 0) throw new Error('Invalid avatar bounds');
