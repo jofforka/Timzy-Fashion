@@ -31,7 +31,7 @@ A **realistic adult male human**, fully clothed, in a neutral standing pose, wea
 ChatGPT can integrate files into the existing Three.js loader, connect outfit selection, add asset validation, handle graceful failures and prepare testing. A 3D artist or legally usable existing assets must supply the realistic human and fitted Nigerian garment geometry. A photo, a Canva design or a generated 2D illustration is **not** a substitute for a rotatable GLB model.
 
 ## Current state
-The draft includes the male base avatar. The Senator, Kaftan and Agbada assets and physical-device checks are pending. The viewer keeps the unclothed base mesh hidden until it loads an outfit.
+The draft includes the male base avatar and a single-outfit Agbada preview. Senator and Kaftan are pending. Physical-device checks are pending for Agbada. The viewer keeps the unclothed base mesh hidden until it loads an outfit.
 
 ## Male base avatar provenance
 
@@ -40,3 +40,8 @@ The draft includes the male base avatar. The Senator, Kaftan and Agbada assets a
 - Source filename: male-base-mesh-base_male.glb.
 - SHA-256: 86c7cdfa989924b45e2e5110c131a4a4e6251ceb4e71246be68e468f3a32ca86.
 - Neutral A-pose, +Y up, +Z front, approximately 1.786 m tall, with a 163-joint rig. The upload uses untextured materials and has no body-shape morph targets. Author garment meshes in the avatar's native coordinates.
+## Agbada preview provenance
+
+- Robe by Prostudios, [Agbada cloth Model](https://sketchfab.com/3d-models/agbada-cloth-model-c86e128883af4a9c8fccc4894f716223), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The preview removes the display figure, resizes textures, and refits the robe to the Timzy avatar.
+- Wool trousers by MRT / MargaretToigo from the [MakeHuman Pants 01 pack](https://static.makehumancommunity.org/assets/assetpacks/pants01.html), CC0. Adapted to the Timzy avatar.
+- Validated combined GLB: 6,046,996 bytes, zero glTF errors and warnings. Chrome visual checks used desktop and emulated phone widths. Physical iOS Safari and Android Chrome checks remain pending.

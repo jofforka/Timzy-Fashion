@@ -7,8 +7,6 @@
   const outfit = document.getElementById('studioOutfit');
   const color = document.getElementById('studioColor');
   const garments = {
-    senator: 'timzy-senator.glb',
-    kaftan: 'timzy-kaftan.glb',
     agbada: 'timzy-agbada.glb',
   };
   const colors = { navy: 0x203451, black: 0x252525, cream: 0xd5c6a5, burgundy: 0x713645, forest: 0x345847 };
