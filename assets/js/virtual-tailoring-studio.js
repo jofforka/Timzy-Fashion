@@ -8,31 +8,36 @@
   }
 
   const status = document.getElementById('studioStatus');
-  const outfit = document.getElementById('studioOutfit');
-  const color = document.getElementById('studioColor');
-  const garments = {
-    senator: 'timzy-senator.glb',
+  const controls = {
+    top: document.getElementById('studioOutfit'),
+    topColor: document.getElementById('studioColor'),
+    trouserColor: document.getElementById('studioTrouser'),
+    shoeColor: document.getElementById('studioShoe'),
   };
-  const colors = { navy: 0x203451, black: 0x252525, cream: 0xd5c6a5, burgundy: 0x713645, forest: 0x345847 };
+  const colors = {
+    navy: 0x203451, black: 0x252525, cream: 0xd5c6a5,
+    burgundy: 0x713645, forest: 0x345847, brown: 0x59402d,
+  };
   const storageKey = 'timzy-virtual-look';
 
   document.getElementById('studioSave').addEventListener('click', () => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify({ outfit: outfit.value, color: color.value, version: 1 }));
-      status.textContent = 'Preview preferences saved on this device. No order was placed.';
+      const values = Object.fromEntries(Object.entries(controls).map(([key, field]) => [key, field.value]));
+      localStorage.setItem(storageKey, JSON.stringify({ ...values, version: 2 }));
+      status.textContent = 'Outfit saved on this device.';
     } catch {
-      status.textContent = 'Unable to save preview preferences on this device.';
+      status.textContent = 'Unable to save the outfit on this device.';
     }
   });
 
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
-    if (saved && Object.hasOwn(garments, saved.outfit) && Object.hasOwn(colors, saved.color)) {
-      outfit.value = saved.outfit;
-      color.value = saved.color;
+    for (const [key, field] of Object.entries(controls)) {
+      const value = saved?.version === 1 && key === 'topColor' ? saved.color : saved?.[key];
+      if (Array.from(field.options).some(option => option.value === value)) field.value = value;
     }
   } catch {
-    // Preferences are optional when storage is unavailable or cannot be read.
+    // Preferences are optional when storage cannot be read.
   }
 
   const unavailable = 'The 3D preview is unavailable. You can still browse the catalogue below.';
@@ -140,67 +145,43 @@
       if (event.pointerId === pointer) pointer = null;
     });
 
-    const outfitCache = new Map();
-    const fabricName = /\b(?:fabric|cloth|garment|main|outer|senator|kaftan|agbada)\b/i;
-    let selection = 0;
-    let current = null;
+    const wardrobe = await loadModel('timzy-wardrobe.glb');
+    const longTop = wardrobe.getObjectByName('LongTunic');
+    const shortTop = wardrobe.getObjectByName('ShortTunic');
+    const trousers = wardrobe.getObjectByName('Trousers');
+    const shoes = wardrobe.getObjectByName('Shoes');
+    if (!longTop || !shortTop || !trousers || !shoes) throw new Error('Incomplete wardrobe');
 
-    async function loadOutfit(type) {
-      const group = await loadModel(garments[type]);
+    function findMaterials(group, prefix) {
       const materials = new Set();
       group.traverse(object => {
         if (!object.isMesh) return;
-        for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
-          const name = (material.name || '').replace(/[_-]/g, ' ');
-          if (material.color && fabricName.test(name) &&
-              !/\b(?:trim|lining|skin|hair|footwear|shoe|button)\b/i.test(name)) {
-            materials.add(material);
-          }
+        for (const material of [object.material].flat()) {
+          if (material.color && material.name.startsWith(prefix)) materials.add(material);
         }
       });
-      return { group, materials };
+      return materials;
     }
+    const slots = [
+      [controls.topColor, new Set([...findMaterials(longTop, 'Main fabric'), ...findMaterials(shortTop, 'Main fabric')])],
+      [controls.trouserColor, findMaterials(trousers, 'Main fabric')],
+      [controls.shoeColor, findMaterials(shoes, 'Shoe upper')],
+    ];
+    if (slots.some(([, materials]) => materials.size === 0)) throw new Error('Missing wardrobe materials');
 
-    function applyColor() {
-      if (!current) return;
-      for (const material of current.materials) material.color.setHex(colors[color.value]);
+    function applyLook() {
+      longTop.visible = controls.top.value === 'long';
+      shortTop.visible = !longTop.visible;
+      for (const [field, materials] of slots) {
+        for (const material of materials) material.color.setHex(colors[field.value]);
+      }
       render();
     }
-
-    async function showOutfit() {
-      const request = ++selection;
-      const type = outfit.value;
-      if (current) model.remove(current.group);
-      current = null;
-      root.visible = false;
-      render();
-      status.textContent = 'Loading the selected 3D outfit…';
-
-      if (!outfitCache.has(type)) {
-        outfitCache.set(type, loadOutfit(type).catch(error => {
-          outfitCache.delete(type);
-          throw error;
-        }));
-      }
-
-      try {
-        const selected = await outfitCache.get(type);
-        if (request !== selection) return;
-        current = selected;
-        model.add(current.group);
-        root.visible = true;
-        applyColor();
-        status.textContent = current.materials.size
-          ? '3D outfit preview. Confirm fabric and fit with a tailor.'
-          : '3D outfit preview. Colour changes are unavailable for this garment.';
-      } catch {
-        if (request === selection) status.textContent = 'The selected 3D outfit is still being prepared.';
-      }
-    }
-
-    outfit.addEventListener('change', showOutfit);
-    color.addEventListener('change', applyColor);
-    await showOutfit();
+    model.add(wardrobe);
+    root.visible = true;
+    for (const field of Object.values(controls)) field.addEventListener('change', applyLook);
+    applyLook();
+    status.textContent = '3D wardrobe ready.';
   } catch {
     status.textContent = unavailable;
   }
