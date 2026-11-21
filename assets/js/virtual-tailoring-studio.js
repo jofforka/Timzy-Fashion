@@ -11,6 +11,8 @@
   const controls = {
     top: document.getElementById('studioOutfit'),
     topColor: document.getElementById('studioColor'),
+    trouserStyle: document.getElementById('studioTrouserStyle'),
+    shoeStyle: document.getElementById('studioShoeStyle'),
     trouserColor: document.getElementById('studioTrouser'),
     shoeColor: document.getElementById('studioShoe'),
   };
@@ -150,7 +152,9 @@
     const shortTop = wardrobe.getObjectByName('ShortTunic');
     const trousers = wardrobe.getObjectByName('Trousers');
     const shoes = wardrobe.getObjectByName('Shoes');
-    if (!longTop || !shortTop || !trousers || !shoes) throw new Error('Incomplete wardrobe');
+    const relaxed = wardrobe.getObjectByName('RelaxedTrousers');
+    const tall = wardrobe.getObjectByName('TallBoots');
+    if (!longTop || !shortTop || !trousers || !shoes || !relaxed || !tall) throw new Error('Incomplete wardrobe');
 
     function findMaterials(group, prefix) {
       const materials = new Set();
@@ -164,14 +168,18 @@
     }
     const slots = [
       [controls.topColor, new Set([...findMaterials(longTop, 'Main fabric'), ...findMaterials(shortTop, 'Main fabric')])],
-      [controls.trouserColor, findMaterials(trousers, 'Main fabric')],
-      [controls.shoeColor, findMaterials(shoes, 'Shoe upper')],
+      [controls.trouserColor, new Set([...findMaterials(trousers, 'Main fabric'), ...findMaterials(relaxed, 'Main fabric')])],
+      [controls.shoeColor, new Set([...findMaterials(shoes, 'Shoe upper'), ...findMaterials(tall, 'Shoe upper')])],
     ];
     if (slots.some(([, materials]) => materials.size === 0)) throw new Error('Missing wardrobe materials');
 
     function applyLook() {
       longTop.visible = controls.top.value === 'long';
       shortTop.visible = !longTop.visible;
+      trousers.visible = controls.trouserStyle.value === 'tapered';
+      relaxed.visible = !trousers.visible;
+      shoes.visible = controls.shoeStyle.value === 'ankle';
+      tall.visible = !shoes.visible;
       for (const [field, materials] of slots) {
         for (const material of materials) material.color.setHex(colors[field.value]);
       }
