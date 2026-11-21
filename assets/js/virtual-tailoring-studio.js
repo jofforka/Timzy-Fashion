@@ -2,6 +2,10 @@
 (async function () {
   const mount = document.getElementById('timzy3d');
   if (!mount) return;
+  const preview = document.getElementById('senator3dPreview');
+  if (preview && !preview.open) {
+    await new Promise(resolve => preview.addEventListener('toggle', resolve, { once: true }));
+  }
 
   const status = document.getElementById('studioStatus');
   const outfit = document.getElementById('studioOutfit');
