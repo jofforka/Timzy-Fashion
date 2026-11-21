@@ -152,9 +152,10 @@
     const shortTop = wardrobe.getObjectByName('ShortTunic');
     const trousers = wardrobe.getObjectByName('Trousers');
     const shoes = wardrobe.getObjectByName('Shoes');
+    const polo = wardrobe.getObjectByName('PoloShirt');
     const relaxed = wardrobe.getObjectByName('RelaxedTrousers');
     const tall = wardrobe.getObjectByName('TallBoots');
-    if (!longTop || !shortTop || !trousers || !shoes || !relaxed || !tall) throw new Error('Incomplete wardrobe');
+    if (!longTop || !shortTop || !trousers || !shoes || !relaxed || !tall || !polo) throw new Error('Incomplete wardrobe');
 
     function findMaterials(group, prefix) {
       const materials = new Set();
@@ -167,7 +168,7 @@
       return materials;
     }
     const slots = [
-      [controls.topColor, new Set([...findMaterials(longTop, 'Main fabric'), ...findMaterials(shortTop, 'Main fabric')])],
+      [controls.topColor, new Set([...findMaterials(longTop, 'Main fabric'), ...findMaterials(shortTop, 'Main fabric'), ...findMaterials(polo, 'Main fabric')])],
       [controls.trouserColor, new Set([...findMaterials(trousers, 'Main fabric'), ...findMaterials(relaxed, 'Main fabric')])],
       [controls.shoeColor, new Set([...findMaterials(shoes, 'Shoe upper'), ...findMaterials(tall, 'Shoe upper')])],
     ];
@@ -175,7 +176,8 @@
 
     function applyLook() {
       longTop.visible = controls.top.value === 'long';
-      shortTop.visible = !longTop.visible;
+      shortTop.visible = controls.top.value === 'short';
+      polo.visible = controls.top.value === 'polo';
       trousers.visible = controls.trouserStyle.value === 'tapered';
       relaxed.visible = !trousers.visible;
       shoes.visible = controls.shoeStyle.value === 'ankle';
