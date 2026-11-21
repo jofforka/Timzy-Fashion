@@ -1,97 +1,194 @@
-/* Timzy virtual tailoring studio: procedural 3D prototype, not measurement-accurate. */
-(async function(){
- const mount=document.getElementById('timzy3d');if(!mount)return;
- const status=document.getElementById('studioStatus');
- const colors={navy:0x203451,black:0x252525,cream:0xd5c6a5,burgundy:0x713645,forest:0x345847};
- const types={senator:'Senator',kaftan:'Kaftan',agbada:'Agbada'};
- let THREE;try{THREE=await import('https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js');}catch(e){status.textContent='3D preview unavailable. Your catalogue remains accessible below.';return;}
- const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0ede7);
- const camera=new THREE.PerspectiveCamera(35,1,0.1,100);camera.position.set(0,2.05,7.5);camera.lookAt(0,1.65,0);
- let renderer;try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});}catch(e){status.textContent='3D is unavailable on this device.';return;}
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.outputColorSpace=THREE.SRGBColorSpace;
- mount.appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','Rotatable 3D male mannequin wearing a preview outfit');
- scene.add(new THREE.HemisphereLight(0xffffff,0x8c8a84,2.4));
- const light=new THREE.DirectionalLight(0xffffff,2.2);light.position.set(3,7,5);scene.add(light);
- const root=new THREE.Group();scene.add(root);
- const prototype=new THREE.Group();root.add(prototype);
- prototype.visible=false;
- let realisticAvatar=null;
- let humanMode=true;
- const skin=new THREE.MeshStandardMaterial({color:0x926449,roughness:0.88});
- const shoes=new THREE.MeshStandardMaterial({color:0x292524,roughness:0.8});
- const cloth=new THREE.MeshStandardMaterial({color:colors.navy,roughness:0.88,side:THREE.DoubleSide});
- const add=(geo,mat,x,y,z,parent=prototype)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);parent.add(m);return m};
- const cylinder=(r1,r2,h,x,y,z,mat)=>add(new THREE.CylinderGeometry(r1,r2,h,18),mat,x,y,z);
- add(new THREE.SphereGeometry(.24,20,14),skin,0,3.45,0);
- cylinder(.115,.125,.18,0,3.2,0,skin);
- for(const sign of [-1,1]){
-   const leg=cylinder(.16,.13,1.18,sign*.2,.84,0,cloth);
-   cylinder(.115,.12,.38,sign*.2,.23,0,skin);
-   const foot=add(new THREE.BoxGeometry(.28,.16,.49),shoes,sign*.2,.09,.12);
-   const arm=cylinder(.135,.11,1.14,sign*.52,2.38,0,cloth);arm.rotation.z=sign*-.13;
-   add(new THREE.SphereGeometry(.105,12,10),skin,sign*.6,1.77,0);
- }
- const torso=cylinder(.39,.33,1.2,0,2.54,0,cloth);
- const skirt=cylinder(.34,.4,.6,0,1.67,0,cloth);
- const robe=cylinder(.72,.62,1.72,0,2.16,0,cloth);robe.visible=false;
- const collar=add(new THREE.TorusGeometry(.16,.022,8,24),new THREE.MeshStandardMaterial({color:0xc5b99d}),0,3.09,.335);collar.rotation.x=Math.PI/2;
- const ground=add(new THREE.CylinderGeometry(1.15,1.2,.09,48),new THREE.MeshStandardMaterial({color:0xcac5bb}),0,-.05,0,scene);
- function outfit(type){robe.visible=type==='agbada';torso.visible=type!=='agbada';skirt.visible=type!=='agbada';skirt.scale.y=type==='kaftan'?1.4:1;status.textContent=types[type]+' — illustrative 3D preview, not a tailored fit.';}
- const typeSelect=document.getElementById('studioOutfit'),colorSelect=document.getElementById('studioColor');
- typeSelect.addEventListener('change',()=>outfit(typeSelect.value));
- colorSelect.addEventListener('change',()=>{cloth.color.setHex(colors[colorSelect.value]);});
- document.querySelectorAll('[data-studio-view]').forEach(btn=>btn.addEventListener('click',()=>{root.rotation.y=Number(btn.dataset.studioView);}));
- let dragging=false,last=0;renderer.domElement.addEventListener('pointerdown',e=>{dragging=true;last=e.clientX;renderer.domElement.setPointerCapture(e.pointerId)});
- renderer.domElement.addEventListener('pointermove',e=>{if(dragging){root.rotation.y+=(e.clientX-last)*.012;last=e.clientX;}});
- renderer.domElement.addEventListener('pointerup',()=>dragging=false);renderer.domElement.addEventListener('pointercancel',()=>dragging=false);
- document.getElementById('studioSave').addEventListener('click',()=>{
-  const selection={outfit:typeSelect.value,color:colorSelect.value,version:1};
-  try{localStorage.setItem('timzy-virtual-look',JSON.stringify(selection));status.textContent='Preview preferences saved on this device. This is not an order.';}catch(e){status.textContent='Unable to save preferences on this device.';}
- });
- try{const saved=JSON.parse(localStorage.getItem('timzy-virtual-look')||'null');if(saved&&types[saved.outfit]&&colors[saved.color]){typeSelect.value=saved.outfit;colorSelect.value=saved.color;cloth.color.setHex(colors[saved.color]);}}catch(e){}
- outfit(typeSelect.value);
- // Real human preview is intentionally separate from the illustrative clothing geometry.
- // Never imply these outfit selectors fit the imported human until garment meshes are authored.
- const humanButton=document.getElementById('studioHumanMode');
- const clothingButton=document.getElementById('studioClothingMode');
- function setMode(real){
-   humanMode=real&&!!realisticAvatar;
-   prototype.visible=false;
-   if(realisticAvatar)realisticAvatar.visible=humanMode;
-   document.querySelectorAll('[data-outfit-preview]').forEach(el=>{el.hidden=true});
-   humanButton.setAttribute('aria-pressed',String(humanMode));
-   clothingButton.setAttribute('aria-pressed',String(!humanMode));
-   status.textContent=humanMode?'Real human model preview. Timzy garment fitting is not yet available.':'Realistic Timzy garments are being prepared; geometric outfit previews are retired.';
- }
- humanButton.addEventListener('click',()=>setMode(true));
- clothingButton.addEventListener('click',()=>setMode(false));
- try{
-   const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js');
-   const loader=new GLTFLoader();
-   const avatarUrl='assets/models/timzy-male-avatar.glb';
-   const avatar=await loader.loadAsync(avatarUrl);
-   realisticAvatar=avatar.scene;
-   const box=new THREE.Box3().setFromObject(realisticAvatar);
-   const size=box.getSize(new THREE.Vector3());
-   if(!Number.isFinite(size.y)||size.y<=0)throw Error('Invalid model bounds');
-   const scale=3.55/size.y;
-   realisticAvatar.scale.setScalar(scale);
-   const scaledBox=new THREE.Box3().setFromObject(realisticAvatar);
-   const center=scaledBox.getCenter(new THREE.Vector3());
-   realisticAvatar.position.x-=center.x;
-   realisticAvatar.position.z-=center.z;
-   realisticAvatar.position.y-=scaledBox.min.y;
-   root.add(realisticAvatar);
-   setMode(true);
- }catch(e){
-   setMode(false);
-   clothingButton.disabled=true;
-   humanButton.disabled=true;
-   humanButton.title='Human model could not be loaded';
-   status.textContent='Realistic 3D fitting preview is not yet available. Choose your outfit from the catalogue below while we prepare the human model and garments.';
- }
- function resize(){const w=Math.max(260,mount.clientWidth),h=Math.max(400,mount.clientHeight);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}
- resize();const observer=new ResizeObserver(resize);observer.observe(mount);
- let visible=true;const io=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting});io.observe(mount);
- function frame(){requestAnimationFrame(frame);if(visible)renderer.render(scene,camera)}frame();
+/* Timzy virtual tailoring studio. */
+(async function () {
+  const mount = document.getElementById('timzy3d');
+  if (!mount) return;
+
+  const status = document.getElementById('studioStatus');
+  const outfit = document.getElementById('studioOutfit');
+  const color = document.getElementById('studioColor');
+  const garments = {
+    agbada: 'timzy-agbada.glb',
+  };
+  const colors = { navy: 0x203451, black: 0x252525, cream: 0xd5c6a5, burgundy: 0x713645, forest: 0x345847 };
+  const storageKey = 'timzy-virtual-look';
+
+  document.getElementById('studioSave').addEventListener('click', () => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ outfit: outfit.value, color: color.value, version: 1 }));
+      status.textContent = 'Preview preferences saved on this device. No order was placed.';
+    } catch {
+      status.textContent = 'Unable to save preview preferences on this device.';
+    }
+  });
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey));
+    if (saved && Object.hasOwn(garments, saved.outfit) && Object.hasOwn(colors, saved.color)) {
+      outfit.value = saved.outfit;
+      color.value = saved.color;
+    }
+  } catch {
+    // Preferences are optional when storage is unavailable or cannot be read.
+  }
+
+  const unavailable = 'The 3D preview is unavailable. You can still browse the catalogue below.';
+  try {
+    const [THREE, { GLTFLoader }] = await Promise.all([
+      import('three'),
+      import('https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/loaders/GLTFLoader.js'),
+    ]);
+    const loader = new GLTFLoader();
+    async function loadModel(file) {
+      const url = new URL('../models/' + file, import.meta.url);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Model unavailable: ' + response.status);
+      const data = await response.arrayBuffer();
+      if (data.byteLength < 20) throw new Error('Incomplete GLB: ' + file);
+      const header = new DataView(data);
+      if (header.getUint32(0, true) !== 0x46546c67 ||
+          header.getUint32(4, true) !== 2 || header.getUint32(8, true) !== data.byteLength) {
+        throw new Error('Invalid GLB header: ' + file);
+      }
+      return (await loader.parseAsync(data, new URL('.', url).href)).scene;
+    }
+
+    const avatar = await loadModel('timzy-male-avatar.glb');
+    // The skinned meshes need current world matrices before measuring the posed avatar.
+    avatar.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(avatar, true);
+    const size = bounds.getSize(new THREE.Vector3());
+    if (!Number.isFinite(size.length()) || size.y <= 0) throw new Error('Invalid avatar bounds');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0ede7);
+    const root = new THREE.Group();
+    const model = new THREE.Group();
+    const center = bounds.getCenter(new THREE.Vector3());
+    model.position.set(-center.x, -bounds.min.y, -center.z);
+    model.add(avatar);
+    root.add(model);
+    scene.add(root);
+    // Keep the unclothed base mesh out of view until an outfit is available.
+    root.visible = false;
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c8a84, 2.4));
+    const light = new THREE.DirectionalLight(0xffffff, 2.2);
+    light.position.set(3, 7, 5);
+    scene.add(light);
+
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.domElement.setAttribute('aria-label', 'Rotatable 3D outfit preview');
+    mount.appendChild(renderer.domElement);
+
+    function render() {
+      renderer.render(scene, camera);
+    }
+    function resize() {
+      const width = mount.clientWidth;
+      const height = mount.clientHeight;
+      if (!width || !height) return;
+      camera.aspect = width / height;
+      const halfFov = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+      const halfWidth = Math.hypot(size.x, size.z) / 2;
+      const distance = Math.max(size.y / 2, halfWidth / camera.aspect) * 1.2 / halfFov + halfWidth;
+      camera.position.set(0, size.y / 2, distance);
+      camera.lookAt(0, size.y / 2, 0);
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+      render();
+    }
+    new ResizeObserver(resize).observe(mount);
+    resize();
+
+    document.querySelectorAll('[data-studio-view]').forEach(button => {
+      button.addEventListener('click', () => {
+        root.rotation.y = Number(button.dataset.studioView);
+        render();
+      });
+    });
+
+    const canvas = renderer.domElement;
+    let pointer = null;
+    let lastX = 0;
+    canvas.addEventListener('pointerdown', event => {
+      if (pointer !== null || event.button !== 0) return;
+      pointer = event.pointerId;
+      lastX = event.clientX;
+      canvas.setPointerCapture(pointer);
+    });
+    canvas.addEventListener('pointermove', event => {
+      if (event.pointerId !== pointer || !root.visible) return;
+      root.rotation.y += (event.clientX - lastX) * 0.012;
+      lastX = event.clientX;
+      render();
+    });
+    canvas.addEventListener('lostpointercapture', event => {
+      if (event.pointerId === pointer) pointer = null;
+    });
+
+    const outfitCache = new Map();
+    const fabricName = /\b(?:fabric|cloth|garment|main|outer|senator|kaftan|agbada)\b/i;
+    let selection = 0;
+    let current = null;
+
+    async function loadOutfit(type) {
+      const group = await loadModel(garments[type]);
+      const materials = new Set();
+      group.traverse(object => {
+        if (!object.isMesh) return;
+        for (const material of Array.isArray(object.material) ? object.material : [object.material]) {
+          const name = (material.name || '').replace(/[_-]/g, ' ');
+          if (material.color && fabricName.test(name) &&
+              !/\b(?:trim|lining|skin|hair|footwear|shoe|button)\b/i.test(name)) {
+            materials.add(material);
+          }
+        }
+      });
+      return { group, materials };
+    }
+
+    function applyColor() {
+      if (!current) return;
+      for (const material of current.materials) material.color.setHex(colors[color.value]);
+      render();
+    }
+
+    async function showOutfit() {
+      const request = ++selection;
+      const type = outfit.value;
+      if (current) model.remove(current.group);
+      current = null;
+      root.visible = false;
+      render();
+      status.textContent = 'Loading the selected 3D outfit…';
+
+      if (!outfitCache.has(type)) {
+        outfitCache.set(type, loadOutfit(type).catch(error => {
+          outfitCache.delete(type);
+          throw error;
+        }));
+      }
+
+      try {
+        const selected = await outfitCache.get(type);
+        if (request !== selection) return;
+        current = selected;
+        model.add(current.group);
+        root.visible = true;
+        applyColor();
+        status.textContent = current.materials.size
+          ? '3D outfit preview. Confirm fabric and fit with a tailor.'
+          : '3D outfit preview. Colour changes are unavailable for this garment.';
+      } catch {
+        if (request === selection) status.textContent = 'The selected 3D outfit is still being prepared.';
+      }
+    }
+
+    outfit.addEventListener('change', showOutfit);
+    color.addEventListener('change', applyColor);
+    await showOutfit();
+  } catch {
+    status.textContent = unavailable;
+  }
 })();
