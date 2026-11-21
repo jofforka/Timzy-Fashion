@@ -55,6 +55,15 @@
     const avatar = await loadModel('timzy-male-avatar.glb');
     // The skinned meshes need current world matrices before measuring the posed avatar.
     avatar.updateMatrixWorld(true);
+    // Relax the arms for the drape of the Agbada sleeves.
+    for (const [side, angle] of [['L', -0.24], ['R', 0.24]]) {
+      const bone = avatar.getObjectByName('upperarm01' + side);
+      if (!bone?.isBone) continue;
+      const worldRotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.25, 0, angle));
+      const parentRotation = bone.parent.getWorldQuaternion(new THREE.Quaternion());
+      bone.quaternion.premultiply(parentRotation.clone().invert().multiply(worldRotation).multiply(parentRotation));
+    }
+    avatar.updateMatrixWorld(true);
     const bounds = new THREE.Box3().setFromObject(avatar, true);
     const size = bounds.getSize(new THREE.Vector3());
     if (!Number.isFinite(size.length()) || size.y <= 0) throw new Error('Invalid avatar bounds');
