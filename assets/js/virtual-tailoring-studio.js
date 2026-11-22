@@ -9,6 +9,7 @@
 
   const status = document.getElementById('studioStatus');
   const controls = {
+    build: document.getElementById('studioBuild'),
     top: document.getElementById('studioOutfit'),
     topColor: document.getElementById('studioColor'),
     trouserStyle: document.getElementById('studioTrouserStyle'),
@@ -20,6 +21,7 @@
     navy: 0x203451, black: 0x252525, cream: 0xd5c6a5,
     burgundy: 0x713645, forest: 0x345847, brown: 0x59402d,
   };
+  const buildScales = { slim: [0.89, 0.91], standard: [1, 1], broad: [1.13, 1.15] };
   const storageKey = 'timzy-virtual-look';
 
   document.getElementById('studioSave').addEventListener('click', () => {
@@ -110,7 +112,7 @@
       if (!width || !height) return;
       camera.aspect = width / height;
       const halfFov = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-      const halfWidth = Math.hypot(size.x, size.z) / 2;
+      const halfWidth = Math.hypot(size.x * root.scale.x, size.z * root.scale.z) / 2;
       const distance = Math.max(size.y / 2, halfWidth / camera.aspect) * 1.2 / halfFov + halfWidth;
       camera.position.set(0, size.y / 2, distance);
       camera.lookAt(0, size.y / 2, 0);
@@ -175,6 +177,8 @@
     if (slots.some(([, materials]) => materials.size === 0)) throw new Error('Missing wardrobe materials');
 
     function applyLook() {
+      const [width, depth] = buildScales[controls.build.value];
+      root.scale.set(width, 1, depth);
       longTop.visible = controls.top.value === 'long';
       shortTop.visible = controls.top.value === 'short';
       polo.visible = controls.top.value === 'polo';
@@ -185,7 +189,7 @@
       for (const [field, materials] of slots) {
         for (const material of materials) material.color.setHex(colors[field.value]);
       }
-      render();
+      resize();
     }
     model.add(wardrobe);
     root.visible = true;
