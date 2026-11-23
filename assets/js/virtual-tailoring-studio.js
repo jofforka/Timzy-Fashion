@@ -65,7 +65,7 @@
       return (await loader.parseAsync(data, new URL('.', url).href)).scene;
     }
 
-    const avatar = await loadModel('timzy-male-avatar.glb');
+    const avatar = await loadModel('timzy-male-avatar.glb?v=2');
     // The skinned meshes need current world matrices before measuring the posed avatar.
     avatar.updateMatrixWorld(true);
     // Relax the arms for the fit of the Senator sleeves.
