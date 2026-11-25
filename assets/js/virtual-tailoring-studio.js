@@ -224,13 +224,23 @@
     // immutable source positions so repeated selection never accumulates distortion.
     stage = 'Preparing garment geometry';
     const tunicBodies = [longTop, shortTop].map(group => {
-      const mesh = group.getObjectByName('Tailored long tunic');
-      if (!mesh?.isMesh) throw new Error('Missing tunic body');
+      // GLTFLoader sanitizes and uniquifies node names. Resolve only an
+      // unambiguous tunic body; otherwise retain the original garment.
+      const candidates = [];
+      group.traverse(object => {
+        if (object.isMesh && /^tailored(?:[ _-]+)?(?:long|short)?(?:[ _-]+)?tunic(?:[ _-]*\d+)?$/i.test(object.name)
+            && object.geometry?.attributes?.position) candidates.push(object);
+      });
+      if (candidates.length !== 1) {
+        console.warn('Using original tunic geometry:', group.name, candidates.length);
+        return null;
+      }
+      const mesh = candidates[0];
       mesh.geometry = mesh.geometry.clone();
       const position = mesh.geometry.attributes.position;
       return {group, mesh, position, original: new Float32Array(position.array),
         placket: group.getObjectByName('Concealed front placket')};
-    });
+    }).filter(Boolean);
     function tailorTunic(body, neckline) {
       const {mesh, position, original, placket} = body;
       const hem = body.group === longTop ? .57 : .825;
@@ -263,7 +273,7 @@
       if (placket) placket.visible = neckline === 'senator';
     }
     function applyLook() {
-      controls.neckline.disabled = controls.top.value === 'polo';
+      controls.neckline.disabled = controls.top.value === 'polo' || !tunicBodies.some(body => body.group === (controls.top.value === 'long' ? longTop : shortTop));
       for (const body of tunicBodies) tailorTunic(body,controls.neckline.value);
       const [width, depth] = buildScales[controls.build.value];
       root.scale.set(width, 1, depth);
@@ -286,7 +296,7 @@
     applyLook();
     interactiveFields.forEach(field => { field.disabled = false; });
     controls.neckline.disabled = controls.top.value === 'polo';
-    status.textContent = '3D wardrobe ready.';
+    status.textContent = tunicBodies.length === 2 ? '3D wardrobe ready.' : '3D wardrobe ready. Some neckline previews are unavailable.';
   } catch (error) {
     console.error('Timzy wardrobe initialization failed:', error);
     mount.replaceChildren();
