@@ -69,7 +69,7 @@
       </header>
 
       <section id="dashboardView" class="admin-view">
-        <p class="admin-card">Orders are confirmed over WhatsApp. Record completed sales and expenses manually; these entries do not change stock or calculate investor payouts. Investor product assignments show current agreed prices only. Track payouts separately.</p>
+        <p class="admin-card">Orders are confirmed over WhatsApp. Record completed sales and expenses manually; ordinary sales entries do not change stock. Administrators can record a stock-linked sale below. Neither action calculates investor payouts. Investor product assignments show current agreed prices only. Track payouts separately.</p>
         <div class="stats-grid">
           <article><span>Products</span><strong id="statProducts">0</strong></article>
           <article><span>Published</span><strong id="statPublished">0</strong></article>
@@ -117,7 +117,7 @@
             <input name="date" type="date" required>
             <button class="primary-btn" type="submit">Add Sale</button>
           </form>
-          <div id="dailyShopSummary" role="status"></div>
+          <form id="stockSaleForm" class="form-grid" data-admin-only><h3>Confirmed stock sale</h3><label>Product<select name="productId" required></select></label><label>Colour<select name="colour"></select></label><label>Quantity sold<input name="quantity" type="number" min="1" step="1" required></label><label>Total received (₦)<input name="amount" type="number" min="0.01" step="0.01" required></label><label>Date<input name="date" type="date" required></label><label>Receipt / reference<input name="reference" maxlength="200" required></label><button type="submit" class="primary-btn">Record sale and deduct stock</button><small>Use only for confirmed sales not already recorded. Investor ledger is separate.</small></form><div id="dailyShopSummary" role="status"></div>
           <div id="salesList" class="record-list"></div>
         </div>
       </section>
@@ -377,7 +377,7 @@
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/firebase.js"></script>
   <script src="product-placement.js?v=1"></script>
-  <script src="../assets/js/fabric-profile.js?v=1"></script><script src="admin.js?v=inventory2"></script>
+  <script src="../assets/js/fabric-profile.js?v=1"></script><script src="admin.js?v=inventory3"></script>
   <script src="spark-roles.js?v=investor-ledger-1"></script>
 </body>
 </html>
