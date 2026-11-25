@@ -422,6 +422,34 @@
     $("#productStoreSection").focus();
   }
 
+
+  function renderVariantStock() {
+    const form = $("#productForm"), root = $("#variantStockEditor");
+    const list = JSON.parse(form.elements.variantsJson.value || "[]");
+    root.replaceChildren();
+    list.forEach((variant, index) => {
+      const row = document.createElement("fieldset");
+      const legend = document.createElement("legend"); legend.textContent = "Colour " + (index + 1); row.append(legend);
+      for (const [key, caption] of [["color","Colour name"],["stockOnHand","Stock quantity"],["image","Image URL / path"],["sizes","Sizes / selling units (comma separated)"]]) {
+        const label = document.createElement("label"); label.textContent = caption;
+        const input = document.createElement("input");
+        input.value = key === "sizes" ? (variant.sizes || []).join(", ") : variant[key] ?? "";
+        if (key === "stockOnHand") { input.type = "number"; input.min = "0"; input.step = "1"; input.placeholder = "Not recorded"; }
+        if (key === "color") input.required = true;
+        input.addEventListener("input", () => {
+          const current = JSON.parse(form.elements.variantsJson.value || "[]");
+          current[index][key] = key === "sizes" ? input.value.split(",").map(x=>x.trim()).filter(Boolean) : key === "stockOnHand" ? (input.value === "" ? null : Number(input.value)) : input.value;
+          form.elements.variantsJson.value = JSON.stringify(current);
+        });
+        label.append(input); row.append(label);
+      }
+      const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "Remove colour";
+      remove.addEventListener("click", () => { const current = JSON.parse(form.elements.variantsJson.value || "[]"); current.splice(index,1); form.elements.variantsJson.value = JSON.stringify(current); renderVariantStock(); });
+      row.append(remove); root.append(row);
+    });
+    form.elements.stockOnHand.disabled = list.length > 0;
+  }
+
   function resetEditor() {
     state.editingId = null;
     state.images = [];
@@ -434,6 +462,7 @@
     $("#productForm").elements.sizes.value = "";
     populateMaterialOptions();
     syncPlacement('outfits', 'Senator', 'Ready-Made');
+    renderVariantStock();
     $("#productModalTitle").textContent = "Add Product";
     $("#deleteProductBtn").hidden = true;
     $("#uploadProgress").hidden = true;
@@ -463,7 +492,7 @@
     for (const key of [...Object.keys(window.TimzyFabric.fields), 'videoUrl']) form.elements['fabric_'+key].value = profile[key];
     Array.from(form.elements.fabric_occasions.options).forEach(option => {option.selected = profile.occasions.includes(option.value);});
     const fields = [
-      "id", "name", "sku", "category", "productType", "price", "salePrice",
+      "id", "name", "sku", "category", "productType", "price", "salePrice", "stockOnHand",
       "fabricType", "materialProductId", "color", "sizes", "deliveryEstimate", "status", "badge",
       "description", "tags", "instagramVideoUrl"
     ];
@@ -475,6 +504,7 @@
     form.elements.featured.checked = Boolean(product.featured);
     form.elements.measurementRequired.checked = Boolean(product.measurementRequired);
 
+    renderVariantStock();
     $("#productModalTitle").textContent = "Edit Product";
     $("#deleteProductBtn").hidden = false;
     renderImagePreviews();
@@ -606,7 +636,7 @@
         profile.occasions = Array.from(form.elements.fabric_occasions.selectedOptions).map(option=>option.value);
         return profile;
       })(),
-      variants: (() => { const raw = form.elements.variantsJson?.value?.trim(); if (!raw) return []; const list = JSON.parse(raw); if (!Array.isArray(list) || list.length > 8) throw Error("Enter up to 8 color variants."); if(new Set(list.map(v=>String(v?.color||"").trim().toLowerCase())).size!==list.length) throw Error("Color names must be unique."); return list.map(v => { if (!v || !String(v.color || "").trim()) throw Error("Each variant needs a color."); const stock = v.stockOnHand == null || v.stockOnHand === "" ? null : Number(v.stockOnHand); if (stock !== null && (!Number.isSafeInteger(stock) || stock < 0)) throw Error("Stock must be a nonnegative integer."); if(v.sizes != null && (!Array.isArray(v.sizes) || v.sizes.length>40 || v.sizes.some(s=>typeof s!=="string" || s.includes("~")))) throw Error("Enter up to 40 size / selling unit labels per color."); const price = v.price == null || v.price === "" ? null : Number(v.price); if (price !== null && (!Number.isFinite(price) || price < 0)) throw Error("Price must be nonnegative."); const image=String(v.image || "").trim(); if(image && !/^(https:\/\/|assets\/img\/)/i.test(image)) throw Error("Use an HTTPS image URL or an assets/img path."); return {...(v.id ? {id:String(v.id)} : {}),color:String(v.color).trim(),image,stockOnHand:stock,price,sizes:Array.isArray(v.sizes)?v.sizes.map(String).map(x=>x.trim()).filter(Boolean):[]}; }); })(),
+      variants: (() => { const raw = form.elements.variantsJson?.value?.trim(); if (!raw) return []; const list = JSON.parse(raw); if (!Array.isArray(list) || list.length > 8) throw Error("Enter up to 8 color variants."); if(new Set(list.map(v=>String(v?.color||"").trim().toLowerCase())).size!==list.length) throw Error("Color names must be unique."); return list.map(v => { if (!v || !String(v.color || "").trim()) throw Error("Each variant needs a color."); const stock = v.stockOnHand == null || v.stockOnHand === "" ? null : Number(v.stockOnHand); if (stock !== null && (!Number.isSafeInteger(stock) || stock < 0)) throw Error("Stock must be a nonnegative integer."); if(v.sizes != null && (!Array.isArray(v.sizes) || v.sizes.length>40 || v.sizes.some(s=>typeof s!=="string" || s.includes("~")))) throw Error("Enter up to 40 size / selling unit labels per color."); const price = Number(data.salePrice)>0 ? Number(data.salePrice) : data.price.trim() === "" ? null : Number(data.price); if (price !== null && (!Number.isFinite(price) || price < 0)) throw Error("Price must be nonnegative."); const image=String(v.image || "").trim(); if(image && !/^(https:\/\/|assets\/img\/)/i.test(image)) throw Error("Use an HTTPS image URL or an assets/img path."); return {...(v.id ? {id:String(v.id)} : {}),color:String(v.color).trim(),image,stockOnHand:stock,price,sizes:Array.isArray(v.sizes)?v.sizes.map(String).map(x=>x.trim()).filter(Boolean):[]}; }); })(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
   }
@@ -624,6 +654,10 @@
       return toast("Complete the required product fields.");
     }
 
+    const stockInput = $("#productForm").elements.stockOnHand.value;
+    product.stockOnHand = product.variants.length ? (product.variants.every(v=>Number.isSafeInteger(v.stockOnHand)) ? product.variants.reduce((sum,v)=>sum+v.stockOnHand,0) : null) : stockInput === "" ? null : Number(stockInput);
+    if (product.stockOnHand !== null && (!Number.isSafeInteger(product.stockOnHand) || product.stockOnHand < 0)) return toast("Enter a valid stock quantity.");
+    if (product.salePrice !== null && (!Number.isFinite(product.salePrice) || product.salePrice < 0)) return toast("Enter a valid sale price.");
     if (product.materialProductId) {
       const match = state.products.find(p => p.id === product.materialProductId);
       if (!match || !/^(fabrics?|materials?)$/i.test(String(match.category || "")) ||
@@ -860,6 +894,7 @@
       } catch (error) { toast(error.message || "Could not prepare fabrics."); }
       finally { button.disabled = false; }
     });
+    $("#addVariantStock").addEventListener("click", () => { const field = $("#productForm").elements.variantsJson; const list = JSON.parse(field.value || "[]"); if (list.length >= 8) return toast("Maximum 8 colours."); list.push({color:"",image:"",stockOnHand:null,sizes:[]}); field.value = JSON.stringify(list); renderVariantStock(); });
     $("#productForm").addEventListener("submit", event => saveProduct(event).catch(error => toast(error.message)));
     $("#loadFabricPreset")?.addEventListener("click", () => {
       const id = $("#fabricPreset")?.value;
@@ -879,6 +914,7 @@
         form.elements.price.value = ""; form.elements.salePrice.value = "";
         form.elements.sizes.value = "";
         form.elements.variantsJson.value = JSON.stringify(preset.variants.map(({imageStatus,...v}) => v),null,2);
+        renderVariantStock();
         state.images = [...preset.images]; renderImagePreviews();
         toast("Prepared images loaded. Confirm commercial values before publishing.");
       }).catch(error => toast(error.message));
