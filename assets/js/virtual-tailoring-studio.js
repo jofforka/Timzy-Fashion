@@ -111,12 +111,20 @@
 
     const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    // Limit drawing-buffer cost on high-density mobile displays.
+    const maxRenderPixels = 1200000;
+    let previousWidth = 0, previousHeight = 0, previousRatio = 0;
+    let frame = null;
+    let contextLost = false;
     renderer.domElement.setAttribute('aria-label', 'Rotatable 3D outfit preview');
     mount.appendChild(renderer.domElement);
 
     function render() {
-      renderer.render(scene, camera);
+      if (frame !== null || contextLost || (preview && !preview.open)) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        if (!contextLost && (!preview || preview.open)) renderer.render(scene, camera);
+      });
     }
     function resize() {
       const width = mount.clientWidth;
@@ -129,7 +137,14 @@
       camera.position.set(0, size.y / 2, distance);
       camera.lookAt(0, size.y / 2, 0);
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height, false);
+      const ratio = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(maxRenderPixels / (width * height)));
+      if (width !== previousWidth || height !== previousHeight || ratio !== previousRatio) {
+        renderer.setPixelRatio(ratio);
+        renderer.setSize(width, height, false);
+        previousWidth = width;
+        previousHeight = height;
+        previousRatio = ratio;
+      }
       render();
     }
     new ResizeObserver(resize).observe(mount);
@@ -143,6 +158,16 @@
     });
 
     const canvas = renderer.domElement;
+    canvas.addEventListener('webglcontextlost', event => {
+      event.preventDefault();
+      contextLost = true;
+      status.textContent = '3D graphics interrupted. Waiting for recovery…';
+    });
+    canvas.addEventListener('webglcontextrestored', () => {
+      contextLost = false;
+      status.textContent = root.visible ? '3D wardrobe ready.' : 'Loading interactive preview…';
+      resize();
+    });
     let pointer = null;
     let lastX = 0;
     canvas.addEventListener('pointerdown', event => {
