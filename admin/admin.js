@@ -246,6 +246,7 @@
   }
 
   function renderAll() {
+    renderStockSaleProducts();
     renderStats();
     renderProducts();
     renderLatestProducts();
@@ -736,6 +737,64 @@
     renderAll();
   }
 
+
+  function renderStockSaleProducts() {
+    const form = $("#stockSaleForm");
+    const current = form.elements.productId.value;
+    form.elements.productId.replaceChildren(new Option("Choose product",""));
+    if (state.role === "admin") state.products.filter(p=>["Published","Out of Stock"].includes(p.status)).forEach(p=>form.elements.productId.add(new Option(p.name,p.id)));
+    form.elements.productId.value = current;
+    renderStockSaleColours();
+  }
+  function renderStockSaleColours() {
+    const form = $("#stockSaleForm"), product = state.products.find(p=>p.id===form.elements.productId.value);
+    const variants = product?.variants || [];
+    form.elements.colour.replaceChildren(new Option(variants.length ? "Choose colour" : "No colour options",""));
+    variants.forEach(v=>form.elements.colour.add(new Option(v.color,v.color)));
+    form.elements.colour.required = variants.length > 0;
+  }
+  async function submitStockSale(event) {
+    event.preventDefault();
+    if (state.role !== "admin") return;
+    const form = event.currentTarget, button = form.querySelector('button[type="submit"]');
+    if (button.disabled || !form.reportValidity()) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+    const quantity = Number(data.quantity), amount = Number(data.amount), reference = data.reference.trim();
+    if (!reference || !Number.isSafeInteger(quantity) || quantity < 1 || !Number.isFinite(amount) || amount <= 0 || amount > 1000000000) throw Error("Enter valid sale details.");
+    button.disabled = true;
+    try {
+      const productRef = fb.db.collection(collections.products).doc(data.productId);
+      const digest = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(reference.toLowerCase()));
+      const saleId = "stock-" + Array.from(new Uint8Array(digest), b=>b.toString(16).padStart(2,"0")).join("");
+      const saleRef = fb.db.collection(collections.sales).doc(saleId);
+      await fb.db.runTransaction(async tx => {
+        const existing = await tx.get(saleRef), snapshot = await tx.get(productRef);
+        if (existing.exists) throw Error("This receipt reference has already been recorded.");
+        if (!snapshot.exists) throw Error("Product no longer exists.");
+        const p = snapshot.data();
+        if (!["Published","Out of Stock"].includes(p.status)) throw Error("Product is not active.");
+        const variants = p.variants || [];
+        let stock = p.stockOnHand, updated = variants;
+        if (variants.length) {
+          const index = variants.findIndex(v=>v.color===data.colour);
+          if (index < 0) throw Error("Choose a valid colour.");
+          const v = variants[index];
+          if (!Number.isSafeInteger(v.stockOnHand) || v.stockOnHand < quantity) throw Error("Insufficient or unrecorded colour stock.");
+          updated = variants.map((v,i)=>i===index?{...v,stockOnHand:v.stockOnHand-quantity}:v);
+          stock = updated.every(v=>Number.isSafeInteger(v.stockOnHand)) ? updated.reduce((sum,v)=>sum+v.stockOnHand,0) : null;
+        } else {
+          if (!Number.isSafeInteger(stock) || stock < quantity) throw Error("Insufficient or unrecorded product stock.");
+          stock -= quantity;
+        }
+        const description = (p.name + (data.colour ? " / "+data.colour : "") + " × "+quantity+" | Receipt: "+reference).slice(0,1000);
+        tx.update(productRef,{stockOnHand:stock,...(variants.length?{variants:updated}:{}),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        tx.set(saleRef,{description,amount,date:data.date,createdBy:state.uid,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      });
+      form.reset(); initDates(); toast("Sale recorded and stock deducted.");
+      await loadProducts(); await loadRecords("sales"); renderAll();
+    } finally { button.disabled = false; }
+  }
+
   async function submitRecord(type, event) {
     event.preventDefault();
     if (!['admin','staff'].includes(state.role)) return;
@@ -949,6 +1008,8 @@
     });
     $("#productSearch").addEventListener("input", renderProducts);
     $("#productFilter").addEventListener("change", renderProducts);
+    $("#stockSaleForm").elements.productId.addEventListener("change", renderStockSaleColours);
+    $("#stockSaleForm").addEventListener("submit", event => submitStockSale(event).catch(error=>toast(error.message)));
     $("#saleForm").addEventListener("submit", event => submitRecord("sales", event).catch(error => toast(error.message)));
     $("#expenseForm").addEventListener("submit", event => submitRecord("expenses", event).catch(error => toast(error.message)));
     $("#restockForm").addEventListener("submit", event => submitRestock(event).catch(error => toast(error.message)));
@@ -960,6 +1021,7 @@
   function initDates() {
     const today = new Date().toISOString().slice(0, 10);
     $("#saleForm").elements.date.value = today;
+    $("#stockSaleForm").elements.date.value = today;
     $("#expenseForm").elements.date.value = today;
   }
 
