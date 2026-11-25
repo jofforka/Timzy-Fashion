@@ -58,6 +58,7 @@
   }
 
   const unavailable = 'The 3D preview is unavailable. You can still browse the catalogue below.';
+  let stage = 'Loading 3D libraries';
   try {
     const [THREE, { GLTFLoader }] = await Promise.all([
       import('three'),
@@ -78,6 +79,7 @@
       return (await loader.parseAsync(data, new URL('.', url).href)).scene;
     }
 
+    stage = 'Loading male avatar';
     const avatar = await loadModel('timzy-male-avatar.glb?v=2');
     // The skinned meshes need current world matrices before measuring the posed avatar.
     avatar.updateMatrixWorld(true);
@@ -111,7 +113,10 @@
     scene.add(light);
 
     const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    stage = 'Initializing WebGL';
+    let renderer;
+    try { renderer = new THREE.WebGLRenderer({ antialias: true }); }
+    catch { renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'low-power' }); }
     // Limit drawing-buffer cost on high-density mobile displays.
     const maxRenderPixels = 1200000;
     let previousWidth = 0, previousHeight = 0, previousRatio = 0;
@@ -187,6 +192,7 @@
       if (event.pointerId === pointer) pointer = null;
     });
 
+    stage = 'Loading wardrobe model';
     const wardrobe = await loadModel('timzy-wardrobe.glb');
     const longTop = wardrobe.getObjectByName('LongTunic');
     const shortTop = wardrobe.getObjectByName('ShortTunic');
@@ -216,6 +222,7 @@
 
     // The original tunic has 96 vertices per horizontal ring. Work from
     // immutable source positions so repeated selection never accumulates distortion.
+    stage = 'Preparing garment geometry';
     const tunicBodies = [longTop, shortTop].map(group => {
       const mesh = group.getObjectByName('Tailored long tunic');
       if (!mesh?.isMesh) throw new Error('Missing tunic body');
@@ -275,6 +282,7 @@
     model.add(wardrobe);
     root.visible = true;
     for (const field of Object.values(controls)) field.addEventListener('change', applyLook);
+    stage = 'Applying outfit';
     applyLook();
     interactiveFields.forEach(field => { field.disabled = false; });
     controls.neckline.disabled = controls.top.value === 'polo';
@@ -282,7 +290,7 @@
   } catch (error) {
     console.error('Timzy wardrobe initialization failed:', error);
     mount.replaceChildren();
-    status.textContent = unavailable;
+    status.textContent = unavailable + ' (' + stage + ': ' + String(error?.message || error).slice(0,180) + ')';
     const retry = document.createElement('button');
     retry.type = 'button';
     retry.textContent = 'Retry 3D preview';
