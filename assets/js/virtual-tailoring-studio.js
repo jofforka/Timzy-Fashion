@@ -220,61 +220,9 @@
     ];
     if (slots.some(([, materials]) => materials.size === 0)) throw new Error('Missing wardrobe materials');
 
-    // The original tunic has 96 vertices per horizontal ring. Work from
-    // immutable source positions so repeated selection never accumulates distortion.
-    stage = 'Preparing garment geometry';
-    const tunicBodies = [longTop, shortTop].map(group => {
-      // GLTFLoader sanitizes and uniquifies node names. Resolve only an
-      // unambiguous tunic body; otherwise retain the original garment.
-      const candidates = [];
-      group.traverse(object => {
-        if (object.isMesh && /^tailored(?:[ _-]+)?(?:long|short)?(?:[ _-]+)?tunic(?:[ _-]*\d+)?$/i.test(object.name)
-            && object.geometry?.attributes?.position) candidates.push(object);
-      });
-      if (candidates.length !== 1) {
-        console.warn('Using original tunic geometry:', group.name, candidates.length);
-        return null;
-      }
-      const mesh = candidates[0];
-      mesh.geometry = mesh.geometry.clone();
-      const position = mesh.geometry.attributes.position;
-      return {group, mesh, position, original: new Float32Array(position.array),
-        placket: group.getObjectByName('Concealed front placket')};
-    }).filter(Boolean);
-    function tailorTunic(body, neckline) {
-      const {mesh, position, original, placket} = body;
-      const hem = body.group === longTop ? .57 : .825;
-      for (let i = 0; i < position.count; i++) {
-        const x = original[i*3], y = original[i*3+1], z = original[i*3+2];
-        // Ease the narrow waist and gently reduce the excessive lower flare.
-        // Retain clearance at the hips and leave shoulder/sleeve joins untouched.
-        const waistEase = Math.max(0, 1-Math.abs(y-1.10)/.23);
-        const hemEase = 1-THREE.MathUtils.smoothstep(y,hem,.94);
-        let nx = x*(1+.12*waistEase-.09*hemEase);
-        let ny = y, nz = z;
-        // Lower the existing standing collar into the shoulder opening for
-        // round and V-neck previews; the original collar remains selectable.
-        if (neckline !== 'senator' && y > 1.49) {
-          const t = THREE.MathUtils.smoothstep(y,1.49,1.566);
-          const front = THREE.MathUtils.smoothstep(z,.035,.115);
-          const dip = neckline === 'v' ? .075*front*Math.max(0,1-Math.abs(x)/.10) : .025*front;
-          ny -= t*(.022+dip);
-          nx *= 1+.12*t;
-        }
-        // Small longitudinal folds, not a physical cloth simulation.
-        const fold = hemEase * .0025 * Math.cos(Math.atan2(z-.025,x)*9);
-        nz += fold * Math.sign(z-.025);
-        position.setXYZ(i,nx,ny,nz);
-      }
-      position.needsUpdate = true;
-      mesh.geometry.computeVertexNormals();
-      mesh.geometry.computeBoundingBox();
-      mesh.geometry.computeBoundingSphere();
-      if (placket) placket.visible = neckline === 'senator';
-    }
+    // Keep GLTF geometry intact until a validated replacement asset is available.
     function applyLook() {
-      controls.neckline.disabled = controls.top.value === 'polo' || !tunicBodies.some(body => body.group === (controls.top.value === 'long' ? longTop : shortTop));
-      for (const body of tunicBodies) tailorTunic(body,controls.neckline.value);
+      controls.neckline.disabled = true;
       const [width, depth] = buildScales[controls.build.value];
       root.scale.set(width, 1, depth);
       longTop.visible = controls.top.value === 'long';
@@ -295,8 +243,8 @@
     stage = 'Applying outfit';
     applyLook();
     interactiveFields.forEach(field => { field.disabled = false; });
-    controls.neckline.disabled = controls.top.value === 'polo';
-    status.textContent = tunicBodies.length === 2 ? '3D wardrobe ready.' : '3D wardrobe ready. Some neckline previews are unavailable.';
+    controls.neckline.disabled = true;
+    status.textContent = '3D wardrobe ready. Custom necklines temporarily unavailable.';
   } catch (error) {
     console.error('Timzy wardrobe initialization failed:', error);
     mount.replaceChildren();
