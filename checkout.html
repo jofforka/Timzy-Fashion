@@ -52,15 +52,15 @@
 
             <div class="grid-2">
               <label>Full Name *
-                <input class="field" name="name" required>
+                <input class="field" name="name" autocomplete="name" required>
               </label>
 
               <label>Phone Number *
-                <input class="field" name="phone" required>
+                <input class="field" name="phone" type="tel" autocomplete="tel" required>
               </label>
 
               <label>Email Address
-                <input class="field" type="email" name="email">
+                <input class="field" type="email" name="email" autocomplete="email">
               </label>
 
               <label>City
@@ -93,7 +93,7 @@
 
             <div class="conditional-box" data-delivery-box="Home Delivery">
               <label>Delivery Address
-                <textarea class="field" name="address" rows="4" placeholder="House number, street, area..."></textarea>
+                <textarea class="field" name="address" autocomplete="street-address" required rows="4" placeholder="House number, street, area..."></textarea>
               </label>
 
               <label>Landmark
@@ -274,6 +274,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="assets/js/config.js"></script>
 <script src="assets/js/firebase.js"></script>
-  <script src="assets/js/app.js?v=spark1"></script><script src="assets/js/storefront-ui.js?v=1"></script>
+  <script src="assets/js/app.js?v=checkout2"></script><script src="assets/js/storefront-ui.js?v=1"></script>
 <script src="assets/js/public-contact.js?v=2"></script></body>
 </html>
