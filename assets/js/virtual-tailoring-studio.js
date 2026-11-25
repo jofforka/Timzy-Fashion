@@ -105,13 +105,37 @@
     scene.add(root);
     // Keep the unclothed base mesh out of view until an outfit is available.
     root.visible = false;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c8a84, 2.4));
-    const light = new THREE.DirectionalLight(0xffffff, 2.2);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c8a84, 1.25));
+    const light = new THREE.DirectionalLight(0xfff5e8, 2.0);
     light.position.set(3, 7, 5);
     scene.add(light);
+    const fill = new THREE.DirectionalLight(0xe5edff, .8);
+    fill.position.set(-3, 2, 4);
+    scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xffffff, 1.5);
+    rim.position.set(1, 4, -4);
+    scene.add(rim);
+    // Lightweight contact shadow: no extra shadow-map render pass.
+    const shadowPixels = new Uint8Array(64*64*4);
+    for (let y=0;y<64;y++) for (let x=0;x<64;x++) {
+      const i=(y*64+x)*4;
+      const d=Math.hypot((x-31.5)/31.5,(y-31.5)/31.5);
+      shadowPixels[i+3]=Math.round(65*Math.max(0,1-d)**2);
+    }
+    const shadowTexture = new THREE.DataTexture(shadowPixels,64,64);
+    shadowTexture.magFilter=THREE.LinearFilter;
+    shadowTexture.minFilter=THREE.LinearFilter;
+    shadowTexture.needsUpdate=true;
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(size.x*1.5,size.z*2.4),
+      new THREE.MeshBasicMaterial({map:shadowTexture,transparent:true,depthWrite:false}));
+    shadow.rotation.x=-Math.PI/2;
+    shadow.position.y=-.006;
+    root.add(shadow);
 
     const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
     // Limit drawing-buffer cost on high-density mobile displays.
     const maxRenderPixels = 1200000;
     let previousWidth = 0, previousHeight = 0, previousRatio = 0;
@@ -212,6 +236,13 @@
       [controls.trouserColor, new Set([...findMaterials(trousers, 'Main fabric'), ...findMaterials(relaxed, 'Main fabric')])],
       [controls.shoeColor, new Set([...findMaterials(shoes, 'Shoe upper'), ...findMaterials(tall, 'Shoe upper')])],
     ];
+    for (const [,materials] of slots.slice(0,2)) {
+      for (const material of materials) {
+        if (!material.isMeshStandardMaterial) continue;
+        material.roughness = .86;
+        material.metalness = 0;
+      }
+    }
     if (slots.some(([, materials]) => materials.size === 0)) throw new Error('Missing wardrobe materials');
 
     // The original tunic has 96 vertices per horizontal ring. Work from
