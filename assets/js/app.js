@@ -175,12 +175,12 @@ bindCheckoutUI(){
       box.hidden = hidden;
       box.querySelectorAll('input,textarea,select').forEach(field => { field.disabled = hidden; });
     };
-    $('[data-delivery-box]').forEach(x=>toggle(x,x.dataset.deliveryBox!==delivery));
+    $$('[data-delivery-box]').forEach(x=>toggle(x,x.dataset.deliveryBox!==delivery));
     const address = $('[name="address"]');
     if (address) address.required = delivery === 'Home Delivery';
 
     const measurement=$('input[name="measurement"]:checked')?.value || 'Manual Measurement';
-    $('[data-measurement-box]').forEach(x=>toggle(x,x.dataset.measurementBox!==measurement));
+    $$('[data-measurement-box]').forEach(x=>toggle(x,x.dataset.measurementBox!==measurement));
     const visitAddress = $('[name="visit_address"]');
     if (visitAddress) visitAddress.required = measurement === 'Request Measurement Visit';
 
