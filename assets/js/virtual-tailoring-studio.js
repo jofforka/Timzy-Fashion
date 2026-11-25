@@ -105,37 +105,13 @@
     scene.add(root);
     // Keep the unclothed base mesh out of view until an outfit is available.
     root.visible = false;
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c8a84, 1.25));
-    const light = new THREE.DirectionalLight(0xfff5e8, 2.0);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c8a84, 2.4));
+    const light = new THREE.DirectionalLight(0xffffff, 2.2);
     light.position.set(3, 7, 5);
     scene.add(light);
-    const fill = new THREE.DirectionalLight(0xe5edff, .8);
-    fill.position.set(-3, 2, 4);
-    scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffffff, 1.5);
-    rim.position.set(1, 4, -4);
-    scene.add(rim);
-    // Lightweight contact shadow: no extra shadow-map render pass.
-    const shadowPixels = new Uint8Array(64*64*4);
-    for (let y=0;y<64;y++) for (let x=0;x<64;x++) {
-      const i=(y*64+x)*4;
-      const d=Math.hypot((x-31.5)/31.5,(y-31.5)/31.5);
-      shadowPixels[i+3]=Math.round(65*Math.max(0,1-d)**2);
-    }
-    const shadowTexture = new THREE.DataTexture(shadowPixels,64,64);
-    shadowTexture.magFilter=THREE.LinearFilter;
-    shadowTexture.minFilter=THREE.LinearFilter;
-    shadowTexture.needsUpdate=true;
-    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(size.x*1.5,size.z*2.4),
-      new THREE.MeshBasicMaterial({map:shadowTexture,transparent:true,depthWrite:false}));
-    shadow.rotation.x=-Math.PI/2;
-    shadow.position.y=-.006;
-    root.add(shadow);
 
     const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
     // Limit drawing-buffer cost on high-density mobile displays.
     const maxRenderPixels = 1200000;
     let previousWidth = 0, previousHeight = 0, previousRatio = 0;
@@ -236,13 +212,6 @@
       [controls.trouserColor, new Set([...findMaterials(trousers, 'Main fabric'), ...findMaterials(relaxed, 'Main fabric')])],
       [controls.shoeColor, new Set([...findMaterials(shoes, 'Shoe upper'), ...findMaterials(tall, 'Shoe upper')])],
     ];
-    for (const [,materials] of slots.slice(0,2)) {
-      for (const material of materials) {
-        if (!material.isMeshStandardMaterial) continue;
-        material.roughness = .86;
-        material.metalness = 0;
-      }
-    }
     if (slots.some(([, materials]) => materials.size === 0)) throw new Error('Missing wardrobe materials');
 
     // The original tunic has 96 vertices per horizontal ring. Work from
@@ -258,20 +227,13 @@
     function tailorTunic(body, neckline) {
       const {mesh, position, original, placket} = body;
       const hem = body.group === longTop ? .57 : .825;
-      const rings = new Map();
-      for (let i = 0; i < position.count; i++) {
-        const key = Math.round(original[i*3+1]*10000);
-        rings.set(key, Math.max(rings.get(key) || 0, Math.abs(original[i*3])));
-      }
-      const straightWidth = Math.max(.245, ...[...rings].filter(([k,w]) => k/10000 >= hem-.01 && k/10000 <= 1.25 && w > .1).map(([,w])=>w));
       for (let i = 0; i < position.count; i++) {
         const x = original[i*3], y = original[i*3+1], z = original[i*3+2];
         // Ease the narrow waist and gently reduce the excessive lower flare.
         // Retain clearance at the hips and leave shoulder/sleeve joins untouched.
+        const waistEase = Math.max(0, 1-Math.abs(y-1.10)/.23);
         const hemEase = 1-THREE.MathUtils.smoothstep(y,hem,.94);
-        const width = rings.get(Math.round(y*10000));
-        const blend = 1-THREE.MathUtils.smoothstep(y,1.22,1.40);
-        let nx = width > .1 ? x * THREE.MathUtils.lerp(1,straightWidth/width,blend) : x;
+        let nx = x*(1+.12*waistEase-.09*hemEase);
         let ny = y, nz = z;
         // Lower the existing standing collar into the shoulder opening for
         // round and V-neck previews; the original collar remains selectable.
@@ -317,9 +279,15 @@
     interactiveFields.forEach(field => { field.disabled = false; });
     controls.neckline.disabled = controls.top.value === 'polo';
     status.textContent = '3D wardrobe ready.';
-  } catch {
+  } catch (error) {
+    console.error('Timzy wardrobe initialization failed:', error);
     mount.replaceChildren();
     status.textContent = unavailable;
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.textContent = 'Retry 3D preview';
+    retry.addEventListener('click', () => location.reload());
+    mount.appendChild(retry);
   } finally {
     mount.setAttribute('aria-busy', 'false');
   }
