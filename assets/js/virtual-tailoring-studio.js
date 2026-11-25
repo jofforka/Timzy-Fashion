@@ -227,13 +227,20 @@
     function tailorTunic(body, neckline) {
       const {mesh, position, original, placket} = body;
       const hem = body.group === longTop ? .57 : .825;
+      const rings = new Map();
+      for (let i = 0; i < position.count; i++) {
+        const key = Math.round(original[i*3+1]*10000);
+        rings.set(key, Math.max(rings.get(key) || 0, Math.abs(original[i*3])));
+      }
+      const straightWidth = Math.max(.245, ...[...rings].filter(([k,w]) => k/10000 >= hem-.01 && k/10000 <= 1.25 && w > .1).map(([,w])=>w));
       for (let i = 0; i < position.count; i++) {
         const x = original[i*3], y = original[i*3+1], z = original[i*3+2];
         // Ease the narrow waist and gently reduce the excessive lower flare.
         // Retain clearance at the hips and leave shoulder/sleeve joins untouched.
-        const waistEase = Math.max(0, 1-Math.abs(y-1.10)/.23);
         const hemEase = 1-THREE.MathUtils.smoothstep(y,hem,.94);
-        let nx = x*(1+.12*waistEase-.09*hemEase);
+        const width = rings.get(Math.round(y*10000));
+        const blend = 1-THREE.MathUtils.smoothstep(y,1.22,1.40);
+        let nx = width > .1 ? x * THREE.MathUtils.lerp(1,straightWidth/width,blend) : x;
         let ny = y, nz = z;
         // Lower the existing standing collar into the shoulder opening for
         // round and V-neck previews; the original collar remains selectable.
