@@ -20,11 +20,15 @@
       if (!body.value && !garment.value) continue;
 
       const item = document.createElement('li');
-      const difference = Math.round((garment.valueAsNumber - body.valueAsNumber) * 100) / 100;
-      if (!Number.isFinite(difference)) {
+      const bodyValue = body.valueAsNumber;
+      const garmentValue = garment.valueAsNumber;
+      const difference = Math.round((garmentValue - bodyValue) * 100) / 100;
+      if (!Number.isFinite(bodyValue) || !Number.isFinite(garmentValue)) {
         item.textContent = label + ' — enter both measurements.';
+      } else if (bodyValue <= 0 || garmentValue <= 0 || !Number.isFinite(difference)) {
+        item.textContent = label + ' — enter valid positive measurements in centimetres.';
       } else if (difference === 0) {
-        item.textContent = label + ' — same circumference.';
+        item.textContent = label + ' — same circumference (to 0.01 cm); this does not establish fit.';
       } else {
         const amount = format.format(Math.abs(difference));
         const relation = difference > 0 ? ' larger' : ' smaller';
