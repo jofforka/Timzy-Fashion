@@ -135,16 +135,31 @@ init(){
   App.checkout.summaryRender();
   App.checkout.bindCheckoutUI();
 
+  let submitting = false;
   f.addEventListener('submit',async e=>{
     e.preventDefault();
+    if (submitting) return;
+    submitting = true;
+    const button = f.querySelector('[type="submit"]');
+    if (button) button.disabled = true;
+    try {
     await App.loadProducts();
     const d=Object.fromEntries(new FormData(f).entries());
     if(!App.cart.list().length)return toast('Your bag is empty.');
     const problem=App.cart.validationError();
     if(problem)return toast(problem);
-    if(!d.name||!d.phone)return toast('Name and phone are required.');
+    if(!d.name?.trim()||!d.phone?.trim())return toast('Name and phone are required.');
+    if(d.delivery==='Home Delivery'&&!d.address?.trim())return toast('Enter your delivery address.');
+    if(d.measurement==='Request Measurement Visit'&&!d.visit_address?.trim())return toast('Enter your visit address.');
+    if(d.delivery==='Pickup'&&d.payment==='Pay on Delivery'||d.delivery==='Home Delivery'&&d.payment==='Pay on Pickup')return toast('Choose a payment method that matches your delivery option.');
     App.whatsapp.send(App.checkout.message(d));
     toast('Send the WhatsApp message to submit your order.');
+    } catch {
+      toast('Unable to prepare your order. Please try again.');
+    } finally {
+      submitting = false;
+      if (button) button.disabled = false;
+    }
   });
 
   $('#clearCartBtn')?.addEventListener('click',()=>{
@@ -156,10 +171,18 @@ init(){
 bindCheckoutUI(){
   const sync=()=>{
     const delivery=$('input[name="delivery"]:checked')?.value || 'Home Delivery';
-    $$('[data-delivery-box]').forEach(x=>x.hidden=x.dataset.deliveryBox!==delivery);
+    const toggle = (box, hidden) => {
+      box.hidden = hidden;
+      box.querySelectorAll('input,textarea,select').forEach(field => { field.disabled = hidden; });
+    };
+    $('[data-delivery-box]').forEach(x=>toggle(x,x.dataset.deliveryBox!==delivery));
+    const address = $('[name="address"]');
+    if (address) address.required = delivery === 'Home Delivery';
 
     const measurement=$('input[name="measurement"]:checked')?.value || 'Manual Measurement';
-    $$('[data-measurement-box]').forEach(x=>x.hidden=x.dataset.measurementBox!==measurement);
+    $('[data-measurement-box]').forEach(x=>toggle(x,x.dataset.measurementBox!==measurement));
+    const visitAddress = $('[name="visit_address"]');
+    if (visitAddress) visitAddress.required = measurement === 'Request Measurement Visit';
 
     const payment=$('input[name="payment"]:checked')?.value || 'Pay Now';
     $$('[data-payment-box]').forEach(x=>x.hidden=x.dataset.paymentBox!==payment);
