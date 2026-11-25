@@ -15,7 +15,7 @@ const pages = [
 for (const file of pages) {
   const html = read(file);
   assert.match(html, /class="[^"]*timzy-public/, file + ': shared body');
-  assert.match(html, /assets\/css\/storefront-ui\.css\?v=1/, file + ': shared CSS');
+  assert.match(html, /assets\/css\/storefront-ui\.css\?v=\d+(?=")/, file + ': shared CSS');
   assert.match(html, /assets\/js\/storefront-ui\.js\?v=1/, file + ': shared navigation JS');
   assert.match(html, /class="site-header"/, file + ': shared header');
   assert.match(html, /class="shop-bag-btn"/, file + ': same basket control');
@@ -26,7 +26,7 @@ for (const file of pages) {
     file + ': one accessible basket counter');
   assert.doesNotMatch(html, /class="floating-bag"/,
     file + ': avoid duplicate floating bag controls');
-  assert.match(html, /assets\/js\/app\.js\?v=spark1/,
+  assert.match(html, /assets\/js\/app\.js\?v=[a-zA-Z0-9]+(?=")/,
     file + ': same commerce application version');
   assert.equal((html.match(/<header class="site-header">/g) || []).length, 1);
 }

@@ -146,3 +146,17 @@ body.timzy-public button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   body.timzy-public * { scroll-behavior: auto; transition-duration: 0s; animation-duration: 0s; }
 }
+/* Premium navigation and mobile usability refinements. */
+body.timzy-public .nav-links a[aria-current="page"] { color: var(--ui-accent); }
+body.timzy-public .nav-links a { white-space: nowrap; }
+body.timzy-public .field:focus-visible, body.timzy-public select:focus-visible, body.timzy-public textarea:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 2px; }
+body.timzy-public .shop-footer { flex-wrap: wrap; }
+body.timzy-public .shop-footer div { flex-wrap: wrap; }
+@media (max-width: 620px) {
+  body.timzy-public .nav-toggle { width: 44px; height: 44px; flex: none; }
+  body.timzy-public .shop-bag-btn { min-height: 44px; }
+  body.timzy-public .nav-links a { min-height: 44px; display: flex; align-items: center; }
+  body.timzy-public .field, body.timzy-public input:not([type="checkbox"]):not([type="radio"]), body.timzy-public textarea, body.timzy-public select { font-size: 16px; }
+  body.timzy-public .btn { min-height: 44px; }
+  body.timzy-public .hero-text, body.timzy-public .lead { font-size: 14px; }
+}
