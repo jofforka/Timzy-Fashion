@@ -4,7 +4,14 @@
   if (!mount) return;
   const preview = document.getElementById('senator3dPreview');
   if (preview && !preview.open) {
-    await new Promise(resolve => preview.addEventListener('toggle', resolve, { once: true }));
+    await new Promise(resolve => {
+      function onToggle() {
+        if (!preview.open) return;
+        preview.removeEventListener('toggle', onToggle);
+        resolve();
+      }
+      preview.addEventListener('toggle', onToggle);
+    });
   }
 
   const status = document.getElementById('studioStatus');
@@ -23,6 +30,11 @@
   };
   const buildScales = { slim: [0.89, 0.91], standard: [1, 1], broad: [1.13, 1.15] };
   const storageKey = 'timzy-virtual-look';
+  const saveButton = document.getElementById('studioSave');
+  const viewButtons = Array.from(document.querySelectorAll('[data-studio-view]'));
+  const interactiveFields = [...Object.values(controls), ...viewButtons, saveButton];
+  interactiveFields.forEach(field => { field.disabled = true; });
+  mount.setAttribute('aria-busy', 'true');
 
   document.getElementById('studioSave').addEventListener('click', () => {
     try {
@@ -195,8 +207,12 @@
     root.visible = true;
     for (const field of Object.values(controls)) field.addEventListener('change', applyLook);
     applyLook();
+    interactiveFields.forEach(field => { field.disabled = false; });
     status.textContent = '3D wardrobe ready.';
   } catch {
+    mount.replaceChildren();
     status.textContent = unavailable;
+  } finally {
+    mount.setAttribute('aria-busy', 'false');
   }
 })();
