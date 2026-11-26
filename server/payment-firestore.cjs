@@ -15,7 +15,7 @@ function repository(db){
    if(ids.some(id=>typeof id!=='string'||!id||id.includes('/')))throw Error('Invalid product');
    const snapshots=await Promise.all(ids.map(id=>t.get(products.doc(id))));
    const catalog=new Map(snapshots.filter(s=>s.exists).map(s=>[s.id,s.data()]));
-   const order={...quote(items,catalog),reference,uid,email,status:'pending_payment',delivery:'Pickup',createdAt:new Date()};
+   const order={...quote(items,catalog),reference,uid,email,status:'pending_payment',paymentMode:'test',delivery:'Pickup',createdAt:new Date()};
    t.create(ref,order);return order;
   });
  },
