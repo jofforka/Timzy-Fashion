@@ -5,6 +5,7 @@ const {postInvestorSale}=require('../server/investor-payment-posting.cjs');
 function fixture(mode='live'){
  const rows=new Map(Object.entries({
  'orders/ref':{paymentMode:mode,status:'paid',transactionId:123,lines:[{productId:'p',qty:2,unitKobo:10000},{productId:'p',qty:1,unitKobo:15000}]},
+ 'paymentReceipts/123':{reference:'ref'},
  'paymentInvestorAllocations/p':{investorUid:'i'},
  'investorCatalog/i/items/p':{productId:'p',agreedPrice:40},
  'investorLedger/i/products/p':{received:10,sold:0,grossSales:0,investorEarnings:0}
@@ -21,3 +22,5 @@ test('mixed prices and replay',async()=>{const {db,rows}=fixture();assert.deepEq
 test('sandbox cannot post',async()=>{const {db,rows}=fixture('test');await assert.rejects(postInvestorSale(db,args));assert.equal(rows.get('investorLedger/i/products/p').sold,0);});
 test('wrong investor cannot post',async()=>{const {db}=fixture();await assert.rejects(postInvestorSale(db,{...args,investorUid:'other'}));});
 test('insufficient investor stock leaves balance unchanged',async()=>{const {db,rows}=fixture();rows.get('investorLedger/i/products/p').received=2;await assert.rejects(postInvestorSale(db,args));assert.equal(rows.get('investorLedger/i/products/p').sold,0);});
+
+test('missing verified receipt blocks posting',async()=>{const {db,rows}=fixture();rows.delete('paymentReceipts/123');await assert.rejects(postInvestorSale(db,args));assert.equal(rows.get('investorLedger/i/products/p').sold,0);});
