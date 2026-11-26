@@ -7,7 +7,7 @@ const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replac
 const num=v=>Number(String(v||0).replace(/[^0-9.-]/g,""))||0, money=v=>`${C().currency}${num(v).toLocaleString()}`;
 const store={get(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}},set(k,v){localStorage.setItem(k,JSON.stringify(v))}};
 function toast(m){let h=$("#toastHost");if(!h){document.body.insertAdjacentHTML("beforeend",'<div class="toast-host" id="toastHost"></div>');h=$("#toastHost")}const id="t"+Date.now();h.insertAdjacentHTML("beforeend",`<div class="toast compact-toast" id="${id}"><span class="toast-icon">✓</span><p>${esc(m)}</p></div>`);setTimeout(()=>$("#"+id)?.remove(),2200)}
-const App={products:[],activeCategory:"All",search:"",sort:"featured",async init(){App.nav();App.year();App.cart.mount();App.cart.render();App.bindGlobalActions();await App.loadProducts();App.featured();App.catalog.init();App.product.init();App.builder.init();App.checkout.init();App.videoViewer.init();App.contact.init();App.videoViewer.init();},
+const App={products:[],activeCategory:"All",search:"",sort:"featured",async init(){App.nav();App.year();App.cart.mount();App.cart.render();App.bindGlobalActions();await App.loadProducts();App.featured();App.catalog.init();App.product.init();App.builder.init();App.checkout.init();App.videoViewer.init();App.contact.init();},
 nav(){const t=$(".nav-toggle"),l=$(".nav-links");t?.addEventListener("click",()=>l?.classList.toggle("open"));const p=location.pathname.split("/").pop()||"index.html";$$('a[href]').forEach(a=>{const h=(a.getAttribute('href')||'').split('?')[0].split('#')[0].split('/').pop();if(h===p)a.classList.add('active')})},year(){const y=$("#year");if(y)y.textContent=new Date().getFullYear()},
 bindGlobalActions(){
   if(App._globalActionsBound)return;
@@ -191,10 +191,11 @@ bindCheckoutUI(){
   $$('input[name="delivery"],input[name="measurement"],input[name="payment"]').forEach(x=>x.addEventListener('change',sync));
   sync();
 
-  $('#copyAccountBtn')?.addEventListener('click',()=>{
+  $('#copyAccountBtn')?.addEventListener('click',async()=>{
     const number=$('#accountNumber')?.textContent?.trim() || '';
-    navigator.clipboard?.writeText(number);
-    toast('Account number copied.');
+    if(!number || !navigator.clipboard?.writeText) return toast('Copy the displayed account number manually.');
+    try { await navigator.clipboard.writeText(number); toast('Account number copied.'); }
+    catch { toast('Could not copy. Select and copy the account number manually.'); }
   });
 },
 
