@@ -26,8 +26,8 @@ function quote(items,products){
  if(!Number.isSafeInteger(amountKobo)||amountKobo<=0)throw Error('Invalid total');
  return {lines:result,amountKobo,currency:'NGN'};
 }
-function paystackClient(secret,fetcher=fetch){
- if(typeof secret!=='string'||!secret.startsWith('sk_test_'))throw Error('Test secret required');
+function paystackClient(secret,fetcher=fetch,mode='test'){
+ if(!['test','live'].includes(mode)||typeof secret!=='string'||!secret.startsWith('sk_'+mode+'_'))throw Error('Payment secret mode mismatch');
  async function request(path,body){
   const response=await fetcher('https://api.paystack.co'+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+secret,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(15000)});
   const result=await response.json();
