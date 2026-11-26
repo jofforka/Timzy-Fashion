@@ -453,6 +453,7 @@
 
   function resetEditor() {
     state.editingId = null;
+    state.editingRevision = null;
     state.images = [];
     if ($("#productForm")?.elements?.variantsJson) $("#productForm").elements.variantsJson.value = "[]";
     state.pendingFiles = [];
@@ -483,6 +484,7 @@
 
     resetEditor();
     state.editingId = id;
+    state.editingRevision = product.updatedAt ?? null;
     if ($("#productForm")?.elements?.variantsJson) $("#productForm").elements.variantsJson.value = JSON.stringify(product.variants || [], null, 2);
     state.images = Array.isArray(product.images) && product.images.length
       ? [...product.images]
@@ -642,7 +644,15 @@
     };
   }
 
+  let productSaveInFlight = false;
   async function saveProduct(event) {
+    event.preventDefault();
+    if (productSaveInFlight) return;
+    productSaveInFlight = true;
+    try { await persistProduct(event); } finally { productSaveInFlight = false; }
+  }
+
+  async function persistProduct(event) {
     if (state.role !== "admin") { event?.preventDefault?.(); return; }
     event.preventDefault();
     let product;
@@ -667,7 +677,9 @@
       }
     }
 
-    const productId = state.editingId || slugify(product.name) || `product-${Date.now()}`;
+    const editingId = state.editingId;
+    const revision = state.editingRevision;
+    const productId = editingId || slugify(product.name) || `product-${Date.now()}`;
     const uploadedFileNames = state.pendingFiles.map(file => file.name);
     const newUrls = await uploadPendingImages(productId);
     if (product.variants.length && newUrls.length) {
@@ -690,10 +702,17 @@
       : firebase.firestore.FieldValue.serverTimestamp();
 
     const {fabricProfile, ...productDocument} = product;
-    const batch = fb.db.batch();
-    batch.set(fb.db.collection(collections.products).doc(productId), productDocument, { merge: true });
-    if (placement.sectionOf(product) === 'materials') batch.set(fb.db.collection('fabricProfiles').doc(productId), fabricProfile);
-    await batch.commit();
+    const ref = fb.db.collection(collections.products).doc(productId);
+    await fb.db.runTransaction(async tx => {
+      const snapshot = await tx.get(ref);
+      if (editingId) {
+        const current = snapshot.exists ? snapshot.data().updatedAt ?? null : null;
+        const same = revision === null ? current === null : typeof revision.isEqual === 'function' && current != null && revision.isEqual(current);
+        if (!snapshot.exists || !same) throw Error('Product changed since opening. Reload the product before saving.');
+      } else if (snapshot.exists) throw Error('A product with this identifier already exists. Choose a different name.');
+      tx.set(ref, productDocument, { merge: true });
+      if (placement.sectionOf(product) === 'materials') tx.set(fb.db.collection('fabricProfiles').doc(productId), fabricProfile);
+    });
     toast(state.editingId ? "Product updated." : "Product created.");
     closeEditor();
     await loadProducts();
@@ -728,6 +747,7 @@
     };
     delete copy.id;
     delete copy.stockOnHand;
+    if (Array.isArray(copy.variants)) copy.variants = copy.variants.map(v => ({...v, stockOnHand:null}));
     copy.quantity = "Verify availability before publishing";
     delete copy.fabricProfile;
     delete copy.profileUnavailable;
