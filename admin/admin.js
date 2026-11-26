@@ -224,15 +224,27 @@
       (state.role==='admin' && x.status==='pending' ? '<button type="button" data-restock-review="'+escapeHTML(x.id)+'" data-decision="resolved">Mark resolved</button>'+
       '<button type="button" data-restock-review="'+escapeHTML(x.id)+'" data-decision="dismissed">Dismiss</button>' : '')+'</div>').join('') || '<p>No restock requests.</p>';
   }
-  async function submitRestock(event) {
+  const pendingForms = new WeakSet();
+  async function guardedSubmission(event, handler) {
     event.preventDefault();
+    const form = event.currentTarget;
+    if (pendingForms.has(form)) return;
+    pendingForms.add(form);
+    const buttons = [...form.querySelectorAll('button[type="submit"],button:not([type]),input[type="submit"]')].filter(b=>!b.disabled);
+    buttons.forEach(b=>b.disabled=true);
+    try { await handler(form); } finally { pendingForms.delete(form); buttons.forEach(b=>b.disabled=false); }
+  }
+  async function submitRestock(event) {
+    return guardedSubmission(event, persistRestock);
+  }
+  async function persistRestock(form) {
     if (state.role!=='staff') return;
-    const d=Object.fromEntries(new FormData(event.currentTarget));
+    const d=Object.fromEntries(new FormData(form));
     const product=state.products.find(p=>p.id===d.productId);
     if (!product || !d.note.trim()) return toast('Choose a product and enter a reason.');
     await fb.db.collection('restockRequests').add({productId:product.id,productName:product.name,note:d.note.trim(),
       status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:state.uid});
-    event.currentTarget.reset();
+    form.reset();
     $('#restockMessage').textContent='Restock request submitted for administrator review.';
     await loadOperationsRequests();renderOperations();
   }
@@ -242,7 +254,7 @@
     if (!record || record.status!=='pending') return;
     if (!confirm('Confirm '+decision+' for this request?')) return;
     await fb.db.collection(collection).doc(id).update({status:decision,reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),reviewedBy:state.uid});
-    await loadOperationsRequests();renderOperations();
+    await loadOperationsRequests();renderStats();renderOperations();
   }
 
   function renderAll() {
@@ -816,13 +828,14 @@
   }
 
   async function submitRecord(type, event) {
-    event.preventDefault();
+    return guardedSubmission(event, form=>persistRecord(type, form));
+  }
+  async function persistRecord(type, form) {
     if (!['admin','staff'].includes(state.role)) return;
-    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const data = Object.fromEntries(new FormData(form).entries());
     if (!data.description.trim() || !Number.isFinite(Number(data.amount)) || Number(data.amount) <= 0 || Number(data.amount) > 1000000000) {
       return toast("Enter a description and a positive amount up to ₦1,000,000,000.");
     }
-    const form = event.currentTarget;
     const targetCollection = type === "expenses" ? "expenseRequests" : collections[type];
     try {
       await fb.db.collection(targetCollection).add({
