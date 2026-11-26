@@ -1,7 +1,8 @@
 'use strict';
 const {quote}=require('./payment-order-service.cjs');
 const {reconcileInvestors}=require('./investor-payment-reconcile.cjs');
-function repository(db){
+function repository(db,mode='test'){
+ if(!['test','live'].includes(mode))throw Error('Invalid payment mode');
  const orders=db.collection('orders'), products=db.collection('products'), receipts=db.collection('paymentReceipts');
  const refFor=reference=>{if(typeof reference!=='string'||!/^TF-[a-zA-Z0-9-]{16,100}$/.test(reference))throw Error('Invalid reference');return orders.doc(reference);};
  return {
@@ -16,7 +17,7 @@ function repository(db){
    if(ids.some(id=>typeof id!=='string'||!id||id.includes('/')))throw Error('Invalid product');
    const snapshots=await Promise.all(ids.map(id=>t.get(products.doc(id))));
    const catalog=new Map(snapshots.filter(s=>s.exists).map(s=>[s.id,s.data()]));
-   const order={...quote(items,catalog),reference,uid,email,status:'pending_payment',paymentMode:'test',delivery:'Pickup',createdAt:new Date()};
+   const order={...quote(items,catalog),reference,uid,email,status:'pending_payment',paymentMode:mode,delivery:'Pickup',createdAt:new Date()};
    t.create(ref,order);return order;
   });
  },
@@ -27,6 +28,7 @@ function repository(db){
    const [s,r]=await Promise.all([t.get(ref),t.get(receipt)]);
    if(!s.exists)throw Error('Unknown order');
    const order=s.data();
+   if((order.paymentMode||'test')!==mode)throw Error('Order mode mismatch');
    if(r.exists){if(r.data().reference!==reference)throw Error('Transaction already assigned');return {duplicate:true};}
    if(order.status!=='pending_payment')throw Error('Unexpected order state');
    const ids=[...new Set(order.lines.map(l=>l.productId))];
