@@ -2,9 +2,9 @@
 const {paymentApi}=require('./payment-api.cjs');
 const {repository}=require('./payment-firestore.cjs');
 const {paystackClient}=require('./payment-order-service.cjs');
-function handler({db,auth,secret,callbackUrl,origin,rateLimit,enabled=false}){
+function handler({db,auth,secret,callbackUrl,origin,rateLimit,enabled=false,mode='test'}){
  if(typeof rateLimit!=='function')throw Error('Distributed rate limiter required');
- const api=paymentApi({repo:repository(db),provider:paystackClient(secret),secret,callbackUrl,authenticate:token=>auth.verifyIdToken(token,true)});
+ const api=paymentApi({repo:repository(db,mode),provider:paystackClient(secret,fetch,mode),secret,callbackUrl,authenticate:token=>auth.verifyIdToken(token,true)});
  return async(req,res)=>{
   res.setHeader('Cache-Control','no-store');
   const send=(status,body)=>{res.statusCode=status;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(body));};

@@ -5,13 +5,13 @@ const {getFirestore}=require('firebase-admin/firestore');
 const {getAuth}=require('firebase-admin/auth');
 const {handler}=require('./payment-http.cjs');
 const {rateLimiter}=require('./payment-rate-limit.cjs');
-const {projectId}=require('./payment-sandbox-config.cjs').sandboxConfig(process.env);
+const {projectId,mode}=require('./payment-runtime-config.cjs').runtimeConfig(process.env);
 const app=initializeApp({credential:applicationDefault(),projectId});
 const db=getFirestore(app);
 const enabled=process.env.PAYMENTS_ENABLED==='true';
 const origin=new URL(process.env.STOREFRONT_ORIGIN);
 if(origin.protocol!=='https:')throw Error('HTTPS origin required');
-const serve=handler({db,auth:getAuth(app),secret:process.env.PAYSTACK_SECRET,callbackUrl:process.env.PAYMENT_CALLBACK_URL,origin:origin.origin,rateLimit:rateLimiter(db),enabled});
+const serve=handler({db,auth:getAuth(app),secret:process.env.PAYSTACK_SECRET,callbackUrl:process.env.PAYMENT_CALLBACK_URL,origin:origin.origin,rateLimit:rateLimiter(db),enabled,mode});
 const server=http.createServer((req,res)=>{
  if(req.url==='/healthz'&&req.method==='GET'){res.statusCode=200;return res.end('ok');}
  Promise.resolve(serve(req,res)).catch(()=>{if(!res.headersSent)res.statusCode=500;res.end();});

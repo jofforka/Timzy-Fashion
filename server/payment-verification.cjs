@@ -6,6 +6,7 @@ function verifySignature(raw,signature,secret){
 }
 function verifyTransaction(order,tx){
  if(!order||!tx||!Number.isSafeInteger(order.amountKobo)||order.amountKobo<=0||typeof order.reference!=='string'||!order.reference)return false;
+ if(order.paymentMode&&tx.domain!==order.paymentMode)return false;
  return tx.status==='success'&&tx.reference===order.reference&&tx.currency==='NGN'&&tx.amount===order.amountKobo&&Number.isSafeInteger(tx.id)&&tx.id>0;
 }
 module.exports={verifySignature,verifyTransaction};
