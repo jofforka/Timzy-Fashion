@@ -120,7 +120,7 @@ assert.equal(nodes['.floating-whatsapp'].href, 'https://wa.me/' + win.TIMZY_CONF
 
 assert.match(shop, /Ready-made &amp; Outfits/);
 assert.match(shop, /Fabrics &amp; Materials/);
-assert.match(shop, /shop-showcase\.css\?v=5/);
+assert.match(shop, /shop-showcase\.css\?v=6/);
 assert.match(shop, /shop-showcase\.js\?v=4/);
 assert.match(shop, /class="shop-bag-btn" data-open-bag/);
 assert.match(shop, /id="products"/);
@@ -224,3 +224,5 @@ assert.deepEqual(Array.from(app.catalog.filtered(),p=>p.id).sort(),['placed-cust
 assert.equal(placement.sectionOf({category:'Fabrics'}),'materials');
 assert.equal(placement.sectionOf({category:'Senator',productType:'Custom Sewing'}),'outfits');
 console.log('PASS: Admin section choices feed the correct storefront tabs without changing the public data schema.');
+
+assert.match(shop, /class="collection-brand-mark" src="assets\/img\/timzy-logo\.png"/, "Collection heading uses existing official logo");
