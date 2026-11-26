@@ -1,0 +1,14 @@
+{
+  "name": "timzy-payment-backend",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node payment-start.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  }
+}
