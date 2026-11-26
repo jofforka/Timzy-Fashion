@@ -225,4 +225,4 @@ assert.equal(placement.sectionOf({category:'Fabrics'}),'materials');
 assert.equal(placement.sectionOf({category:'Senator',productType:'Custom Sewing'}),'outfits');
 console.log('PASS: Admin section choices feed the correct storefront tabs without changing the public data schema.');
 
-assert.match(shop, /class="collection-brand-mark" src="assets\/img\/timzy-logo\.png"/, "Collection heading uses existing official logo");
+assert.doesNotMatch(shop, /class="collection-brand-mark"/, "No duplicate logo in collection hero");
