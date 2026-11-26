@@ -31,9 +31,10 @@
     if (uid !== $('allocationInvestor').value || !owner()) return;
     target.innerHTML = rows.map(stockRow).join('') || '<p>Assign a product before recording stock.</p>';
   }
+  let movementPending = false;
   $('investorMovementForm').addEventListener('submit', async event => {
     event.preventDefault();
-    if (!owner()) return;
+    if (!owner() || movementPending) return;
     const form = event.currentTarget;
     const d = Object.fromEntries(new FormData(form));
     const uid = $('allocationInvestor').value;
@@ -51,19 +52,26 @@
     const agreedUnitAmount = Number(allocation.agreedPrice);
     if (!Number.isFinite(agreedUnitAmount) || agreedUnitAmount < 0) { msg.textContent = 'Invalid agreed unit amount.'; return; }
     const ref = ledger(uid, productId);
-    const movement = ref.collection('movements').doc();
+    const reference = d.reference.trim();
+    if (reference.length > 300) { msg.textContent = 'Reference must be at most 300 characters.'; return; }
     const timestamp = now();
     const grossAmount = d.kind === 'sale' ? safeAmount(unitRetailPrice * quantity) : 0;
     const investorAmount = d.kind === 'sale' ? safeAmount(agreedUnitAmount * quantity) : 0;
     if (grossAmount > 1e12 || investorAmount > 1e12) { msg.textContent = 'Amount exceeds supported limit.'; return; }
     const button = form.querySelector('button[type=submit]');
+    movementPending = true;
     button.disabled = true;
     msg.textContent = 'Recording movement…';
     try {
+      const key = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(d.kind+'\n'+reference.toLowerCase()));
+      const movement = ref.collection('movements').doc(Array.from(new Uint8Array(key), b=>b.toString(16).padStart(2,'0')).join(''));
+      const legacy = await ref.collection('movements').where('reference','==',reference).get();
+      if (legacy.docs.some(doc=>doc.data().kind===d.kind)) throw Error('This movement reference has already been recorded.');
       await db.runTransaction(async tx => {
-        const [current, agreement] = await Promise.all([
-          tx.get(ref), tx.get(items(uid).doc(productId))
+        const [current, agreement, existing] = await Promise.all([
+          tx.get(ref), tx.get(items(uid).doc(productId)), tx.get(movement)
         ]);
+        if (existing.exists) throw Error('This movement reference has already been recorded.');
         if (!agreement.exists) throw Error('Investor assignment was removed. Refresh and retry.');
         const terms = agreement.data();
         if (Number(terms.agreedPrice) !== agreedUnitAmount) throw Error('Agreed unit amount changed. Refresh and retry.');
@@ -82,7 +90,7 @@
       form.reset();
       await refreshOwnerLedger();
     } catch(error) { msg.textContent = error.message || 'Movement could not be saved.'; }
-    finally { button.disabled = false; }
+    finally { movementPending = false; button.disabled = false; }
   });
 
   const now = () => firebase.firestore.FieldValue.serverTimestamp();
@@ -128,6 +136,8 @@
     } catch (error) {
       if (session === state.session) {
         $('portfolioItems').replaceChildren();
+        $('investorSummary').textContent = '';
+        $('investorMovements').replaceChildren();
         $('portfolioMessage').textContent = 'Could not load your products. Check your connection or contact the administrator.';
       }
     }
@@ -151,7 +161,7 @@
     if (!owner()) return;
     const request = ++allocationRequest, session=state.session;
     const uid = $('allocationInvestor').value;
-    allocations=[]; $('allocationList').replaceChildren();
+    allocations=[]; $('allocationList').replaceChildren(); $('allocationLedger').replaceChildren();
     if (!validUid(uid)) return;
     const snap=await items(uid).get();
     if (!owner() || session!==state.session || request!==allocationRequest || uid!==$('allocationInvestor').value) return;
