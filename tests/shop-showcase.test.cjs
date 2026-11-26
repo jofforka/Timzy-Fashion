@@ -120,7 +120,7 @@ assert.equal(nodes['.floating-whatsapp'].href, 'https://wa.me/' + win.TIMZY_CONF
 
 assert.match(shop, /Ready-made &amp; Outfits/);
 assert.match(shop, /Fabrics &amp; Materials/);
-assert.match(shop, /shop-showcase\.css\?v=4/);
+assert.match(shop, /shop-showcase\.css\?v=5/);
 assert.match(shop, /shop-showcase\.js\?v=4/);
 assert.match(shop, /class="shop-bag-btn" data-open-bag/);
 assert.match(shop, /id="products"/);
@@ -132,8 +132,10 @@ assert.match(smallMobileCSS, /grid-template-columns:\s*repeat\(2,minmax\(0,1fr\)
 assert.match(shopCSS.slice(shopCSS.lastIndexOf('@media (max-width: 350px)')),
   /grid-template-columns:\s*repeat\(2,minmax\(0,1fr\)\)/,
   'Two cards on very narrow screens');
-assert.doesNotMatch(shopCSS, /linear-gradient|radial-gradient/,
-  'No busy decorative gradients in shop design');
+assert.match(shop, /class="collection-kicker"/, 'Editorial collection heading is present');
+assert.equal((shop.match(/class="collection-icon"/g)||[]).length, 2, 'Both collection switches have icons');
+assert.match(shopCSS, /shop-section-tab\[aria-pressed="true"\]:after/, 'Selected collection has a visible check');
+assert.match(shopCSS, /prefers-reduced-motion:reduce/, 'New switch respects reduced motion');
 
 // Deep link from an outfit to a specific material focuses the real product card.
 location.search = '?section=materials&product=brocade-senator-fabric';
