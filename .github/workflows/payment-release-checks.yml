@@ -1,0 +1,23 @@
+name: Payment release checks
+on:
+  pull_request:
+  push:
+    branches:
+      - feature/payment-release-integration
+permissions:
+  contents: read
+jobs:
+  payment-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check server syntax
+        run: find server -name '*.cjs' -exec node --check {} \;
+      - name: Payment regression tests
+        run: node --test tests/payment*.test.cjs
+      - name: Verify runtime dependencies
+        run: npm install --prefix server --ignore-scripts --no-audit --no-fund
