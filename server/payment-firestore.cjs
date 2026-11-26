@@ -1,5 +1,6 @@
 'use strict';
 const {quote}=require('./payment-order-service.cjs');
+const {reconcileInvestors}=require('./investor-payment-reconcile.cjs');
 function repository(db){
  const orders=db.collection('orders'), products=db.collection('products'), receipts=db.collection('paymentReceipts');
  const refFor=reference=>{if(typeof reference!=='string'||!/^TF-[a-zA-Z0-9-]{16,100}$/.test(reference))throw Error('Invalid reference');return orders.doc(reference);};
@@ -22,7 +23,7 @@ function repository(db){
  async recordVerifiedPayment(reference,transactionId){
   if(!Number.isSafeInteger(transactionId)||transactionId<=0)throw Error('Invalid transaction');
   const ref=refFor(reference), receipt=receipts.doc(String(transactionId));
-  return db.runTransaction(async t=>{
+  const result=await db.runTransaction(async t=>{
    const [s,r]=await Promise.all([t.get(ref),t.get(receipt)]);
    if(!s.exists)throw Error('Unknown order');
    const order=s.data();
@@ -48,6 +49,12 @@ function repository(db){
    t.update(ref,{status,transactionId,paidAt:new Date()});
    return {status};
   });
+  const saved=await ref.get();
+  if(saved.exists&&saved.data().paymentMode==='live'&&saved.data().status==='paid'){
+   const reconciliation=await reconcileInvestors(db,reference);
+   await ref.update({investorReconciliation:reconciliation,investorReconciledAt:new Date()});
+  }
+  return result;
  }
  };
 }
