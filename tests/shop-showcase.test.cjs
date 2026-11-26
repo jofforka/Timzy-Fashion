@@ -120,7 +120,7 @@ assert.equal(nodes['.floating-whatsapp'].href, 'https://wa.me/' + win.TIMZY_CONF
 
 assert.match(shop, /Ready-made &amp; Outfits/);
 assert.match(shop, /Fabrics &amp; Materials/);
-assert.match(shop, /shop-showcase\.css\?v=6/);
+assert.match(shop, /shop-showcase\.css\?v=7/);
 assert.match(shop, /shop-showcase\.js\?v=4/);
 assert.match(shop, /class="shop-bag-btn" data-open-bag/);
 assert.match(shop, /id="products"/);
