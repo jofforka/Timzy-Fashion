@@ -12,6 +12,8 @@ async function postInvestorSale(db,{reference,productId,investorUid}){
  return db.runTransaction(async t=>{
  const [o,a,g,l,m,p]=await Promise.all([order,allocation,agreement,ledger,movement,marker].map(ref=>t.get(ref)));
  if(!o.exists||o.data().paymentMode!=='live'||o.data().status!=='paid'||!Number.isSafeInteger(o.data().transactionId)||o.data().transactionId<=0)throw Error('Verified live sale required');
+ const receipt=await t.get(db.collection('paymentReceipts').doc(String(o.data().transactionId)));
+ if(!receipt.exists||receipt.data().reference!==reference)throw Error('Verified payment receipt required');
  if(p.exists)return {duplicate:true};
  if(!a.exists||a.data().investorUid!==investorUid)throw Error('Explicit investor allocation required');
  const lines=o.data().lines.filter(line=>line.productId===productId);
