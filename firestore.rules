@@ -251,6 +251,20 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
+    match /paymentInvestorAllocations/{productId} {
+      allow read: if owner();
+      allow create, update: if owner()
+        && exists(/databases/$(database)/documents/products/$(productId))
+        && ((request.resource.data.keys().hasOnly(['merchantOwned']) && request.resource.data.merchantOwned == true)
+        || (request.resource.data.keys().hasOnly(['investorUid'])
+        && request.resource.data.investorUid is string
+        && exists(/databases/$(database)/documents/investorCatalog/$(request.resource.data.investorUid)/items/$(productId))));
+      allow delete: if false;
+    }
+    match /paymentInvestorPostings/{id} {
+      allow read: if owner();
+      allow write: if false;
+    }
     match /orders/{id} {
       allow read: if owner();
       allow write: if false;
